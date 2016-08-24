@@ -1,0 +1,158 @@
+{
+ "kind": "discovery#restDescription",
+ "id": "guestbook:v1",
+ "name": "guestbook",
+ "version": "v1",
+ "description": "App Engine GuestBook API",
+ "icons": {
+  "x16": "http://www.google.com/images/icons/product/search-16.gif",
+  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+ },
+ "labels": [
+  "labs"
+ ],
+ "protocol": "rest",
+ "basePath": "https://beezswarm-guestbook.appspot.com/_ah/api/guestbook/v1/",
+ "parameters": {
+  "alt": {
+   "type": "string",
+   "description": "Data format for the response.",
+   "default": "json",
+   "enum": [
+    "json"
+   ],
+   "enumDescriptions": [
+    "Responses with Content-Type of application/json"
+   ],
+   "location": "query"
+  },
+  "fields": {
+   "type": "string",
+   "description": "Selector specifying which fields to include in a partial response.",
+   "location": "query"
+  },
+  "key": {
+   "type": "string",
+   "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+   "location": "query"
+  },
+  "oauth_token": {
+   "type": "string",
+   "description": "OAuth 2.0 token for the current user.",
+   "location": "query"
+  },
+  "prettyPrint": {
+   "type": "boolean",
+   "description": "Returns response with indentations and line breaks.",
+   "default": "true",
+   "location": "query"
+  },
+  "quotaUser": {
+   "type": "string",
+   "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters. Overrides userIp if both are provided.",
+   "location": "query"
+  },
+  "userIp": {
+   "type": "string",
+   "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
+   "location": "query"
+  }
+ },
+ "schemas": {
+  "Greeting": {
+   "id": "Greeting",
+   "type": "object",
+   "properties": {
+    "content": {
+     "type": "string"
+    }
+   }
+  },
+  "Greetings": {
+   "id": "Greetings",
+   "type": "array",
+   "items": {
+    "$ref": "Greeting"
+   }
+  }
+ },
+ "resources": {
+  "greetings": {
+   "methods": {
+    "get": {
+     "id": "guestbook.greetings.get",
+     "path": "greetings/{id}",
+     "httpMethod": "GET",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "response": {
+      "$ref": "Greeting"
+     }
+    },
+    "insert": {
+     "id": "guestbook.greetings.insert",
+     "path": "greetings",
+     "httpMethod": "POST",
+     "request": {
+      "$ref": "Greeting"
+     },
+     "response": {
+      "$ref": "Greeting"
+     }
+    },
+    "list": {
+     "id": "guestbook.greetings.list",
+     "path": "greetings",
+     "httpMethod": "GET",
+     "response": {
+      "$ref": "Greetings"
+     }
+    },
+    "remove": {
+     "id": "guestbook.greetings.remove",
+     "path": "greetings/{id}",
+     "httpMethod": "DELETE",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ]
+    },
+    "update": {
+     "id": "guestbook.greetings.update",
+     "path": "greetings/{id}",
+     "httpMethod": "PUT",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "request": {
+      "$ref": "Greeting"
+     },
+     "response": {
+      "$ref": "Greeting"
+     }
+    }
+   }
+  }
+ }
+}

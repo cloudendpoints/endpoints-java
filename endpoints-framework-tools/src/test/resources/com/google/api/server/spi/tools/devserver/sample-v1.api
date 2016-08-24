@@ -1,0 +1,132 @@
+{
+  "extends" : "thirdParty.api",
+  "root" : "https://myapp.appspot.com/_ah/api",
+  "name" : "sample",
+  "version" : "v1",
+  "description" : "Sample Paths",
+  "methods" : {
+    "sample.getSample" : {
+      "path" : "sample",
+      "httpMethod" : "GET",
+      "rosyMethod" : "Sample.getSample",
+      "request" : {
+        "parameters" : {
+          "param" : {
+            "type" : "string",
+            "required" : false
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "sample.getSampleWithString" : {
+      "path" : "sample/{param}",
+      "httpMethod" : "GET",
+      "rosyMethod" : "Sample.getSampleWithString",
+      "request" : {
+        "parameters" : {
+          "param" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "sample.getSampleWithDefaults" : {
+      "path" : "sample/withDefaults",
+      "httpMethod" : "GET",
+      "rosyMethod" : "Sample.getSampleWithDefaults",
+      "request" : {
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "sample.sendOn" : {
+      "path" : "send/{id_from}/to/{id_to}/{time}",
+      "httpMethod" : "GET",
+      "rosyMethod" : "Sample.sendOn",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          },
+          "id" : {
+            "type" : "string",
+            "required" : true
+          },
+          "time" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "sample.sendToHomeOn" : {
+      "path" : "send/{id}/to/home/{time}",
+      "httpMethod" : "GET",
+      "rosyMethod" : "Sample.sendToHomeOn",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          },
+          "time" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "sample.sendFromHomeOn" : {
+      "path" : "send/home/to/{id}/{time}",
+      "httpMethod" : "GET",
+      "rosyMethod" : "Sample.sendFromHomeOn",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          },
+          "time" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "sample.sendFromHomeToHomeToday" : {
+      "path" : "send/home/to/home/today",
+      "httpMethod" : "GET",
+      "rosyMethod" : "Sample.sendFromHomeToHomeToday",
+      "request" : {
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    }
+  }
+}

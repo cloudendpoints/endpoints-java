@@ -1,0 +1,42 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "myapi.appspot.com"
+  },
+  "host": "myapi.appspot.com",
+  "basePath": "/_ah/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/enum/v1/{value}": {
+      "post": {
+        "operationId": "EnumCreate",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "VALUE1",
+              "VALUE2"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        }
+      }
+    }
+  }
+}

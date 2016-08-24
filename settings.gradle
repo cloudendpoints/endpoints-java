@@ -1,0 +1,1 @@
+include ':endpoints-framework', ':endpoints-framework-tools', ':endpoints-framework-guice', ':test-utils', ':discovery-client', ':test-compat', ':test-compat:legacy-app', ':test-compat:new-app', ':test-compat:new-app-guice'

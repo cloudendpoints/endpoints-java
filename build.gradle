@@ -1,0 +1,109 @@
+/*
+ * Copyright 2016 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+subprojects {
+  apply plugin: 'java'
+
+  repositories {
+    mavenCentral()
+    mavenLocal()
+  }
+
+  compileJava {
+    // Workaround to actually apply project compatibility
+    sourceCompatibility = project.sourceCompatibility
+    targetCompatibility = project.targetCompatibility
+  }
+
+  compileTestJava {
+    // Workaround to actually apply project compatibility
+    sourceCompatibility = project.sourceCompatibility
+    targetCompatibility = project.targetCompatibility
+  }
+}
+
+// Common Maven artifact configuration. Called by subprojects which need it.
+def configureMaven(project, projectName, projectDescription) {
+  def ossrhUsername = project.findProperty('ossrhUsername')
+  def ossrhPassword = project.findProperty('ossrhPassword')
+  configure(project) {
+    apply plugin: 'maven'
+    apply plugin: 'signing'
+
+    task sourceJar(type: Jar, dependsOn: classes) {
+      classifier = 'sources'
+      from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar) {
+      classifier = 'javadoc'
+      from javadoc
+    }
+
+    artifacts {
+      archives sourceJar, javadocJar
+    }
+
+    signing {
+      required { gradle.taskGraph.hasTask('uploadArchives') }
+      sign configurations.archives
+    }
+
+    uploadArchives {
+      repositories {
+        mavenDeployer {
+          beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+          repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+            authentication(userName: ossrhUsername, password: ossrhPassword)
+          }
+
+          snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+            authentication(userName: ossrhUsername, password: ossrhPassword)
+          }
+
+          pom.project {
+            name projectName
+            description projectDescription
+            packaging 'jar'
+            url 'https://cloud.google.com/endpoints/docs/frameworks/java'
+
+            scm {
+              connection 'scm:git:https://github.com/cloudendpoints/endpoints-java-framework'
+              developerConnection 'scm:git:https://github.com/cloudendpoints/endpoints-java-framework'
+              url 'scm:git:https://github.com/cloudendpoints/endpoints-java-framework'
+            }
+
+            licenses {
+              license {
+                name 'The Apache License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+              }
+            }
+
+            developers {
+              developer {
+                id 'tangd'
+                name 'Daniel Tang'
+                email 'tangd@google.com'
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

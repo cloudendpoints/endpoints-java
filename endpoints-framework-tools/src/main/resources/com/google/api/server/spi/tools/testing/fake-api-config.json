@@ -1,0 +1,119 @@
+{ extends: "lily-1p.api",
+  abstract: false,
+  root: "https://beezswarm-dummy.appspot.com/_ah/api",
+  name: "guestbook",
+  version: "v1",
+  defaultVersion: true,
+  description: "App Engine GuestBook API",
+  internalIPOnly: false,
+  ownerName: "Google",
+  ownerDomain: "google.com",
+  adapter: {
+    bns: "http://beezswarm-dummy.appspot.com/_ah/spi"
+  },
+  auth: {
+    allowCookieAuth: true
+  },
+  methods: {
+    "guestbook.greetings.list": {
+      path: "greetings",
+      httpMethod: "GET",
+      rosyMethod: "Greetings.list",
+      request: {body: "empty"},
+      response: {body: "autoTemplate(backendResponse)"}
+    },
+    "guestbook.greetings.get": {
+      path: "greetings/{id}",
+      httpMethod: "GET",
+      rosyMethod: "Greetings.get",
+      request: {
+        body: "empty",
+        parameters: {
+          id: {required: true}
+        }
+      },
+      response: {body: "autoTemplate(backendResponse)"}
+    },
+    "guestbook.greetings.insert": {
+      path: "greetings",
+      httpMethod: "POST",
+      rosyMethod: "Greetings.insert",
+      request: {body: "autoTemplate(backendRequest)"},
+      response: {body: "autoTemplate(backendResponse)"}
+    },
+    "guestbook.greetings.update": {
+      path: "greetings/{id}",
+      httpMethod: "PUT",
+      rosyMethod: "Greetings.update",
+      request: {
+        parameters: {id: {required: true}},
+        body: "autoTemplate(backendRequest)"
+      },
+      response: {body: "autoTemplate(backendResponse)"}
+    },
+    "guestbook.greetings.remove": {
+      path: "greetings/{id}",
+      httpMethod: "DELETE",
+      rosyMethod: "Greetings.remove",
+      request: {
+        body: "empty",
+        parameters: {id: {required: true}}
+      },
+      response: {body: "empty"}
+    }
+  },
+  descriptor: {
+    "schemas": {
+      "Greeting": {
+        "id": "Greeting",
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "Greetings": {
+        "id": "Greetings",
+        "type": "array",
+        "items": {
+          "$ref": "Greeting"
+        }
+      }
+    },
+    "methods": {
+      "Greetings.list": {
+        "request": "empty",
+        "response": {
+          "$ref": "Greetings"
+        }
+      },
+      "Greetings.get": {
+        "request": "empty",
+        "response": {
+          "$ref": "Greeting"
+        }
+      },
+      "Greetings.insert": {
+        "request": {
+          "$ref": "Greeting"
+        },
+        "response": {
+          "$ref": "Greeting"
+        }
+      },
+      "Greetings.update": {
+        "request": {
+          "$ref": "Greeting"
+        },
+        "response": {
+          "$ref": "Greeting"
+        }
+      },
+      "Greetings.remove": {
+        "request": "empty",
+        "response": "empty"
+      }
+    }
+  }
+}

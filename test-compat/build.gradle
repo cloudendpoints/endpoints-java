@@ -1,0 +1,148 @@
+/*
+ * Copyright 2016 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "com.google.appengine:gradle-appengine-plugin:${appengineVersion}"
+  }
+}
+
+configurations {
+  compileOnly
+}
+
+sourceSets {
+  main {
+    compileClasspath += configurations.compileOnly
+  }
+  testlib {
+    compileClasspath += configurations.compileOnly
+  }
+}
+
+def testProjectId = project.findProperty('testProjectId') ?: 'FILL_THIS_IN_FOR_TESTING'
+
+allprojects {
+  apply plugin: 'war'
+  apply plugin: 'appengine'
+
+  war {
+    filesMatching('WEB-INF/*.xml') {
+      expand 'projectId': testProjectId
+    }
+  }
+
+  appengine {
+    downloadSdk = true
+    jvmFlags = ['-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000']
+
+    appcfg {
+      oauth2 = true
+    }
+  }
+}
+
+def testConfigs = [
+    [name: 'testNewLocal', dependsOn: ':test-compat:new-app',
+     backend: 'http://localhost:8080/_ah/api',
+     isProd: false],
+    [name: 'testNewProd', dependsOn: ':test-compat:new-app',
+     backend: "https://dev-dot-${testProjectId}.appspot.com/_ah/api",
+     isProd: true],
+    [name: 'testNewGuiceLocal', dependsOn: ':test-compat:new-app-guice',
+     backend: 'http://localhost:8080/_ah/api',
+     isProd: false],
+    [name: 'testLegacyProd', dependsOn: ':test-compat:legacy-app',
+     backend: "https://legacy-dot-${testProjectId}.appspot.com/_ah/api",
+     isProd: true]]
+
+def test = task('test', type: Test, overwrite: true) {
+  description = 'runs tests for all environments'
+  group = 'Compatibility testing'
+  testClassesDir = sourceSets.test.output.classesDir
+  dependsOn += ':test-compat:appengineEndpointsInstallClientLibs'
+}
+
+testConfigs.each { cfg ->
+  def task = task(cfg['name'], type: Test) {
+    systemProperty 'test.backend.url', cfg['backend']
+    description = 'runs tests against the ' + cfg['name'] + ' environment'
+    group = 'Compatibility testing'
+    testClassesDir = sourceSets.testlib.output.classesDir
+    classpath = sourceSets.testlib.runtimeClasspath
+    outputs.upToDateWhen { false }
+    reports.html.destination = file("$buildDir/reports/" + cfg['name'])
+    reports.junitXml.destination = file("$buildDir/test-results/" + cfg['name'])
+  }
+
+  if (cfg['isProd']) {
+    task.dependsOn = [cfg['dependsOn'] + ':appengineUpdate']
+  } else {
+    task.dependsOn = [cfg['dependsOn'] + ':appengineRun']
+    task.finalizedBy = [cfg['dependsOn'] + ':appengineStop']
+    gradle.taskGraph.whenReady { taskGraph ->
+      if (taskGraph.hasTask(task)) {
+        project(cfg['dependsOn']).appengine {
+          daemon = true
+        }
+      }
+    }
+  }
+  task.dependsOn += ':test-compat:compileTestlibJava'
+  test.dependsOn += task
+}
+
+dependencies {
+  compile group: 'com.googlecode.objectify', name: 'objectify', version: objectifyVersion
+  compile group: 'javax.inject', name: 'javax.inject', version: javaxinjectVersion
+  compile group: 'javax.servlet', name: 'servlet-api', version: servletVersion
+  compileOnly group: 'com.google.appengine', name: 'appengine-endpoints', version: appengineVersion
+
+  testlibCompile(group: 'com.compat_tests', name: 'wax', version: 'v1-+') {
+    exclude group: 'com.google.guava', module: 'guava-jdk5'
+  }
+  testlibCompile(group: 'com.compat_tests', name: 'tictactoe', version: 'v1-+') {
+    exclude group: 'com.google.guava', module: 'guava-jdk5'
+  }
+  testlibCompile group: 'junit', name: 'junit', version: junitVersion
+  testlibCompile group: 'com.google.truth', name: 'truth', version: truthVersion
+  testlibCompile group: 'javax.servlet', name: 'servlet-api', version: servletVersion
+  testlibCompile(group: 'com.google.http-client', name: 'google-http-client-jackson', version: apiclientVersion) {
+    exclude group: 'com.google.guava', module: 'guava-jdk5'
+  }
+  testlibCompile(group: 'com.google.api-client', name: 'google-api-client', version: apiclientVersion) {
+    exclude group: 'com.google.guava', module: 'guava-jdk5'
+  }
+  appengineSdk "com.google.appengine:appengine-java-sdk:${appengineVersion}"
+}
+
+idea {
+  module {
+    scopes.PROVIDED.plus += [configurations.compileOnly, configurations.testlibCompile]
+  }
+}
+
+eclipse {
+  classpath {
+    plusConfigurations += [configurations.compileOnly, configurations.testlibCompile]
+  }
+}

@@ -1,0 +1,102 @@
+/*
+ * Copyright 2016 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+configurations {
+  include
+  compile.extendsFrom include
+}
+
+jar {
+  from {
+    configurations.include.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}
+
+def annotations = [
+    "AnnotationBoolean.java",
+    "Api.java",
+    "ApiAuth.java",
+    "ApiCacheControl.java",
+    "ApiClass.java",
+    "ApiFrontendLimitRule.java",
+    "ApiFrontendLimits.java",
+    "ApiIssuer.java",
+    "ApiIssuerAudience.java",
+    "ApiMethod.java",
+    "ApiMethodCacheControl.java",
+    "ApiNamespace.java",
+    "ApiReference.java",
+    "ApiResourceProperty.java",
+    "ApiTransformer.java",
+    "Authenticator.java",
+    "DefaultValue.java",
+    "PeerAuthenticator.java",
+    "AuthLevel.java",
+    "Transformer.java",
+]
+
+def apiTypes = [
+    "DataAndTime.java",
+    "SimpleData.java",
+]
+
+// Generates a Javadoc for types meant to be used by API producers
+task siteJavadoc(type: Javadoc) {
+  source = annotations.collect({ "src/main/java/com/google/api/server/spi/config/${it}" }) +
+      apiTypes.collect({ "src/main/java/com/google/api/server/spi/types" })
+  destinationDir = file("${project.docsDir}/site-docs")
+}
+
+configureMaven(project, 'Endpoints Framework', 'A framework for building RESTful web APIs.')
+
+dependencies {
+  include(project(":discovery-client")) {
+    // We already include all of the dependencies needed for the discovery
+    // client, and they are often newer versions. Leaving this out can cause
+    // Android Studio to confuse different versions of Jackson 2 and Guava,
+    // leading to test failures.
+    transitive = false
+  }
+  compile group: 'javax.servlet', name: 'servlet-api', version: servletVersion
+  compile group: 'com.google.guava', name: 'guava', version: guavaVersion
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+  compile group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
+  compile(group: 'com.google.http-client', name: 'google-http-client-jackson2', version: apiclientVersion) {
+    exclude group: 'com.google.guava', module: 'guava-jdk5'
+    exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+  }
+  compile(group: 'com.google.api-client', name: 'google-api-client', version: apiclientVersion) {
+    exclude group: 'com.google.guava', module: 'guava-jdk5'
+  }
+  compile(group: 'com.google.api-client', name: 'google-api-client-appengine', version: apiclientVersion) {
+    exclude group: 'com.google.guava', module: 'guava-jdk5'
+  }
+  compile group: 'com.google.code.findbugs', name: 'jsr305', version: findbugsVersion
+  compile group: 'io.swagger', name: 'swagger-models', version: swaggerVersion
+  compile group: 'io.swagger', name: 'swagger-core', version: swaggerVersion
+  compile group: 'org.slf4j', name: 'slf4j-nop', version: slf4jVersion
+
+  testCompile project(':test-utils')
+  testCompile group: 'junit', name: 'junit', version: junitVersion
+  testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+  testCompile group: 'com.google.truth', name: 'truth', version: truthVersion
+  testCompile group: 'com.google.appengine', name: 'appengine-testing', version: appengineVersion
+  testCompile group: 'com.google.appengine', name: 'appengine-api-stubs', version: appengineVersion
+  testCompile group: 'org.springframework', name: 'spring-test', version: springtestVersion
+  testCompile group: 'com.google.guava', name: 'guava-testlib', version: guavaVersion
+}

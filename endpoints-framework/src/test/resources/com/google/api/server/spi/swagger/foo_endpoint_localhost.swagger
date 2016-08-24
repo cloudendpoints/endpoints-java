@@ -1,0 +1,115 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "localhost:8080"
+  },
+  "host": "localhost:8080",
+  "basePath": "/api",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/foo/v1/foos/{id}": {
+      "get": {
+        "operationId": "FooGetFoo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "google_id_token": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "FooUpdateFoo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "google_id_token": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "FooCreateFoo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "google_id_token": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "FooDeleteFoo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "google_id_token": []
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "google_id_token": {
+      "type": "oauth2",
+      "authorizationUrl": "",
+      "flow": "implicit",
+      "x-issuer": "accounts.google.com",
+      "x-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
+    }
+  }
+}

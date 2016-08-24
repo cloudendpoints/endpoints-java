@@ -1,0 +1,69 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "myapi.appspot.com"
+  },
+  "host": "myapi.appspot.com",
+  "basePath": "/_ah/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/array/v1/array": {
+      "post": {
+        "operationId": "ArrayIntArray",
+        "parameters": [
+          {
+            "name": "ints",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        }
+      }
+    },
+    "/array/v1/enumarray": {
+      "post": {
+        "operationId": "ArrayEnumArray",
+        "parameters": [
+          {
+            "name": "enums",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "VALUE1",
+                "VALUE2"
+              ]
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        }
+      }
+    }
+  }
+}
