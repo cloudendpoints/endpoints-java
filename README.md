@@ -14,11 +14,48 @@ in the `com.google.endpoints` group:
 The main documents for consuming Endpoints can be found at
 https://cloud.google.com/endpoints/docs/frameworks/java
 
-## Installing to local maven
+## Installing to local Maven
 
 To install test versions to Maven for easier dependency management, simply run:
 
     gradle install
+
+## Migrating from the legacy Endpoints framework
+
+This release replaces the old `appengine-endpoints` artifact. You should replace
+the dependency with the `endpoints-framework` artifact from the
+`com.google.endpoints` group. In Maven, the new dependency looks like this:
+
+    <dependency>
+      <groupId>com.google.endpoints</groupId>
+      <artifactId>endpoints-framework</artifactId>
+      <version>2.0.0-beta.7</version>
+    </dependency>
+
+In Gradle, the new dependency looks like this:
+
+    compile group: 'com.google.endpoints', name: 'endpoints-framework', version: '2.0.0-beta.7'
+
+You also need to update your `web.xml`. Simply replace all instances of
+`SystemServiceServlet` with `EndpointsServlet` and replace `/_ah/spi/*` with
+`/_ah/api/*`. The new Endpoints configuration should look something like this:
+
+    <servlet>
+      <servlet-name>EndpointsServlet</servlet-name>
+      <servlet-class>com.google.api.server.spi.EndpointsServlet</servlet-class>
+      <init-param>
+        <param-name>services</param-name>
+        <param-value>com.example.YourEndpoint</param-value>
+      </init-param>
+      <init-param>
+        <param-name>restricted</param-name>
+        <param-value>false</param-value>
+      </init-param>
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>EndpointsServlet</servlet-name>
+      <url-pattern>/_ah/api/*</url-pattern>
+    </servlet-mapping>
 
 ## Contributing
 
