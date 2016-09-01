@@ -46,12 +46,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
@@ -62,7 +65,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ServletRequestParamReaderTest {
-
   private static final String VALUE_STRING = "123";
   private static final boolean VALUE_BOOLEAN = true;
   private static final int VALUE_INTEGER = 123;
@@ -414,9 +416,9 @@ public class ServletRequestParamReaderTest {
     Collection<Date> dates = (Collection<Date>) params[0];
     assertEquals(3, dates.size());
     Iterator<Date> iterator = dates.iterator();
-    assertEquals(1, iterator.next().getDay());
-    assertEquals(2, iterator.next().getDay());
-    assertEquals(3, iterator.next().getDay());
+    assertEquals(1, getCalendarFromDate(iterator.next()).get(Calendar.DAY_OF_MONTH));
+    assertEquals(2, getCalendarFromDate(iterator.next()).get(Calendar.DAY_OF_MONTH));
+    assertEquals(3, getCalendarFromDate(iterator.next()).get(Calendar.DAY_OF_MONTH));
   }
 
   @Test
@@ -449,9 +451,9 @@ public class ServletRequestParamReaderTest {
     assertEquals(1, params.length);
     Date[] dates = (Date[]) params[0];
     assertEquals(3, dates.length);
-    assertEquals(1, dates[0].getDay());
-    assertEquals(2, dates[1].getDay());
-    assertEquals(3, dates[2].getDay());
+    assertEquals(1, getCalendarFromDate(dates[0]).get(Calendar.DAY_OF_MONTH));
+    assertEquals(2, getCalendarFromDate(dates[1]).get(Calendar.DAY_OF_MONTH));
+    assertEquals(3, getCalendarFromDate(dates[2]).get(Calendar.DAY_OF_MONTH));
   }
 
   private enum Outcome {
@@ -777,4 +779,9 @@ public class ServletRequestParamReaderTest {
     } catch (IllegalArgumentException expected) {}
   }
 
+  private Calendar getCalendarFromDate(Date date) {
+    Calendar c = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT"));
+    c.setTime(date);
+    return c;
+  }
 }

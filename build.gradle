@@ -33,6 +33,12 @@ subprojects {
     sourceCompatibility = project.sourceCompatibility
     targetCompatibility = project.targetCompatibility
   }
+
+  test {
+    testLogging {
+      exceptionFormat = 'full'
+    }
+  }
 }
 
 // Common Maven artifact configuration. Called by subprojects which need it.

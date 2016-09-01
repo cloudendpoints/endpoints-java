@@ -1,3 +1,5 @@
+![Travis CI Status](https://travis-ci.org/cloudendpoints/endpoints-java.svg)
+
 # Endpoints Java Framework
 
 The Endpoints Java Framework aims to be a simple solution to assist in creation
@@ -57,7 +59,16 @@ You also need to update your `web.xml`. Simply replace all instances of
       <url-pattern>/_ah/api/*</url-pattern>
     </servlet-mapping>
 
+## Repackaging dependencies
+
+The new version of the Endpoints framework does not repackage its dependencies
+to hide them. If you run into dependency conflicts and need to do so, we
+recommend using the Maven Shade plugin or Gradle Shadow plugin. Full
+instructions on doing so are on the [wiki][1].
+
 ## Contributing
 
 Your contributions are welcome. Please follow the [contributor
 guidelines](/CONTRIBUTING.md).
+
+[1]: https://github.com/cloudendpoints/endpoints-java/wiki/Vendoring-dependencies
