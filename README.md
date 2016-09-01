@@ -1,3 +1,5 @@
+![Travis CI Status](https://travis-ci.org/cloudendpoints/endpoints-java.svg)
+
 # Endpoints Java Framework
 
 The Endpoints Java Framework aims to be a simple solution to assist in creation
