@@ -61,6 +61,15 @@ allprojects {
   }
 }
 
+test {
+  dependsOn += ':test-compat:appengineEndpointsInstallClientLibs'
+}
+
+// This is necessary because otherwise gradle check runs the dev server, but since there are no
+// tests in the parent class, the attempt to stop the server happens too soon and doesn't actually
+// stop it. So we just remove this as it's effectively a no-op anyway.
+check.dependsOn.remove(appengineFunctionalTest)
+
 def testConfigs = [
     [name: 'testNewLocal', dependsOn: ':test-compat:new-app',
      backend: 'http://localhost:8080/_ah/api',
@@ -75,7 +84,7 @@ def testConfigs = [
      backend: "https://legacy-dot-${testProjectId}.appspot.com/_ah/api",
      isProd: true]]
 
-def test = task('test', type: Test, overwrite: true) {
+def testAllConfigs = task('testAllConfigs', type: Test) {
   description = 'runs tests for all environments'
   group = 'Compatibility testing'
   testClassesDir = sourceSets.test.output.classesDir
@@ -106,9 +115,10 @@ testConfigs.each { cfg ->
         }
       }
     }
+    test.dependsOn += task
   }
   task.dependsOn += ':test-compat:compileTestlibJava'
-  test.dependsOn += task
+  testAllConfigs.dependsOn += task
 }
 
 dependencies {
