@@ -1017,8 +1017,9 @@ public class ApiConfigAnnotationReaderTest {
 
     ApiParameterConfig parameter =
         config.getApiClassConfig().getMethods()
-            .get(methodToEndpointMethod(Test.class.getDeclaredMethods()[0]))
-            .getParameterConfigs().get(0);
+            .get(methodToEndpointMethod(Test.class.getDeclaredMethod("setT", Object.class)))
+            .getParameterConfigs()
+            .get(0);
     assertEquals(ApiParameterConfig.Classification.UNKNOWN, parameter.getClassification());
   }
 
@@ -1041,8 +1042,10 @@ public class ApiConfigAnnotationReaderTest {
 
     ApiParameterConfig parameter =
         config.getApiClassConfig().getMethods()
-            .get(methodToEndpointMethod(Foo.class.getSuperclass().getDeclaredMethods()[0]))
-            .getParameterConfigs().get(0);
+            .get(methodToEndpointMethod(
+                Foo.class.getSuperclass().getDeclaredMethod("bar", Object.class)))
+            .getParameterConfigs()
+            .get(0);
     assertEquals(ApiParameterConfig.Classification.UNKNOWN, parameter.getClassification());
   }
 
@@ -1061,8 +1064,10 @@ public class ApiConfigAnnotationReaderTest {
 
     ApiParameterConfig parameter =
         config.getApiClassConfig().getMethods()
-            .get(methodToEndpointMethod(Foo.class.getSuperclass().getDeclaredMethods()[0]))
-            .getParameterConfigs().get(0);
+            .get(methodToEndpointMethod(
+                Foo.class.getSuperclass().getDeclaredMethod("bar", Object.class)))
+            .getParameterConfigs()
+            .get(0);
     assertEquals(ApiParameterConfig.Classification.API_PARAMETER, parameter.getClassification());
   }
 

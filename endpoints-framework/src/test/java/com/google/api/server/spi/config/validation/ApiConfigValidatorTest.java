@@ -298,7 +298,7 @@ public class ApiConfigValidatorTest {
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
         .addParameter("param", false, null,
-            Foo.class.getDeclaredMethods()[0].getGenericParameterTypes()[0]);
+            Foo.class.getDeclaredMethod("foo", List.class).getGenericParameterTypes()[0]);
 
     try {
       validator.validate(config);
@@ -316,7 +316,7 @@ public class ApiConfigValidatorTest {
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
         .addParameter("param", false, null,
-            Foo.class.getDeclaredMethods()[0].getGenericParameterTypes()[0]);
+            Foo.class.getDeclaredMethod("foo", List[].class).getGenericParameterTypes()[0]);
 
     try {
       validator.validate(config);
@@ -334,7 +334,7 @@ public class ApiConfigValidatorTest {
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
         .addParameter("param", false, null,
-            Foo.class.getDeclaredMethods()[0].getGenericParameterTypes()[0]);
+            Foo.class.getDeclaredMethod("foo", List.class).getGenericParameterTypes()[0]);
 
     try {
       validator.validate(config);
@@ -362,7 +362,8 @@ public class ApiConfigValidatorTest {
       @SuppressWarnings("unused")
       public void foo(T t) {}
     }
-    Type unknownType = Foo.class.getDeclaredMethods()[0].getGenericParameterTypes()[0];
+    Type unknownType =
+        Foo.class.getDeclaredMethod("foo", Object.class).getGenericParameterTypes()[0];
 
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
