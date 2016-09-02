@@ -128,14 +128,14 @@ public class TypeLoaderTest {
   }
 
   @Test
-  public void testIsGenericType() {
+  public void testIsGenericType() throws Exception {
     final class Foo<T> {
       @SuppressWarnings("unused")
       void foo(T t) {}
     }
 
     assertTrue(TypeLoader.isGenericType(
-        Foo.class.getDeclaredMethods()[0].getGenericParameterTypes()[0]));
+        Foo.class.getDeclaredMethod("foo", Object.class).getGenericParameterTypes()[0]));
   }
 
   @Test
