@@ -1,4 +1,5 @@
-![Travis CI Status](https://travis-ci.org/cloudendpoints/endpoints-java.svg)
+[![Build Status](https://travis-ci.org/cloudendpoints/endpoints-java.svg?branch=master)](https://travis-ci.org/cloudendpoints/endpoints-java)
+[![codecov](https://codecov.io/gh/cloudendpoints/endpoints-java/branch/master/graph/badge.svg)](https://codecov.io/gh/cloudendpoints/endpoints-java)
 
 # Endpoints Java Framework
 
