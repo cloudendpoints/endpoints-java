@@ -15,11 +15,13 @@
  */
 package com.google.api.server.spi.tools;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.google.api.server.spi.IoUtil;
 import com.google.api.server.spi.config.ApiConfigException;
 import com.google.api.server.spi.tools.EndpointsToolAction.EndpointsOption;
 import com.google.appengine.tools.util.Option;
@@ -33,6 +35,7 @@ import org.junit.runners.JUnit4;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.List;
 
@@ -126,7 +129,7 @@ public class EndpointsToolActionTest {
 
   @SuppressWarnings("unused")
   public void testEndpointsOptionWithBadArguments() {
-    // Validate that visible non-flag EndpointsOpiton should fail to be created when description is
+    // Validate that visible non-flag EndpointsOption should fail to be created when description is
     // null.
     try {
       EndpointsOption testOption =
@@ -168,7 +171,7 @@ public class EndpointsToolActionTest {
   @Test
   public void testGetLongForm() {
     // When it is an invisible flag option.
-    EndpointsOption  option = EndpointsOption.makeInvisibleFlagOption("f", "file");
+    EndpointsOption option = EndpointsOption.makeInvisibleFlagOption("f", "file");
     assertEquals("--file", option.getLongForm(true).get());
     assertEquals("--file", option.getLongForm(false).get());
 
@@ -218,5 +221,33 @@ public class EndpointsToolActionTest {
     assertEquals(classesDir.getAbsolutePath() + File.separator, urls[0].getFile());
     assertEquals(jarFileInLibDir.getAbsolutePath(), urls[1].getFile());
     assertEquals(jarFileInClasspath.getAbsolutePath(), urls[2].getFile());
+  }
+
+  @Test
+  public void getServiceClassNames_argsSpecified() throws IOException {
+    doGetServiceClassNamesTest(ImmutableList.of("test"), "test");
+  }
+
+  @Test
+  public void getServiceClassNames_webXml() throws IOException {
+    doGetServiceClassNamesTest(ImmutableList.<String>of(), "com.google.testapi.TestEndpoint",
+        "com.google.waxapi.WaxEndpoint");
+  }
+
+  private void doGetServiceClassNamesTest(final ImmutableList<String> args, String... expected)
+      throws IOException {
+    String tempDir = tmpFolder.getRoot().getAbsolutePath();
+    File webInfDir = new File(tempDir, "WEB-INF");
+    if (!webInfDir.exists()) {
+      webInfDir.mkdir();
+    }
+    File webXml = new File(webInfDir, "web.xml");
+    PrintWriter writer = new PrintWriter(webXml);
+    String webXmlContents = IoUtil.readResourceFile(getClass(), "web.xml");
+    writer.append(webXmlContents);
+    writer.close();
+
+    TestAction action = new TestAction() {{ setArgs(args); }};
+    assertThat(action.getServiceClassNames(tempDir)).containsExactly((Object[]) expected);
   }
 }

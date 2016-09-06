@@ -25,19 +25,26 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
+import org.xml.sax.SAXException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Base class for {@link Action}s used by the Cloud Endpoints command line tool. Users can use
  * Endpoints command line tool to generate client library bundles and discovery docs.
  */
 public abstract class EndpointsToolAction extends Action {
+  private static Logger log = Logger.getLogger(EndpointsToolAction.class.getName());
 
   private static final int MAX_WIDTH = 80;
   private static final int OPTION_INDENT = 2;
@@ -357,6 +364,23 @@ public abstract class EndpointsToolAction extends Action {
       }
     }
     return urls.build().toArray(new URL[0]);
+  }
+
+  protected List<String> getServiceClassNames(String warPath) {
+    if (!getArgs().isEmpty()) {
+      return getArgs();
+    }
+    try {
+      File warDir = new File(warPath).getAbsoluteFile();
+      File webInfDir = new File(warDir, "WEB-INF");
+      File webXmlFile = new File(webInfDir, "web.xml");
+      if (webXmlFile.exists()) {
+        return WebXml.parse(webXmlFile).endpointsServiceClasses();
+      }
+    } catch (ParserConfigurationException | IOException | SAXException e) {
+      log.log(Level.WARNING, "could not parse web.xml for service classes", e);
+    }
+    return Collections.emptyList();
   }
 
   /**

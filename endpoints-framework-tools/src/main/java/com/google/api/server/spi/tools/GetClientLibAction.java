@@ -56,12 +56,13 @@ public class GetClientLibAction extends EndpointsToolAction {
 
   @Override
   public boolean execute() throws ClassNotFoundException, IOException, ApiConfigException {
-    if (getArgs().isEmpty()) {
+    String warPath = getWarPath(warOption);
+    List<String> serviceClassNames = getServiceClassNames(warPath);
+    if (serviceClassNames.isEmpty()) {
       return false;
     }
-    String warPath = getWarPath(warOption);
     getClientLib(computeClassPath(warPath, getClassPath(classPathOption)),
-        getLanguage(languageOption), getOutputPath(outputOption), warPath, getArgs(),
+        getLanguage(languageOption), getOutputPath(outputOption), warPath, serviceClassNames,
         getBuildSystem(buildSystemOption), getDebug(debugOption));
     return true;
   }

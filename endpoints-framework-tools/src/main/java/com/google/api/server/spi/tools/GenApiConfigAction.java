@@ -56,12 +56,13 @@ public class GenApiConfigAction extends EndpointsToolAction {
 
   @Override
   public boolean execute() throws ClassNotFoundException, IOException, ApiConfigException {
-    if (getArgs().isEmpty()) {
+    String warPath = getWarPath(warOption);
+    List<String> serviceClassNames = getServiceClassNames(warPath);
+    if (serviceClassNames.isEmpty()) {
       return false;
     }
-    String warPath = getWarPath(warOption);
     genApiConfig(computeClassPath(warPath, getClassPath(classPathOption)),
-        getWarOutputPath(outputOption, warPath), warPath, getArgs(), true);
+        getWarOutputPath(outputOption, warPath), warPath, serviceClassNames, true);
     return true;
   }
 

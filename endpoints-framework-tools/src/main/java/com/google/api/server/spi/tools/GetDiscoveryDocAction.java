@@ -55,13 +55,14 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
 
   @Override
   public boolean execute() throws ClassNotFoundException, IOException, ApiConfigException {
-    if (getArgs().isEmpty()) {
+    String warPath = getWarPath(warOption);
+    List<String> serviceClassNames = getServiceClassNames(warPath);
+    if (serviceClassNames.isEmpty()) {
       return false;
     }
-    String warPath = getWarPath(warOption);
     Format format = Format.valueOf(getFormat(formatOption).toUpperCase());
     getDiscoveryDoc(format, computeClassPath(warPath, getClassPath(classPathOption)),
-        getOutputPath(outputOption), warPath, getArgs(), getDebug(debugOption));
+        getOutputPath(outputOption), warPath, serviceClassNames, getDebug(debugOption));
     return true;
   }
 
