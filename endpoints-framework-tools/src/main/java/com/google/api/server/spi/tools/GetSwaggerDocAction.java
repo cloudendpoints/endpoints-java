@@ -69,13 +69,14 @@ public class GetSwaggerDocAction extends EndpointsToolAction {
 
   @Override
   public boolean execute() throws ClassNotFoundException, IOException, ApiConfigException {
-    if (getArgs().isEmpty()) {
+    String warPath = getWarPath(warOption);
+    List<String> serviceClassNames = getServiceClassNames(warPath);
+    if (serviceClassNames.isEmpty()) {
       return false;
     }
-    String warPath = getWarPath(warOption);
     genSwaggerDoc(computeClassPath(warPath, getClassPath(classPathOption)),
         getSwaggerOutputPath(outputOption), getHostname(hostnameOption, warPath),
-        getBasePath(basePathOption), getArgs(), true);
+        getBasePath(basePathOption), serviceClassNames, true);
     return true;
   }
 
