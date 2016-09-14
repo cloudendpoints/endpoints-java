@@ -127,14 +127,17 @@ public class ApiConfig {
     this.typeLoader = original.typeLoader;
     this.root = original.root;
     this.name = original.name;
+    this.canonicalName = original.canonicalName;
     this.version = original.version;
+    this.title = original.title;
     this.description = original.description;
+    this.documentationLink = original.documentationLink;
     this.backendRoot = original.backendRoot;
     this.isAbstract = original.isAbstract;
     this.defaultVersion = original.defaultVersion;
     this.discoverable = original.discoverable;
-    this.useDatastore = original.useDatastore;
     this.resource = original.resource;
+    this.useDatastore = original.useDatastore;
     this.authLevel = original.authLevel;
     this.scopeExpression = original.scopeExpression;
     this.audiences = original.audiences == null ? null : new ArrayList<>(original.audiences);

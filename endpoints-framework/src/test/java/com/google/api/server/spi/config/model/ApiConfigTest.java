@@ -21,9 +21,15 @@ import static org.junit.Assert.assertNull;
 
 import com.google.api.server.spi.ServiceContext;
 import com.google.api.server.spi.TypeLoader;
+import com.google.api.server.spi.auth.EndpointsPeerAuthenticator;
+import com.google.api.server.spi.auth.GoogleJwtAuthenticator;
 import com.google.api.server.spi.config.ApiConfigInconsistency;
+import com.google.api.server.spi.config.AuthLevel;
+import com.google.api.server.spi.config.Authenticator;
+import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.ResourceTransformer;
+import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.testing.DefaultValueSerializer;
 import com.google.api.server.spi.testing.DumbSerializer1;
 import com.google.api.server.spi.testing.TestEndpoint;
@@ -183,6 +189,38 @@ public class ApiConfigTest {
             new ApiConfigInconsistency<Integer>("cacheControl.maxAge", 4, 23),
             new ApiConfigInconsistency<List<String>>(
                 "auth.blockedRegions", blockedRegions1, blockedRegions2));
+  }
+
+  @Test
+  public void testCopyConstructor() {
+    apiConfig.setRoot("root");
+    apiConfig.setName("name");
+    apiConfig.setCanonicalName("canonical");
+    apiConfig.setVersion("version");
+    apiConfig.setTitle("title");
+    apiConfig.setDescription("desc");
+    apiConfig.setDocumentationLink("link");
+    apiConfig.setBackendRoot("backend");
+    apiConfig.setIsAbstract(true);
+    apiConfig.setIsDefaultVersion(true);
+    apiConfig.setIsDiscoverable(true);
+    apiConfig.setResource("resource");
+    apiConfig.setUseDatastore(true);
+    apiConfig.setAuthLevel(AuthLevel.REQUIRED);
+    apiConfig.setScopeExpression(AuthScopeExpressions.interpret("test"));
+    apiConfig.setAudiences(ImmutableList.of("aud1"));
+    apiConfig.setIssuers(ApiIssuerConfigs.builder()
+        .addIssuer(ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER)
+        .build());
+    apiConfig.setIssuerAudiences(ApiIssuerAudienceConfig.builder()
+        .addIssuerAudiences("iss", "aud")
+        .build());
+    apiConfig.setClientIds(ImmutableList.of("clientid"));
+    apiConfig.setAuthenticators(
+        ImmutableList.<Class<? extends Authenticator>>of(GoogleJwtAuthenticator.class));
+    apiConfig.setPeerAuthenticators(
+        ImmutableList.<Class<? extends PeerAuthenticator>>of(EndpointsPeerAuthenticator.class));
+    assertThat(apiConfig).isEqualTo(new ApiConfig(apiConfig));
   }
 
   static class IntegerToStringSerializer extends DefaultValueSerializer<Integer, String> {
