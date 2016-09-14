@@ -37,7 +37,10 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Api(
     name = "discovery",
-    version = "v1"
+    version = "v1",
+    title = "APIs Discovery Service",
+    description = "Lets you discover information about other Google APIs, such as what APIs are "
+        + "available, the resource and method details for each API"
 )
 public class ProxyingDiscoveryService {
   private static final Logger logger = Logger.getLogger(ProxyingDiscoveryService.class.getName());
