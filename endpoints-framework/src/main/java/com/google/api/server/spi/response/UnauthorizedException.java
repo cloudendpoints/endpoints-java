@@ -16,6 +16,7 @@
 package com.google.api.server.spi.response;
 
 import com.google.api.server.spi.ServiceException;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,27 +26,29 @@ import java.util.Map;
  */
 public class UnauthorizedException extends ServiceException {
 
-  public static final String AUTH_SCHEME_OAUTH = "OAuth";
+  public static final String AUTH_SCHEME_BEARER = "Bearer";
+  private static final Map<String, String> GOOGLE_REALM =
+      ImmutableMap.of("realm", "\"https://accounts.google.com/\"");
   private static final int CODE = 401;
 
   private final String authScheme;
   private final Map<String, String> params;
 
   public UnauthorizedException(String message) {
-    this(message, AUTH_SCHEME_OAUTH, null);
+    this(message, AUTH_SCHEME_BEARER, GOOGLE_REALM);
   }
 
   public UnauthorizedException(Throwable cause) {
     super(CODE, cause);
 
-    this.authScheme = AUTH_SCHEME_OAUTH;
-    this.params = null;
+    this.authScheme = AUTH_SCHEME_BEARER;
+    this.params = GOOGLE_REALM;
   }
 
   public UnauthorizedException(String message, Throwable cause) {
     super(CODE, message, cause);
 
-    this.authScheme = AUTH_SCHEME_OAUTH;
+    this.authScheme = AUTH_SCHEME_BEARER;
     this.params = null;
   }
 
