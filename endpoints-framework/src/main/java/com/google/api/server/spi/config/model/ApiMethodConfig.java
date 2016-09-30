@@ -292,10 +292,10 @@ public class ApiMethodConfig {
    * Adds the given parameter to the configuration and updates the path to add the new parameter if
    * it is non-optional and has no default.
    */
-  public ApiParameterConfig addParameter(String name, boolean nullable, String defaultValue,
+  public ApiParameterConfig addParameter(String name, String description, boolean nullable, String defaultValue,
       Type type) {
     ApiParameterConfig config =
-        new ApiParameterConfig(this, name, nullable, defaultValue, type, typeLoader);
+        new ApiParameterConfig(this, name, description, nullable, defaultValue, type, typeLoader);
     parameterConfigs.add(config);
 
     if (config.getClassification() != Classification.INJECTED && name != null && !nullable

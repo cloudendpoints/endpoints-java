@@ -39,6 +39,7 @@ import com.google.api.server.spi.config.ApiReference;
 import com.google.api.server.spi.config.ApiTransformer;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.DefaultValue;
+import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.config.Transformer;
@@ -744,6 +745,23 @@ public class ApiConfigAnnotationReaderTest {
       @Override public void foo(@Named("id") @DefaultValue("3141") Long id) {}
     }
     assertEquals(3141L, Long.parseLong(implValidTestDefaultValuedParameter(Test.class)));
+  }
+
+  @Test
+  public void testParameterDescription() throws Exception {
+    @Api
+    final class TestParameterDescription {
+      public void foo(@Description("desc") String param) {}
+    }
+    ApiConfig config = createConfig(TestParameterDescription.class);
+    annotationReader.loadEndpointMethods(serviceContext, TestParameterDescription.class,
+        config.getApiClassConfig().getMethods());
+
+    ApiMethodConfig methodConfig =
+        Iterables.getOnlyElement(config.getApiClassConfig().getMethods().values());
+    ApiParameterConfig parameterConfig =
+        Iterables.getOnlyElement(methodConfig.getParameterConfigs());
+    assertEquals("desc", parameterConfig.getDescription());
   }
 
   @ApiTransformer(TestSerializer.class)

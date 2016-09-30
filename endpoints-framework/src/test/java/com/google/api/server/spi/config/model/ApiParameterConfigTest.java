@@ -85,9 +85,9 @@ public class ApiParameterConfigTest {
     Mockito.when(apiClassConfig.getApiConfig()).thenReturn(apiConfig);
     Mockito.when(apiConfig.getSerializationConfig()).thenReturn(serializationConfig);
 
-    config = new ApiParameterConfig(apiMethodConfig, "bleh", false, null, String.class, typeLoader);
+    config = new ApiParameterConfig(apiMethodConfig, "bleh", null, false, null, String.class, typeLoader);
     configWithArray =
-        new ApiParameterConfig(apiMethodConfig, "bleh", false, null, Boolean[].class, typeLoader);
+        new ApiParameterConfig(apiMethodConfig, "bleh", null, false, null, Boolean[].class, typeLoader);
   }
 
   @Test
@@ -154,6 +154,6 @@ public class ApiParameterConfigTest {
   }
 
   private ApiParameterConfig createStandardParameter(String name) {
-    return new ApiParameterConfig(apiMethodConfig, "alt", false, null, String.class, typeLoader);
+    return new ApiParameterConfig(apiMethodConfig, "alt", null, false, null, String.class, typeLoader);
   }
 }

@@ -31,6 +31,7 @@ import java.util.Objects;
 public class ApiParameterConfig {
   private final ApiMethodConfig apiMethodConfig;
   private final String name;
+  private final String description;
   private final boolean nullable;
   private final String defaultValue;
   private final Type type;
@@ -56,10 +57,11 @@ public class ApiParameterConfig {
     UNKNOWN
   }
 
-  public ApiParameterConfig(ApiMethodConfig apiMethodConfig, String name, boolean nullable,
+  public ApiParameterConfig(ApiMethodConfig apiMethodConfig, String name, String description, boolean nullable,
       String defaultValue, Type type, TypeLoader typeLoader) {
     this.apiMethodConfig = apiMethodConfig;
     this.name = name;
+    this.description = description;
     this.nullable = nullable;
     this.defaultValue = defaultValue;
     this.type = type;
@@ -71,6 +73,7 @@ public class ApiParameterConfig {
   public ApiParameterConfig(ApiParameterConfig original, ApiMethodConfig apiMethodConfig) {
     this.apiMethodConfig = apiMethodConfig;
     this.name = original.name;
+    this.description = original.description;
     this.nullable = original.nullable;
     this.defaultValue = original.defaultValue;
     this.type = original.type;
@@ -109,6 +112,10 @@ public class ApiParameterConfig {
 
   public String getName() {
     return name;
+  }
+
+  public String getDescription() {
+    return description;
   }
 
   public boolean getNullable() {

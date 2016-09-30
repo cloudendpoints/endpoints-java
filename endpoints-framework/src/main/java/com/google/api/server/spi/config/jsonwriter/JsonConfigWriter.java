@@ -398,6 +398,7 @@ public class JsonConfigWriter implements ApiConfigWriter {
     }
 
     parameterNode.put("type", typeLoader.getParameterTypes().get(type));
+    parameterNode.put("description", config.getDescription());
     parameterNode.put("required", !config.getNullable() && config.getDefaultValue() == null);
 
     // TODO: Try to find a way to move default value interpretation/conversion into the
