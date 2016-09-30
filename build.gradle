@@ -27,12 +27,14 @@ subprojects {
     // Workaround to actually apply project compatibility
     sourceCompatibility = project.sourceCompatibility
     targetCompatibility = project.targetCompatibility
+    options.encoding = 'UTF-8'
   }
 
   compileTestJava {
     // Workaround to actually apply project compatibility
     sourceCompatibility = project.sourceCompatibility
     targetCompatibility = project.targetCompatibility
+    options.encoding = 'UTF-8'
   }
 
   test {
