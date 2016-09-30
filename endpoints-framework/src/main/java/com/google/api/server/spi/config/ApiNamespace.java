@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 public @interface ApiNamespace {
   /**
    * This is the domain name commonly associated with owner.
-   * If, for instance, this is an API owned by NASA, then “nasa.gov” would be a reasonable choice
+   * If, for instance, this is an API owned by NASA, then "nasa.gov" would be a reasonable choice
    * for domain name.
    * It does not necessarily need to be the same as the serving domain, though the latter will be
    * picked as a default if {@code ownerDomain} is not set.
@@ -41,7 +41,7 @@ public @interface ApiNamespace {
    * This is a canonical company name obeying the same rules as the canonical API name.
    * It obeys the exact capitalization a company would like to use to represent themselves.
    * If their name is really two dwords, they are separated by spaces.
-   * E.g. “YouTube”, “NASA” , “3Com”, “Fox News”.
+   * E.g. "YouTube", "NASA" , "3Com", "Fox News".
    *
    * Required for a specified namespace.
    */
