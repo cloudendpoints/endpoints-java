@@ -50,6 +50,12 @@ public @interface ApiMethod {
   String name() default "";
 
   /**
+   * Description of this API method. This will be exposed in the discovery service to
+   * describe your API method, and may also be used to generate documentation.
+   */
+  String description() default "";
+  
+  /**
    * The URI path to use to access this method. If not set a default will be
    * created based on the Java method name.
    */

@@ -146,6 +146,7 @@ public class ApiMethodConfig {
   private final ApiClassConfig apiClassConfig;
 
   private String name;
+  private String description;
   private String path;
   private String httpMethod;
 
@@ -176,6 +177,7 @@ public class ApiMethodConfig {
     this.apiClassConfig = apiClassConfig;
     this.name = original.name;
     this.path = original.path;
+    this.description = original.description;
     this.httpMethod = original.httpMethod;
     this.scopeExpression = original.scopeExpression;
     this.audiences = original.audiences == null ? null : new ArrayList<>(original.audiences);
@@ -348,6 +350,14 @@ public class ApiMethodConfig {
    */
   public String getFullMethodName() {
     return methodNameFormatter(apiClassConfig.getApiConfig().getName() + "." + getName());
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   public void setPath(String path) {

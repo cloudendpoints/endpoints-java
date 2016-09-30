@@ -48,6 +48,12 @@ class ApiMethodAnnotationConfig {
     }
   }
 
+  public void setDescriptionIfNotEmpty(String description) {
+    if (description != null && !description.isEmpty()) {
+      config.setDescription(description);
+    }
+  }
+
   public void setPathIfNotEmpty(String path) {
     if (path != null && !path.isEmpty()) {
       config.setPath(path);
