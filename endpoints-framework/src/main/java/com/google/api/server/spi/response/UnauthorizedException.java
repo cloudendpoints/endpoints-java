@@ -52,6 +52,34 @@ public class UnauthorizedException extends ServiceException {
     this.params = null;
   }
 
+  public UnauthorizedException(String statusMessage, String reason) {
+    super(CODE, statusMessage, reason);
+
+    this.authScheme = AUTH_SCHEME_BEARER;
+    this.params = null;
+  }
+
+  public UnauthorizedException(String statusMessage, String reason, Throwable cause) {
+    super(CODE, statusMessage, reason, cause);
+
+    this.authScheme = AUTH_SCHEME_BEARER;
+    this.params = null;
+  }
+
+  public UnauthorizedException(String statusMessage, String reason, String domain) {
+    super(CODE, statusMessage, reason, domain);
+
+    this.authScheme = AUTH_SCHEME_BEARER;
+    this.params = null;
+  }
+
+  public UnauthorizedException(String statusMessage, String reason, String domain, Throwable cause) {
+    super(CODE, statusMessage, reason, domain, cause);
+
+    this.authScheme = AUTH_SCHEME_BEARER;
+    this.params = null;
+  }
+
   /**
    * Creates an UnauthorizedException.
    *
@@ -61,6 +89,13 @@ public class UnauthorizedException extends ServiceException {
    */
   public UnauthorizedException(String message, String authScheme, Map<String, String> params) {
     super(CODE, message);
+
+    this.authScheme = authScheme;
+    this.params = params;
+  }
+
+  public UnauthorizedException(String message, String reason, String domain, String authScheme, Map<String, String> params) {
+    super(CODE, message, reason, domain, null);
 
     this.authScheme = authScheme;
     this.params = params;

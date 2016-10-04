@@ -35,4 +35,20 @@ public class ConflictException extends ServiceException {
   public ConflictException(String message, Throwable cause) {
     super(CODE, message, cause);
   }
+
+  public ConflictException(String statusMessage, String reason) {
+    super(CODE, statusMessage, reason);
+  }
+  
+  public ConflictException(String statusMessage, String reason, Throwable cause) {
+    super(CODE, statusMessage, reason, cause);
+  }
+
+  public ConflictException(String statusMessage, String reason, String domain) {
+    super(CODE, statusMessage, reason, domain);
+  }
+  
+  public ConflictException(String statusMessage, String reason, String domain, Throwable cause) {
+    super(CODE, statusMessage, reason, domain, cause);
+  }
 }

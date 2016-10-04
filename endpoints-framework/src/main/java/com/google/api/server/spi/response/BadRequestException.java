@@ -35,4 +35,20 @@ public class BadRequestException extends ServiceException {
   public BadRequestException(String message, Throwable cause) {
     super(CODE, message, cause);
   }
+
+  public BadRequestException(String statusMessage, String reason) {
+    super(CODE, statusMessage, reason);
+  }
+  
+  public BadRequestException(String statusMessage, String reason, Throwable cause) {
+    super(CODE, statusMessage, reason, cause);
+  }
+
+  public BadRequestException(String statusMessage, String reason, String domain) {
+    super(CODE, statusMessage, reason, domain);
+  }
+
+  public BadRequestException(String statusMessage, String reason, String domain, Throwable cause) {
+    super(CODE, statusMessage, reason, domain, cause);
+  }
 }

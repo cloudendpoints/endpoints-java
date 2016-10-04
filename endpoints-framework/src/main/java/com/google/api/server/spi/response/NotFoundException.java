@@ -35,4 +35,20 @@ public class NotFoundException extends ServiceException {
   public NotFoundException(String message, Throwable cause) {
     super(CODE, message, cause);
   }
+
+  public NotFoundException(String statusMessage, String reason) {
+    super(CODE, statusMessage, reason);
+  }
+  
+  public NotFoundException(String statusMessage, String reason, Throwable cause) {
+    super(CODE, statusMessage, reason, cause);
+  }
+
+  public NotFoundException(String statusMessage, String reason, String domain) {
+    super(CODE, statusMessage, reason, domain);
+  }
+  
+  public NotFoundException(String statusMessage, String reason, String domain, Throwable cause) {
+    super(CODE, statusMessage, reason, domain, cause);
+  }
 }

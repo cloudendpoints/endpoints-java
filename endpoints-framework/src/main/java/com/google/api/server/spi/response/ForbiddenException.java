@@ -35,4 +35,20 @@ public class ForbiddenException extends ServiceException {
   public ForbiddenException(String message, Throwable cause) {
     super(CODE, message, cause);
   }
+
+  public ForbiddenException(String statusMessage, String reason) {
+    super(CODE, statusMessage, reason);
+  }
+
+  public ForbiddenException(String statusMessage, String reason, Throwable cause) {
+    super(CODE, statusMessage, reason, cause);
+  }
+  
+  public ForbiddenException(String statusMessage, String reason, String domain) {
+    super(CODE, statusMessage, reason, domain);
+  }
+
+  public ForbiddenException(String statusMessage, String reason, String domain, Throwable cause) {
+    super(CODE, statusMessage, reason, domain, cause);
+  }
 }

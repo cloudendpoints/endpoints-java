@@ -35,4 +35,20 @@ public class ServiceUnavailableException extends ServiceException {
   public ServiceUnavailableException(String message, Throwable cause) {
     super(CODE, message, cause);
   }
+
+  public ServiceUnavailableException(String statusMessage, String reason) {
+    super(CODE, statusMessage, reason);
+  }
+
+  public ServiceUnavailableException(String statusMessage, String reason, Throwable cause) {
+    super(CODE, statusMessage, reason, cause);
+  }
+
+  public ServiceUnavailableException(String statusMessage, String reason, String domain) {
+    super(CODE, statusMessage, reason, domain);
+  }
+  
+  public ServiceUnavailableException(String statusMessage, String reason, String domain, Throwable cause) {
+    super(CODE, statusMessage, reason, domain, cause);
+  }
 }

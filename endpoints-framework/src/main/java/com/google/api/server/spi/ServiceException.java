@@ -24,27 +24,75 @@ import java.util.Map;
 public class ServiceException extends Exception {
 
   protected final int statusCode;
+  protected final String reason;
+  protected final String domain;
 
   public ServiceException(int statusCode, String statusMessage) {
     super(statusMessage);
 
     this.statusCode = statusCode;
+    this.reason = null;
+    this.domain = null;
   }
 
   public ServiceException(int statusCode, Throwable cause) {
     super(cause);
 
     this.statusCode = statusCode;
+    this.reason = null;
+    this.domain = null;
   }
 
   public ServiceException(int statusCode, String statusMessage, Throwable cause) {
     super(statusMessage, cause);
 
     this.statusCode = statusCode;
+    this.reason = null;
+    this.domain = null;
+  }
+
+  public ServiceException(int statusCode, String statusMessage, String reason) {
+    super(statusMessage);
+
+    this.statusCode = statusCode;
+    this.reason = reason;
+    this.domain = null;
+  }
+  
+  public ServiceException(int statusCode, String statusMessage, String reason, Throwable cause) {
+    super(statusMessage, cause);
+    
+    this.statusCode = statusCode;
+    this.reason = reason;
+    this.domain = null;
+  }
+
+  public ServiceException(int statusCode, String statusMessage, String reason, String domain) {
+    super(statusMessage);
+
+    this.statusCode = statusCode;
+    this.reason = reason;
+    this.domain = domain;
+  }
+  
+  public ServiceException(int statusCode, String statusMessage, String reason, String domain, Throwable cause) {
+    super(statusMessage, cause);
+    
+    this.statusCode = statusCode;
+    this.reason = reason;
+    this.domain = domain;
   }
 
   public int getStatusCode() {
     return statusCode;
+  }
+
+  public String getReason() {
+    return reason;
+  }
+
+  public String getDomain() {
+    return domain;
   }
 
   public Map<String, String> getHeaders() {
