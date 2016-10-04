@@ -17,6 +17,7 @@ package com.google.api.server.spi.response;
 
 import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -59,8 +60,8 @@ public class RestResponseResultWriter extends ServletResponseResultWriter {
   public void writeError(ServiceException e) throws IOException {
     ErrorMap errorMap = new ErrorMap(enableExceptionCompatibility);
     int code = errorMap.getHttpStatus(e.getStatusCode());
-    String reason = errorMap.getReason(e.getStatusCode());
-    String domain = errorMap.getDomain(e.getStatusCode());
+    String reason = !Strings.isNullOrEmpty(e.getReason()) ? e.getReason() : errorMap.getReason(e.getStatusCode());
+    String domain = !Strings.isNullOrEmpty(e.getDomain()) ? e.getDomain() : errorMap.getDomain(e.getStatusCode());
     write(code, e.getHeaders(),
         writeValueAsString(createError(code, reason, domain, e.getMessage())));
   }

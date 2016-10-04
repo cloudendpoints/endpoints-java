@@ -29,6 +29,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import java.io.IOException;
+
 /**
  * Tests for {@link RestResponseResultWriter}.
  */
@@ -175,5 +177,28 @@ public class RestResponseResultWriterTest {
     assertThat(innerError.path("domain").asText()).isEqualTo("global");
     assertThat(innerError.path("reason").asText()).isEqualTo(reason);
     assertThat(innerError.path("message").asText()).isEqualTo("error");
+  }
+
+  @Test
+  public void writeError_CustomReasonAndDomain() throws Exception {
+    writeError(false, null, "badRequest", null, "global");
+    writeError(true, null, "badRequest", null, "global");
+    writeError(false, "", "badRequest", "", "global");
+    writeError(true, "", "badRequest", "", "global");
+    writeError(false, "customReason", "customReason", "customDomain", "customDomain");
+    writeError(true, "customReason", "customReason", "customDomain", "customDomain");
+  }
+
+  private void writeError(boolean enableExceptionCompatibility,
+      String customReason, String expectedReason, String customDomain, String expectedDomain) throws IOException {
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    RestResponseResultWriter writer = new RestResponseResultWriter(
+            response, null, true /* prettyPrint */, enableExceptionCompatibility);
+    writer.writeError(new ServiceException(400, "error", customReason, customDomain));
+    ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
+    ObjectNode content = mapper.readValue(response.getContentAsString(), ObjectNode.class);
+    JsonNode innerError = content.path("error").path("errors").path(0);
+    assertThat(innerError.path("domain").asText()).isEqualTo(expectedDomain);
+    assertThat(innerError.path("reason").asText()).isEqualTo(expectedReason);
   }
 }

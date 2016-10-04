@@ -35,4 +35,20 @@ public class InternalServerErrorException extends ServiceException {
   public InternalServerErrorException(String message, Throwable cause) {
     super(CODE, message, cause);
   }
+
+  public InternalServerErrorException(String statusMessage, String reason) {
+    super(CODE, statusMessage, reason);
+  }
+  
+  public InternalServerErrorException(String statusMessage, String reason, Throwable cause) {
+    super(CODE, statusMessage, reason, cause);
+  }
+
+  public InternalServerErrorException(String statusMessage, String reason, String domain) {
+    super(CODE, statusMessage, reason, domain);
+  }
+  
+  public InternalServerErrorException(String statusMessage, String reason, String domain, Throwable cause) {
+    super(CODE, statusMessage, reason, domain, cause);
+  }
 }
