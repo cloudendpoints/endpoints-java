@@ -48,7 +48,7 @@ You also need to update your `web.xml`. Simply replace all instances of
       <servlet-class>com.google.api.server.spi.EndpointsServlet</servlet-class>
       <init-param>
         <param-name>services</param-name>
-        <param-value>com.example.YourEndpoint</param-value>
+        <param-value>com.example.Endpoint1,com.example.Endpoint2</param-value>
       </init-param>
       <init-param>
         <param-name>restricted</param-name>
