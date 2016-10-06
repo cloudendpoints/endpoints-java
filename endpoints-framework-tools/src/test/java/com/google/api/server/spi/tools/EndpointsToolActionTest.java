@@ -218,9 +218,9 @@ public class EndpointsToolActionTest {
 
     TestAction action = new TestAction();
     URL[] urls = action.computeClassPath(tempDir, jarFileInClasspath.getAbsolutePath());
-    assertEquals(classesDir.getAbsolutePath() + File.separator, urls[0].getFile());
-    assertEquals(jarFileInLibDir.getAbsolutePath(), urls[1].getFile());
-    assertEquals(jarFileInClasspath.getAbsolutePath(), urls[2].getFile());
+    assertEquals(new File(classesDir.getAbsolutePath() + File.separator), new File(urls[0].getFile()));
+    assertEquals(new File(jarFileInLibDir.getAbsolutePath()), new File(urls[1].getFile()));
+    assertEquals(new File(jarFileInClasspath.getAbsolutePath()), new File(urls[2].getFile()));
   }
 
   @Test
