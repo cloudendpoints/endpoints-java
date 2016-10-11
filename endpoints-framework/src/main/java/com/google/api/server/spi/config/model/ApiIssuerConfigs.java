@@ -11,7 +11,7 @@ import java.util.Objects;
 public class ApiIssuerConfigs {
   static final String UNSPECIFIED_NAME = "_unspecified_issuer_name";
   public static final IssuerConfig GOOGLE_ID_TOKEN_ISSUER = new IssuerConfig(
-      Constant.GOOGLE_ID_TOKEN_NAME, "accounts.google.com",
+      Constant.GOOGLE_ID_TOKEN_NAME, "https://accounts.google.com",
       "https://www.googleapis.com/oauth2/v1/certs");
   public static final ApiIssuerConfigs UNSPECIFIED = builder()
       .addIssuer(new IssuerConfig(UNSPECIFIED_NAME, null, null))
