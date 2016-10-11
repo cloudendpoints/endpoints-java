@@ -28,6 +28,7 @@ import com.google.api.server.spi.handlers.ExplorerHandler;
 import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -61,17 +62,31 @@ public class EndpointsServlet extends HttpServlet {
 
   @Override
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    if ("OPTIONS".equals(request.getMethod())) {
+    String method = getRequestMethod(request);
+    if ("OPTIONS".equals(method)) {
       corsHandler.handle(request, response);
     } else {
       String path = Strings.stripSlash(
           request.getRequestURI().substring(request.getServletPath().length()));
-      EndpointsContext context = new EndpointsContext(request.getMethod(), path, request, response);
-      if (!dispatcher.dispatch(request.getMethod(), path, context)) {
+      EndpointsContext context = new EndpointsContext(method, path, request, response);
+      if (!dispatcher.dispatch(method, path, context)) {
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         response.getWriter().append("Not Found");
       }
     }
+  }
+
+  private String getRequestMethod(HttpServletRequest request) {
+    Enumeration headerNames = request.getHeaderNames();
+    String methodOverride = null;
+    while (headerNames.hasMoreElements()) {
+      String headerName = (String) headerNames.nextElement();
+      if (headerName.toLowerCase().equals("x-http-method-override")) {
+        methodOverride = request.getHeader(headerName);
+        break;
+      }
+    }
+    return methodOverride != null ? methodOverride.toUpperCase() : request.getMethod();
   }
 
   private PathDispatcher<EndpointsContext> createDispatcher() {

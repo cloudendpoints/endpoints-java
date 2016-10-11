@@ -114,6 +114,22 @@ public class EndpointsServletTest {
   }
 
   @Test
+  public void methodOverride() throws IOException {
+    req.setRequestURI("/_ah/api/test/v2/increment");
+    req.setMethod("POST");
+    req.addHeader("X-HTTP-Method-Override", "PATCH");
+    req.setParameter("x", "1");
+
+    servlet.service(req, resp);
+
+    assertThat(resp.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
+    ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
+    ObjectNode actual = mapper.readValue(resp.getContentAsString(), ObjectNode.class);
+    assertThat(actual.size()).isEqualTo(1);
+    assertThat(actual.get("x").asInt()).isEqualTo(2);
+  }
+
+  @Test
   public void proxy() throws IOException {
     req.setRequestURI("/_ah/api/static/proxy.html");
     req.setMethod("GET");
@@ -155,6 +171,12 @@ public class EndpointsServletTest {
 
     @ApiMethod(httpMethod = HttpMethod.POST)
     public TestResource echo(TestResource r) {
+      return r;
+    }
+
+    @ApiMethod(httpMethod = "PATCH")
+    public TestResource increment(TestResource r) {
+      r.x = r.x + 1;
       return r;
     }
   }
