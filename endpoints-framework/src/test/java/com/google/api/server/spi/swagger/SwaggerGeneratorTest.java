@@ -21,6 +21,7 @@ import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.IoUtil;
 import com.google.api.server.spi.ServiceContext;
 import com.google.api.server.spi.TypeLoader;
+import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiConfigLoader;
 import com.google.api.server.spi.config.ApiIssuer;
@@ -130,6 +131,15 @@ public class SwaggerGeneratorTest {
     compareSwagger(expected, swagger);
   }
 
+  @Test
+  public void testWriteSwagger_ApiKeys() throws Exception {
+    ApiConfig config =
+        configLoader.loadConfiguration(ServiceContext.create(), ApiKeysEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
+    Swagger expected = readExpectedAsSwagger("api_keys.swagger");
+    compareSwagger(expected, swagger);
+  }
+
   private Swagger getSwagger(Class<?> serviceClass, SwaggerContext context, boolean internal)
       throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), serviceClass);
@@ -217,5 +227,15 @@ public class SwaggerGeneratorTest {
         }
     )
     public void googleAuth() { }
+  }
+
+  @Api(name = "apikeys", version = "v1",
+      apiKeyRequired = AnnotationBoolean.TRUE)
+  private static class ApiKeysEndpoint {
+    @ApiMethod(apiKeyRequired = AnnotationBoolean.FALSE)
+    public void overrideApiKeySetting() { }
+
+    @ApiMethod
+    public void inheritApiKeySetting() { }
   }
 }

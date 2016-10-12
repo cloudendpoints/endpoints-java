@@ -192,4 +192,10 @@ public @interface Api {
    * by extension, the API Explorer.
    */
   AnnotationBoolean discoverable() default AnnotationBoolean.UNSPECIFIED;
+
+  /**
+   * Whether or not an API key is required. This is used to output a Swagger specification and has
+   * no effect unless used with endpoints-management-control-appengine.
+   */
+  AnnotationBoolean apiKeyRequired() default AnnotationBoolean.UNSPECIFIED;
 }

@@ -93,4 +93,12 @@ public class ApiClassAnnotationConfig {
       config.setUseDatastore(false);
     }
   }
+
+  public void setApiKeyRequiredIfSpecified(AnnotationBoolean apiKeyRequired) {
+    if (apiKeyRequired == AnnotationBoolean.TRUE) {
+      config.setApiKeyRequired(true);
+    } else if (apiKeyRequired == AnnotationBoolean.FALSE) {
+      config.setApiKeyRequired(false);
+    }
+  }
 }

@@ -81,6 +81,7 @@ public class ApiConfig {
   private List<String> clientIds;
   private List<Class<? extends Authenticator>> authenticators;
   private List<Class<? extends PeerAuthenticator>> peerAuthenticators;
+  private boolean apiKeyRequired;
 
   private final ApiAuthConfig authConfig;
   private final ApiCacheControlConfig cacheControlConfig;
@@ -146,6 +147,7 @@ public class ApiConfig {
     this.clientIds = original.clientIds == null ? null : new ArrayList<>(original.clientIds);
     this.authenticators = original.authenticators;
     this.peerAuthenticators = original.peerAuthenticators;
+    this.apiKeyRequired = original.apiKeyRequired;
     this.authConfig = new ApiAuthConfig(original.authConfig);
     this.cacheControlConfig = new ApiCacheControlConfig(original.cacheControlConfig);
     this.frontendLimitsConfig = new ApiFrontendLimitsConfig(original.frontendLimitsConfig);
@@ -196,6 +198,7 @@ public class ApiConfig {
         .addIfInconsistent("clientIds", clientIds, config.clientIds)
         .addIfInconsistent("authenticators", authenticators, config.authenticators)
         .addIfInconsistent("peerAuthenticators", peerAuthenticators, config.peerAuthenticators)
+        .addIfInconsistent("apiKeyRequired", apiKeyRequired, config.apiKeyRequired)
         .addAll(authConfig.getConfigurationInconsistencies(config.authConfig))
         .addAll(cacheControlConfig.getConfigurationInconsistencies(config.cacheControlConfig))
         .addAll(frontendLimitsConfig.getConfigurationInconsistencies(config.frontendLimitsConfig))
@@ -210,7 +213,7 @@ public class ApiConfig {
         documentationLink, backendRoot, isAbstract, defaultVersion, discoverable, useDatastore,
         resource, authLevel, scopeExpression, audiences, clientIds, authenticators,
         peerAuthenticators, authConfig, cacheControlConfig, frontendLimitsConfig,
-        serializationConfig, apiClassConfig, issuers, issuerAudiences);
+        serializationConfig, apiClassConfig, issuers, issuerAudiences, apiKeyRequired);
   }
 
   /**
@@ -279,6 +282,7 @@ public class ApiConfig {
     clientIds = DEFAULT_CLIENT_IDS;
     authenticators = null;
     peerAuthenticators = null;
+    apiKeyRequired = false;
   }
 
   public ApiKey getApiKey() {
@@ -481,6 +485,14 @@ public class ApiConfig {
 
   public List<Class<? extends PeerAuthenticator>> getPeerAuthenticators() {
     return peerAuthenticators;
+  }
+
+  public void setApiKeyRequired(boolean apiKeyRequired) {
+    this.apiKeyRequired = apiKeyRequired;
+  }
+
+  public boolean isApiKeyRequired() {
+    return apiKeyRequired;
   }
 
   private String toHttps(String url) {
