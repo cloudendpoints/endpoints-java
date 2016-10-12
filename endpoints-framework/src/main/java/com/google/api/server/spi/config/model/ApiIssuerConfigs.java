@@ -11,7 +11,10 @@ import java.util.Objects;
 public class ApiIssuerConfigs {
   static final String UNSPECIFIED_NAME = "_unspecified_issuer_name";
   public static final IssuerConfig GOOGLE_ID_TOKEN_ISSUER = new IssuerConfig(
-      Constant.GOOGLE_ID_TOKEN_NAME, "https://accounts.google.com",
+      Constant.GOOGLE_ID_TOKEN_NAME, "accounts.google.com",
+      "https://www.googleapis.com/oauth2/v1/certs");
+  public static final IssuerConfig GOOGLE_ID_TOKEN_ISSUER_ALT = new IssuerConfig(
+      Constant.GOOGLE_ID_TOKEN_NAME + "_alt", "https://accounts.google.com",
       "https://www.googleapis.com/oauth2/v1/certs");
   public static final ApiIssuerConfigs UNSPECIFIED = builder()
       .addIssuer(new IssuerConfig(UNSPECIFIED_NAME, null, null))
@@ -36,7 +39,8 @@ public class ApiIssuerConfigs {
   }
 
   public ApiIssuerConfigs withGoogleIdToken() {
-    if (hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME)) {
+    if (hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME) 
+        && hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME + "_alt")) {
       return this;
     }
     Builder builder = builder();
@@ -44,6 +48,7 @@ public class ApiIssuerConfigs {
       builder.issuerConfigs.putAll(issuerConfigs);
     }
     builder.addIssuer(GOOGLE_ID_TOKEN_ISSUER);
+    builder.addIssuer(GOOGLE_ID_TOKEN_ISSUER_ALT);
     return builder.build();
   }
 

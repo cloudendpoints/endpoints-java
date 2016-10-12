@@ -33,6 +33,9 @@
         "security": [
           {
             "google_id_token": []
+          },
+          {
+            "google_id_token_alt": []
           }
         ]
       },
@@ -54,6 +57,9 @@
         "security": [
           {
             "google_id_token": []
+          },
+          {
+            "google_id_token_alt": []
           }
         ]
       },
@@ -75,6 +81,9 @@
         "security": [
           {
             "google_id_token": []
+          },
+          {
+            "google_id_token_alt": []
           }
         ]
       },
@@ -96,6 +105,9 @@
         "security": [
           {
             "google_id_token": []
+          },
+          {
+            "google_id_token_alt": []
           }
         ]
       }
@@ -103,6 +115,13 @@
   },
   "securityDefinitions": {
     "google_id_token": {
+      "type": "oauth2",
+      "authorizationUrl": "",
+      "flow": "implicit",
+      "x-issuer": "accounts.google.com",
+      "x-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
+    },
+    "google_id_token_alt": {
       "type": "oauth2",
       "authorizationUrl": "",
       "flow": "implicit",
