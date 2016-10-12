@@ -116,4 +116,10 @@ public @interface ApiMethod {
    * Whether or not API method should be ignored.
    */
   AnnotationBoolean ignored() default AnnotationBoolean.UNSPECIFIED;
+
+  /**
+   * Whether or not an API key is required. This is used to output a Swagger specification and has
+   * no effect unless used with endpoints-management-control-appengine.
+   */
+  AnnotationBoolean apiKeyRequired() default AnnotationBoolean.UNSPECIFIED;
 }

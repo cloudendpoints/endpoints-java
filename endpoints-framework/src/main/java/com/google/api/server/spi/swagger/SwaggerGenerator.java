@@ -51,6 +51,8 @@ import io.swagger.models.Path;
 import io.swagger.models.Response;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
+import io.swagger.models.auth.ApiKeyAuthDefinition;
+import io.swagger.models.auth.In;
 import io.swagger.models.auth.OAuth2Definition;
 import io.swagger.models.auth.SecuritySchemeDefinition;
 import io.swagger.models.parameters.PathParameter;
@@ -69,6 +71,8 @@ import io.swagger.models.properties.StringProperty;
  * Generates a {@link Swagger} object representing a set of {@link ApiConfig} objects.
  */
 public class SwaggerGenerator {
+  private static final String API_KEY = "api_key";
+  private static final String API_KEY_PARAM = "key";
   private static final Converter<String, String> CONVERTER =
       CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL);
   private static final ImmutableMap<Type, String> TYPE_TO_STRING_MAP =
@@ -217,6 +221,13 @@ public class SwaggerGenerator {
     }
     operation.response(200, new Response().description("A successful response"));
     writeAudiences(methodConfig, writeInternal, operation);
+    if (methodConfig.isApiKeyRequired()) {
+      operation.addSecurity(API_KEY, ImmutableList.<String>of());
+      Map<String, SecuritySchemeDefinition> definitions = swagger.getSecurityDefinitions();
+      if (definitions == null || !definitions.containsKey(API_KEY)) {
+        swagger.securityDefinition(API_KEY, new ApiKeyAuthDefinition(API_KEY_PARAM, In.QUERY));
+      }
+    }
     path.set(methodConfig.getHttpMethod().toLowerCase(), operation);
   }
 

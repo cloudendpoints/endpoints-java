@@ -206,6 +206,8 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
         this.<Class<? extends Authenticator>[]>getAnnotationProperty(api, "authenticators"));
     config.setPeerAuthenticatorsIfSpecified(this
         .<Class<? extends PeerAuthenticator>[]>getAnnotationProperty(api, "peerAuthenticators"));
+    config.setApiKeyRequiredIfSpecified(
+        (AnnotationBoolean) this.getAnnotationProperty(api, "apiKeyRequired"));
   }
 
   private ApiIssuerConfigs getIssuerConfigs(Annotation annotation)
@@ -298,6 +300,8 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
         Class<? extends PeerAuthenticator>[]>getAnnotationProperty(apiClass, "peerAuthenticators"));
     config.setUseDatastoreIfSpecified(
         (AnnotationBoolean) getAnnotationProperty(apiClass, "useDatastoreForAdditionalConfig"));
+    config.setApiKeyRequiredIfSpecified(
+        (AnnotationBoolean) this.getAnnotationProperty(apiClass, "apiKeyRequired"));
   }
 
   private void readEndpointMethods(Class<?> endpointClass,
@@ -349,6 +353,8 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
         Class<? extends PeerAuthenticator>[]>getAnnotationProperty(apiMethod,
         "peerAuthenticators"));
     config.setIgnoredIfSpecified((AnnotationBoolean) getAnnotationProperty(apiMethod, "ignored"));
+    config.setApiKeyRequiredIfSpecified(
+        (AnnotationBoolean) this.getAnnotationProperty(apiMethod, "apiKeyRequired"));
   }
 
   private void readMethodRequestParameters(EndpointMethod endpointMethod,

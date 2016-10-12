@@ -1,0 +1,54 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "swagger-test.appspot.com"
+  },
+  "host": "swagger-test.appspot.com",
+  "basePath": "/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/apikeys/v1/inheritApiKeySetting": {
+      "post": {
+        "operationId": "ApikeysInheritApiKeySetting",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/apikeys/v1/overrideApiKeySetting": {
+      "post": {
+        "operationId": "ApikeysOverrideApiKeySetting",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "key",
+      "in": "query"
+    }
+  }
+}

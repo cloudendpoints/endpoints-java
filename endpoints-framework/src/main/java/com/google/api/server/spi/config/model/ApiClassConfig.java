@@ -53,6 +53,7 @@ public class ApiClassConfig {
   private List<String> clientIds;
   private List<Class<? extends Authenticator>> authenticators;
   private List<Class<? extends PeerAuthenticator>> peerAuthenticators;
+  private Boolean apiKeyRequired;
 
   private final MethodConfigMap methods;
 
@@ -71,6 +72,7 @@ public class ApiClassConfig {
     this.peerAuthenticators = null;
     this.useDatastore = null;
     this.methods = new MethodConfigMap(this);
+    this.apiKeyRequired = null;
   }
 
   public ApiClassConfig(ApiClassConfig original, ApiConfig apiConfig) {
@@ -90,6 +92,7 @@ public class ApiClassConfig {
         original.peerAuthenticators == null ? null : new ArrayList<>(original.peerAuthenticators);
     this.useDatastore = original.useDatastore;
     this.methods = new MethodConfigMap(original.methods, this);
+    this.apiKeyRequired = original.apiKeyRequired;
   }
 
   @Override
@@ -110,7 +113,8 @@ public class ApiClassConfig {
           Objects.equals(authenticators, config.authenticators) &&
           Objects.equals(peerAuthenticators, config.peerAuthenticators) &&
           Objects.equals(useDatastore, config.useDatastore) &&
-          methods.equals(config.methods);
+          methods.equals(config.methods) &&
+          Objects.equals(apiKeyRequired, config.apiKeyRequired);
     } else {
       return false;
     }
@@ -120,7 +124,7 @@ public class ApiClassConfig {
   public int hashCode() {
     return Objects.hash(apiClassJavaName, apiClassJavaSimpleName, typeLoader, resource,
         authLevel, scopeExpression, audiences, clientIds, authenticators, peerAuthenticators, 
-        useDatastore, methods, issuerAudiences);
+        useDatastore, methods, issuerAudiences, apiKeyRequired);
   }
 
   public ApiConfig getApiConfig() {
@@ -214,6 +218,14 @@ public class ApiClassConfig {
 
   public MethodConfigMap getMethods() {
     return methods;
+  }
+
+  public void setApiKeyRequired(boolean apiKeyRequired) {
+    this.apiKeyRequired = apiKeyRequired;
+  }
+
+  public boolean isApiKeyRequired() {
+    return apiKeyRequired != null ? apiKeyRequired : apiConfig.isApiKeyRequired();
   }
 
   /**

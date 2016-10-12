@@ -159,6 +159,7 @@ public class ApiMethodConfig {
   private List<Class<? extends Authenticator>> authenticators;
   private List<Class<? extends PeerAuthenticator>> peerAuthenticators;
   private boolean ignored = false;
+  private Boolean apiKeyRequired;
 
   private final TypeLoader typeLoader;
 
@@ -186,6 +187,7 @@ public class ApiMethodConfig {
     this.peerAuthenticators =
         original.peerAuthenticators == null ? null : new ArrayList<>(original.peerAuthenticators);
     this.ignored = original.ignored;
+    this.apiKeyRequired = original.apiKeyRequired;
     this.typeLoader = original.typeLoader;
 
     // Parameter configs are mutable, so we need to do a deep copy.
@@ -223,6 +225,7 @@ public class ApiMethodConfig {
     authenticators = null;
     peerAuthenticators = null;
     ignored = false;
+    apiKeyRequired = null;
   }
 
   private RestMethod getRestMethod(Method method) {
@@ -251,7 +254,8 @@ public class ApiMethodConfig {
           Objects.equals(authenticators, config.authenticators) &&
           Objects.equals(peerAuthenticators, config.peerAuthenticators) &&
           Objects.equals(typeLoader, config.typeLoader) &&
-          ignored == config.ignored;
+          ignored == config.ignored &&
+          apiKeyRequired == config.apiKeyRequired;
     } else {
       return false;
     }
@@ -261,7 +265,7 @@ public class ApiMethodConfig {
   public int hashCode() {
     return Objects.hash(endpointMethodName, parameterConfigs, name, path, httpMethod,
         scopeExpression, audiences, clientIds, authenticators, peerAuthenticators, typeLoader,
-        ignored, issuerAudiences);
+        ignored, issuerAudiences, apiKeyRequired);
   }
 
   public ApiClassConfig getApiClassConfig() {
@@ -443,6 +447,14 @@ public class ApiMethodConfig {
 
   public boolean isIgnored() {
     return ignored;
+  }
+
+  public void setApiKeyRequired(boolean apiKeyRequired) {
+    this.apiKeyRequired = apiKeyRequired;
+  }
+
+  public boolean isApiKeyRequired() {
+    return apiKeyRequired != null ? apiKeyRequired : apiClassConfig.isApiKeyRequired();
   }
 
   /**
