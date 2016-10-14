@@ -61,7 +61,12 @@ public final class Constant {
   public static final String DISCOVERY_GEN_ROOT = "https://webapis-discovery.appspot.com/_ah/api";
 
   /**
-   * Friendly name to refer to Google ID token authentication.
+   * Friendly name to refer to Google ID token authentication with accounts.google.com issuer.
    */
   public static final String GOOGLE_ID_TOKEN_NAME = "google_id_token";
+
+  /**
+   * Google ID token authentication variant with https://accounts.google.com issuer.
+   */
+  public static final String GOOGLE_ID_TOKEN_NAME_HTTPS = "google_id_token_https";
 }

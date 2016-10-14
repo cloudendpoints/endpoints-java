@@ -14,7 +14,7 @@ public class ApiIssuerConfigs {
       Constant.GOOGLE_ID_TOKEN_NAME, "accounts.google.com",
       "https://www.googleapis.com/oauth2/v1/certs");
   public static final IssuerConfig GOOGLE_ID_TOKEN_ISSUER_ALT = new IssuerConfig(
-      Constant.GOOGLE_ID_TOKEN_NAME + "_alt", "https://accounts.google.com",
+      Constant.GOOGLE_ID_TOKEN_NAME_HTTPS, "https://accounts.google.com",
       "https://www.googleapis.com/oauth2/v1/certs");
   public static final ApiIssuerConfigs UNSPECIFIED = builder()
       .addIssuer(new IssuerConfig(UNSPECIFIED_NAME, null, null))
@@ -40,7 +40,7 @@ public class ApiIssuerConfigs {
 
   public ApiIssuerConfigs withGoogleIdToken() {
     if (hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME) 
-        && hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME + "_alt")) {
+        && hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME_HTTPS)) {
       return this;
     }
     Builder builder = builder();

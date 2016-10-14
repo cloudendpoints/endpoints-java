@@ -57,7 +57,7 @@ public class IssuerUtil {
     }
     if (!googleAudiencesUnspecified) {
       builder.addIssuerAudiences(Constant.GOOGLE_ID_TOKEN_NAME, googleAudiences);
-      builder.addIssuerAudiences(Constant.GOOGLE_ID_TOKEN_NAME + "_alt", googleAudiences);
+      builder.addIssuerAudiences(Constant.GOOGLE_ID_TOKEN_NAME_HTTPS, googleAudiences);
     }
     return builder.build();
   }
