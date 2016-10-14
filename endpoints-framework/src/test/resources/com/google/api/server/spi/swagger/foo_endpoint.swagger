@@ -35,7 +35,7 @@
             "google_id_token": []
           },
           {
-            "google_id_token_alt": []
+            "google_id_token_https": []
           }
         ]
       },
@@ -59,7 +59,7 @@
             "google_id_token": []
           },
           {
-            "google_id_token_alt": []
+            "google_id_token_https": []
           }
         ]
       },
@@ -83,7 +83,7 @@
             "google_id_token": []
           },
           {
-            "google_id_token_alt": []
+            "google_id_token_https": []
           }
         ]
       },
@@ -107,7 +107,7 @@
             "google_id_token": []
           },
           {
-            "google_id_token_alt": []
+            "google_id_token_https": []
           }
         ]
       }
@@ -121,7 +121,7 @@
       "x-issuer": "accounts.google.com",
       "x-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
     },
-    "google_id_token_alt": {
+    "google_id_token_https": {
       "type": "oauth2",
       "authorizationUrl": "",
       "flow": "implicit",
