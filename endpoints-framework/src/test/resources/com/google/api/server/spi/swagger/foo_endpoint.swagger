@@ -16,7 +16,7 @@
   "paths": {
     "/foo/v1/foos/{id}": {
       "get": {
-        "description":"get desc",
+        "description": "get desc",
         "operationId": "FooGetFoo",
         "parameters": [
           {
@@ -38,7 +38,7 @@
         ]
       },
       "post": {
-        "description":"update desc",
+        "description": "update desc",
         "operationId": "FooUpdateFoo",
         "parameters": [
           {
@@ -60,7 +60,7 @@
         ]
       },
       "put": {
-        "description":"create desc",
+        "description": "create desc",
         "operationId": "FooCreateFoo",
         "parameters": [
           {
@@ -82,7 +82,7 @@
         ]
       },
       "delete": {
-        "description":"delete desc",
+        "description": "delete desc",
         "operationId": "FooDeleteFoo",
         "parameters": [
           {
