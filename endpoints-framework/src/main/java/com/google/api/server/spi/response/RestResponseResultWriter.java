@@ -60,8 +60,10 @@ public class RestResponseResultWriter extends ServletResponseResultWriter {
   public void writeError(ServiceException e) throws IOException {
     ErrorMap errorMap = new ErrorMap(enableExceptionCompatibility);
     int code = errorMap.getHttpStatus(e.getStatusCode());
-    String reason = !Strings.isNullOrEmpty(e.getReason()) ? e.getReason() : errorMap.getReason(e.getStatusCode());
-    String domain = !Strings.isNullOrEmpty(e.getDomain()) ? e.getDomain() : errorMap.getDomain(e.getStatusCode());
+    String reason = !Strings.isNullOrEmpty(e.getReason()) ?
+        e.getReason() : errorMap.getReason(e.getStatusCode());
+    String domain = !Strings.isNullOrEmpty(e.getDomain()) ?
+        e.getDomain() : errorMap.getDomain(e.getStatusCode());
     write(code, e.getHeaders(),
         writeValueAsString(createError(code, reason, domain, e.getMessage())));
   }

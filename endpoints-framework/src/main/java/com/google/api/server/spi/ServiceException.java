@@ -75,7 +75,8 @@ public class ServiceException extends Exception {
     this.domain = domain;
   }
   
-  public ServiceException(int statusCode, String statusMessage, String reason, String domain, Throwable cause) {
+  public ServiceException(int statusCode, String statusMessage, String reason, String domain, 
+      Throwable cause) {
     super(statusMessage, cause);
     
     this.statusCode = statusCode;

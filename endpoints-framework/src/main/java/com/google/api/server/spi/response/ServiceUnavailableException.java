@@ -48,7 +48,8 @@ public class ServiceUnavailableException extends ServiceException {
     super(CODE, statusMessage, reason, domain);
   }
   
-  public ServiceUnavailableException(String statusMessage, String reason, String domain, Throwable cause) {
+  public ServiceUnavailableException(String statusMessage, String reason, String domain, 
+      Throwable cause) {
     super(CODE, statusMessage, reason, domain, cause);
   }
 }
