@@ -48,7 +48,8 @@ public class InternalServerErrorException extends ServiceException {
     super(CODE, statusMessage, reason, domain);
   }
   
-  public InternalServerErrorException(String statusMessage, String reason, String domain, Throwable cause) {
+  public InternalServerErrorException(String statusMessage, String reason, String domain, 
+      Throwable cause) {
     super(CODE, statusMessage, reason, domain, cause);
   }
 }

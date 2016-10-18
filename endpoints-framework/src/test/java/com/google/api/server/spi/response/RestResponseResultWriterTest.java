@@ -29,8 +29,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import java.io.IOException;
-
 /**
  * Tests for {@link RestResponseResultWriter}.
  */
@@ -189,8 +187,8 @@ public class RestResponseResultWriterTest {
     writeError(true, "customReason", "customReason", "customDomain", "customDomain");
   }
 
-  private void writeError(boolean enableExceptionCompatibility,
-      String customReason, String expectedReason, String customDomain, String expectedDomain) throws IOException {
+  private void writeError(boolean enableExceptionCompatibility, String customReason, 
+      String expectedReason, String customDomain, String expectedDomain) throws Exception {
     MockHttpServletResponse response = new MockHttpServletResponse();
     RestResponseResultWriter writer = new RestResponseResultWriter(
             response, null, true /* prettyPrint */, enableExceptionCompatibility);
