@@ -300,6 +300,7 @@ public class JsonConfigWriter implements ApiConfigWriter {
         methodsNode, config.getFullMethodName(), methodNode);
 
     methodNode.put("path", config.getPath());
+    methodNode.put("description", config.getDescription());
     methodNode.put("httpMethod", config.getHttpMethod());
 
     methodNode.set("authLevel", objectMapper.convertValue(config.getAuthLevel(), JsonNode.class));

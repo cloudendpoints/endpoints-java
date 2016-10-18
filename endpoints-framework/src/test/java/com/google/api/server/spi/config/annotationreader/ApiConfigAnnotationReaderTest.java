@@ -389,6 +389,34 @@ public class ApiConfigAnnotationReaderTest {
   }
 
   @Test
+  public void testMethodDescription() throws Exception {
+    @Api
+    final class MethodDescriptionEndpoint {
+      public void noAnnotation() {}
+      @ApiMethod
+      public void noDescription() {}
+      @ApiMethod(description = "description")
+      public void withDescription() {}
+    }
+    ApiConfig config = createConfig(MethodDescriptionEndpoint.class);
+    annotationReader.loadEndpointMethods(serviceContext, MethodDescriptionEndpoint.class,
+        config.getApiClassConfig().getMethods());
+
+    ApiMethodConfig method1 =
+        config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
+            MethodDescriptionEndpoint.class.getMethod("noAnnotation")));
+    assertNull(method1.getDescription());
+    ApiMethodConfig method2 =
+        config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
+            MethodDescriptionEndpoint.class.getMethod("noDescription")));
+    assertNull(method2.getDescription());
+    ApiMethodConfig method3 =
+        config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
+            MethodDescriptionEndpoint.class.getMethod("withDescription")));
+    assertEquals("description", method3.getDescription());
+  }
+
+  @Test
   public void testWildcardParameterTypes() throws Exception {
     @Api
     final class WildcardEndpoint {

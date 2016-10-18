@@ -336,6 +336,7 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
       throws IllegalArgumentException, SecurityException, IllegalAccessException,
           InvocationTargetException, NoSuchMethodException {
     config.setNameIfNotEmpty((String) getAnnotationProperty(apiMethod, "name"));
+    config.setDescriptionIfNotEmpty((String) getAnnotationProperty(apiMethod, "description"));
     config.setPathIfNotEmpty((String) getAnnotationProperty(apiMethod, "path"));
     config.setHttpMethodIfNotEmpty((String) getAnnotationProperty(apiMethod, "httpMethod"));
     config.setAuthLevelIfSpecified((AuthLevel) getAnnotationProperty(apiMethod, "authLevel"));

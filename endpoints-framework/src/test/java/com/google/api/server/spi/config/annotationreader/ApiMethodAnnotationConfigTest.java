@@ -95,6 +95,7 @@ public class ApiMethodAnnotationConfigTest {
   @Test
   public void testDefaults() {
     assertEquals("TestEndpoint.overrideMethod1", config.getName());
+    assertEquals(null, config.getDescription());
     assertEquals("overrideMethod1", config.getPath());
     assertEquals("POST", config.getHttpMethod());
     assertEquals(AuthLevel.NONE, config.getAuthLevel());
@@ -148,6 +149,22 @@ public class ApiMethodAnnotationConfigTest {
     annotationConfig.setNameIfNotEmpty("foo");
     annotationConfig.setNameIfNotEmpty("");
     assertEquals("foo", config.getName());
+  }
+
+  @Test
+  public void testSetDescriptionIfNotEmpty() {
+    annotationConfig.setDescriptionIfNotEmpty("bleh");
+    assertEquals("bleh", config.getDescription());
+  }
+
+  @Test
+  public void testSetDescriptionIfNotEmpty_empty() {
+    annotationConfig.setDescriptionIfNotEmpty("");
+    testDefaults();
+
+    annotationConfig.setDescriptionIfNotEmpty("foo");
+    annotationConfig.setDescriptionIfNotEmpty("");
+    assertEquals("foo", config.getDescription());
   }
 
   @Test
