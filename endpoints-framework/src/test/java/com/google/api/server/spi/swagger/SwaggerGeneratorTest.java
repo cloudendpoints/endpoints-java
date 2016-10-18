@@ -149,19 +149,23 @@ public class SwaggerGeneratorTest {
 
   @Api(name = "foo", version = "v1", audiences = {"audience"})
   private static class FooEndpoint {
-    @ApiMethod(name = "foo.create", path = "foos/{id}", httpMethod = HttpMethod.PUT)
+    @ApiMethod(name = "foo.create", description = "create desc", path = "foos/{id}", 
+        httpMethod = HttpMethod.PUT)
     public Foo createFoo(@Named("id") String id, Foo foo) {
       return null;
     }
-    @ApiMethod(name = "foo.get", path = "foos/{id}", httpMethod = HttpMethod.GET)
+    @ApiMethod(name = "foo.get", description = "get desc", path = "foos/{id}", 
+        httpMethod = HttpMethod.GET)
     public Foo getFoo(@Named("id") String id) {
       return null;
     }
-    @ApiMethod(name = "foo.update", path = "foos/{id}", httpMethod = HttpMethod.POST)
+    @ApiMethod(name = "foo.update", description = "update desc", path = "foos/{id}", 
+        httpMethod = HttpMethod.POST)
     public Foo updateFoo(@Named("id") String id, Foo foo) {
       return null;
     }
-    @ApiMethod(name = "foo.delete", path = "foos/{id}", httpMethod = HttpMethod.DELETE)
+    @ApiMethod(name = "foo.delete", description = "delete desc", path = "foos/{id}", 
+        httpMethod = HttpMethod.DELETE)
     public Foo deleteFoo(@Named("id") String id) {
       return null;
     }

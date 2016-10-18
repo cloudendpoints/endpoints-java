@@ -177,6 +177,7 @@ public class SwaggerGenerator {
     Path path = getOrCreatePath(swagger, apiConfig, methodConfig);
     Operation operation = new Operation();
     operation.setOperationId(getOperationId(apiConfig, methodConfig));
+    operation.setDescription(methodConfig.getDescription());
     Collection<String> pathParameters = methodConfig.getPathParameters();
     for (ApiParameterConfig parameterConfig : methodConfig.getParameterConfigs()) {
       switch (parameterConfig.getClassification()) {
