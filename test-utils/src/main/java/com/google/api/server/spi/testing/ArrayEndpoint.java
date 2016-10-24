@@ -71,6 +71,7 @@ public class ArrayEndpoint {
     return null;
   }
 
+  @ApiMethod(path = "getObjectIntegers")
   public Integer[] getObjectIntegers() {
     return null;
   }
