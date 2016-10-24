@@ -15,11 +15,14 @@
  */
 package com.google.api.server.spi.config.jsonwriter;
 
+import com.google.api.client.util.ClassInfo;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.config.ResourcePropertySchema;
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.model.ApiConfig;
+import com.google.api.server.spi.config.model.Types;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.TypeToken;
 
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -30,8 +33,9 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -54,19 +58,49 @@ public class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvide
         ObjectMapperUtil.createStandardObjectMapper(config.getSerializationConfig());
     JavaType javaType = objectMapper.getTypeFactory().constructType(type.getRawType());
     BeanDescription beanDescription = objectMapper.getSerializationConfig().introspect(javaType);
-    List<BeanPropertyDefinition> definitions = beanDescription.findProperties();
     ResourceSchema.Builder schemaBuilder = ResourceSchema.builderForType(type.getRawType());
-    for (BeanPropertyDefinition definition : definitions) {
+    Set<String> genericDataFieldNames = getGenericDataFieldNames(type);
+    for (BeanPropertyDefinition definition : beanDescription.findProperties()) {
       TypeToken<?> propertyType = getPropertyType(type, toMethod(definition.getGetter()),
           toMethod(definition.getSetter()), definition.getField(), config);
-      if (propertyType != null) {
-        schemaBuilder.addProperty(definition.getName(), ResourcePropertySchema.of(propertyType));
+      String name = definition.getName();
+      if (genericDataFieldNames == null || genericDataFieldNames.contains(name)) {
+        if (hasUnresolvedType(propertyType)) {
+          logger.warning("skipping field '" + name + "' of type '" + propertyType
+              + "' because it is unresolved.");
+          continue;
+        }
+        if (propertyType != null) {
+          schemaBuilder.addProperty(name, ResourcePropertySchema.of(propertyType));
+        } else {
+          logger.warning("No type found for property '" + name + "' on class '" + type + "'.");
+        }
       } else {
-        logger.warning(
-            "No type found for property " + definition.getName() + " on class " + type);
+        logger.fine("skipping field '" + name + "' because it's not a Java client model field.");
       }
     }
     return schemaBuilder.build();
+  }
+
+  private static Set<String> getGenericDataFieldNames(TypeToken<?> type) {
+    if (!Types.isJavaClientEntity(type)) {
+      return null;
+    }
+    return ImmutableSet.copyOf(ClassInfo.of(type.getRawType(), false /* ignoreCase */).getNames());
+  }
+
+  private static boolean hasUnresolvedType(TypeToken<?> type) {
+    Type javaType = type.getType();
+    if (javaType instanceof ParameterizedType) {
+      ParameterizedType p = (ParameterizedType) javaType;
+      for (Type t : p.getActualTypeArguments()) {
+        if (Types.isWildcardType(type.resolveType(t))) {
+          logger.warning("skipping field of type " + type + " because it is unresolved");
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private static Method toMethod(AnnotatedMethod am) {

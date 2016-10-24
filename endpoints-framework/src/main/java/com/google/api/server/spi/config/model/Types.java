@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.config.model;
 
+import com.google.api.client.util.GenericData;
 import com.google.api.client.util.Preconditions;
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.ResourceTransformer;
@@ -51,10 +52,18 @@ public abstract class Types {
   }
 
   /**
-   * Returns whether or not this type is a {@link Map}.
+   * Returns whether or not this type is a {@link Map}. This excludes {@link GenericData}, which is
+   * used by the Google Java client library as a supertype of resource types with concrete fields.
    */
   public static boolean isMapType(TypeToken<?> type) {
-    return type.isSubtypeOf(Map.class);
+    return type.isSubtypeOf(Map.class) && !isJavaClientEntity(type);
+  }
+
+  /**
+   * Returns whether or not this type is a Google Java client library entity.
+   */
+  public static boolean isJavaClientEntity(TypeToken<?> type) {
+    return type.isSubtypeOf(GenericData.class);
   }
 
   /**

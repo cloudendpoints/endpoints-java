@@ -18,6 +18,8 @@ package com.google.api.server.spi.config.jsonwriter;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import com.google.api.client.json.GenericJson;
+import com.google.api.client.util.Key;
 import com.google.api.server.spi.ServiceContext;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.AnnotationBoolean;
@@ -131,6 +133,13 @@ public abstract class ResourceSchemaProviderTest {
     assertEquals(String.class, schema.getProperties().get("a").getJavaType());
   }
 
+  @Test
+  public void testGenericJsonEntity() throws Exception {
+    ResourceSchema schema = getResourceSchema(GenericJsonEntity.class);
+    assertThat(schema.getProperties().keySet()).containsExactly("foo");
+    assertThat(schema.getProperties().get("foo").getJavaType()).isEqualTo(String.class);
+  }
+
   private static class BeanWithSetterOnlyProperty {
     @SuppressWarnings("unused")
     public void setA(String a) {}
@@ -209,6 +218,18 @@ public abstract class ResourceSchemaProviderTest {
 
     public Long getBar() {
       return null;
+    }
+  }
+
+  private static class GenericJsonEntity extends GenericJson {
+    @Key private String foo;
+
+    public String getFoo() {
+      return foo;
+    }
+
+    public void setFoo(String foo) {
+      this.foo = foo;
     }
   }
 

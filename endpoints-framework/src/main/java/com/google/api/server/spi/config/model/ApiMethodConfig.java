@@ -154,6 +154,7 @@ public class ApiMethodConfig {
   private List<Class<? extends PeerAuthenticator>> peerAuthenticators;
   private boolean ignored = false;
   private Boolean apiKeyRequired;
+  private TypeToken<?> returnType;
 
   private final TypeLoader typeLoader;
 
@@ -183,6 +184,7 @@ public class ApiMethodConfig {
         original.peerAuthenticators == null ? null : new ArrayList<>(original.peerAuthenticators);
     this.ignored = original.ignored;
     this.apiKeyRequired = original.apiKeyRequired;
+    this.returnType = original.returnType;
     this.typeLoader = original.typeLoader;
 
     // Parameter configs are mutable, so we need to do a deep copy.
@@ -221,6 +223,7 @@ public class ApiMethodConfig {
     peerAuthenticators = null;
     ignored = false;
     apiKeyRequired = null;
+    returnType = endpointMethod.getReturnType();
   }
 
   private RestMethod getRestMethod(Method method) {
@@ -250,7 +253,8 @@ public class ApiMethodConfig {
           Objects.equals(peerAuthenticators, config.peerAuthenticators) &&
           Objects.equals(typeLoader, config.typeLoader) &&
           ignored == config.ignored &&
-          apiKeyRequired == config.apiKeyRequired;
+          apiKeyRequired == config.apiKeyRequired &&
+          Objects.equals(returnType, config.returnType);
     } else {
       return false;
     }
@@ -260,7 +264,7 @@ public class ApiMethodConfig {
   public int hashCode() {
     return Objects.hash(endpointMethodName, parameterConfigs, name, path, httpMethod,
         scopeExpression, audiences, clientIds, authenticators, peerAuthenticators, typeLoader,
-        ignored, issuerAudiences, apiKeyRequired);
+        ignored, issuerAudiences, apiKeyRequired, returnType);
   }
 
   public ApiClassConfig getApiClassConfig() {
@@ -480,5 +484,9 @@ public class ApiMethodConfig {
     }
 
     return pathParameters;
+  }
+
+  public TypeToken<?> getReturnType() {
+    return returnType;
   }
 }
