@@ -90,4 +90,11 @@ public final class ApiKey {
         .add("root", root)
         .toString();
   }
+
+  public ApiKey withoutRoot() {
+    if (root == null) {
+      return this;
+    }
+    return new ApiKey(name, version);
+  }
 }
