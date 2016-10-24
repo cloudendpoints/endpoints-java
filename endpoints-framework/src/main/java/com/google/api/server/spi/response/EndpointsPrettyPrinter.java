@@ -25,7 +25,11 @@ import java.io.IOException;
  */
 public class EndpointsPrettyPrinter extends DefaultPrettyPrinter {
   public EndpointsPrettyPrinter() {
-    SingleSpaceIndenter indenter = new SingleSpaceIndenter();
+    this(1);
+  }
+
+  public EndpointsPrettyPrinter(int spacesPerIndent) {
+    SpaceIndenter indenter = new SpaceIndenter(spacesPerIndent);
     indentArraysWith(indenter);
     indentObjectsWith(indenter);
   }
@@ -40,12 +44,22 @@ public class EndpointsPrettyPrinter extends DefaultPrettyPrinter {
     return this;
   }
 
-  private static class SingleSpaceIndenter implements Indenter {
+  private static class SpaceIndenter implements Indenter {
+    private final String indent;
+
+    SpaceIndenter(int spacesPerIndent) {
+      StringBuilder builder = new StringBuilder(spacesPerIndent);
+      for (int i = 0; i < spacesPerIndent; i++) {
+        builder.append(' ');
+      }
+      indent = builder.toString();
+    }
+
     @Override
     public void writeIndentation(JsonGenerator jg, int level) throws IOException {
       jg.writeRaw('\n');
       for (int i = 0; i < level; i++) {
-        jg.writeRaw(' ');
+        jg.writeRaw(indent);
       }
     }
 
