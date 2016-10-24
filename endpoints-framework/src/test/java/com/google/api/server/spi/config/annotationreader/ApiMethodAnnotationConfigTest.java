@@ -37,6 +37,7 @@ import com.google.api.server.spi.testing.PassPeerAuthenticator;
 import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -110,14 +111,15 @@ public class ApiMethodAnnotationConfigTest {
   public void testAddParameter() {
     assertEquals(0, config.getParameterConfigs().size());
 
-    config.addParameter("bleh", "desc", false, null, String.class);
+    config.addParameter("bleh", "desc", false, null, TypeToken.of(String.class));
 
     assertEquals(1, config.getParameterConfigs().size());
     assertEquals("bleh", config.getParameterConfigs().get(0).getName());
     assertEquals("desc", config.getParameterConfigs().get(0).getDescription());
-    assertEquals(String.class, config.getParameterConfigs().get(0).getType());
+    assertEquals(TypeToken.of(String.class), config.getParameterConfigs().get(0).getType());
     assertTrue(config.getParameterConfigs().get(0).getSerializers().isEmpty());
-    assertEquals(String.class, config.getParameterConfigs().get(0).getSchemaBaseType());
+    assertEquals(
+        TypeToken.of(String.class), config.getParameterConfigs().get(0).getSchemaBaseType());
     assertEquals("overrideMethod1/{bleh}", config.getPath());
   }
 
@@ -125,12 +127,12 @@ public class ApiMethodAnnotationConfigTest {
   public void testAddParameter_nullableOrDefault() {
     assertEquals(0, config.getParameterConfigs().size());
 
-    config.addParameter("bleh", null, true, null, String.class);
+    config.addParameter("bleh", null, true, null, TypeToken.of(String.class));
     assertEquals(1, config.getParameterConfigs().size());
     assertEquals("bleh", config.getParameterConfigs().get(0).getName());
     assertEquals("overrideMethod1", config.getPath());
 
-    config.addParameter("foo", null, false, "42", String.class);
+    config.addParameter("foo", null, false, "42", TypeToken.of(String.class));
     assertEquals(2, config.getParameterConfigs().size());
     assertEquals("foo", config.getParameterConfigs().get(1).getName());
     assertEquals("overrideMethod1", config.getPath());

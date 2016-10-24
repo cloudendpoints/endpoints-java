@@ -16,7 +16,6 @@
 package com.google.api.server.spi.config.validation;
 
 import com.google.api.client.util.Strings;
-import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.ApiConfigInconsistency;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.model.ApiClassConfig;
@@ -28,6 +27,7 @@ import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiNamespaceConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.Serializers;
+import com.google.api.server.spi.config.model.Types;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -35,7 +35,6 @@ import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -265,10 +264,10 @@ public class ApiConfigValidator {
       throw new ApiParameterConfigInvalidException(parameter, e.getMessage());
     }
 
-    Type type;
+    TypeToken<?> type;
     if (parameter.isRepeated()) {
       type = parameter.getRepeatedItemSerializedType();
-      if (TypeLoader.isArrayType(type)) {
+      if (Types.isArrayType(type)) {
         throw new NestedCollectionException(parameter, type);
       }
     } else {
@@ -295,7 +294,7 @@ public class ApiConfigValidator {
   }
 
   private void validateParameterSerializers(ApiParameterConfig config,
-      List<Class<? extends Transformer<?, ?>>> serializers, Type parameterType)
+      List<Class<? extends Transformer<?, ?>>> serializers, TypeToken<?> parameterType)
       throws ApiParameterConfigInvalidException {
     if (serializers.isEmpty()) {
       return;
@@ -305,21 +304,21 @@ public class ApiConfigValidator {
       throw new MultipleTransformersException(config, serializers);
     }
 
-    Type sourceType = Serializers.getSourceType(serializers.get(0));
-    Type serializedType = Serializers.getTargetType(serializers.get(0));
+    TypeToken<?> sourceType = Serializers.getSourceType(serializers.get(0));
+    TypeToken<?> serializedType = Serializers.getTargetType(serializers.get(0));
 
     if (sourceType == null || serializedType == null) {
       throw new NoTransformerInterfaceException(config, serializers.get(0));
     }
 
-    if (!TypeToken.of(sourceType).isSupertypeOf(parameterType)) {
+    if (!sourceType.isSupertypeOf(parameterType)) {
       throw new WrongTransformerTypeException(config, serializers.get(0), parameterType,
           sourceType);
     }
   }
 
   private void validateApiParameter(ApiParameterConfig parameter,
-      Set<String> parameterNames, Collection<String> pathParameters, Type type)
+      Set<String> parameterNames, Collection<String> pathParameters, TypeToken<?> type)
       throws ApiParameterConfigInvalidException {
     if (parameter.getName() == null) {
       throw new MissingParameterNameException(parameter, type);
@@ -333,7 +332,7 @@ public class ApiConfigValidator {
     }
   }
 
-  private void validateResourceParameter(ApiParameterConfig parameter, Type type)
+  private void validateResourceParameter(ApiParameterConfig parameter, TypeToken<?> type)
       throws ApiParameterConfigInvalidException {
     if (parameter.isRepeated()) {
       throw new CollectionResourceException(parameter, parameter.getRepeatedItemSerializedType(),

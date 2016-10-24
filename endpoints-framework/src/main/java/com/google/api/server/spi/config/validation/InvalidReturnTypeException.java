@@ -16,8 +16,7 @@
 package com.google.api.server.spi.config.validation;
 
 import com.google.api.server.spi.config.model.ApiMethodConfig;
-
-import java.lang.reflect.Type;
+import com.google.common.reflect.TypeToken;
 
 /**
  * Exception for endpoint methods returning unsupported types such as primitives or enum types.
@@ -25,11 +24,11 @@ import java.lang.reflect.Type;
  * @author Eric Orth
  */
 public class InvalidReturnTypeException extends ApiMethodConfigInvalidException {
-  public InvalidReturnTypeException(ApiMethodConfig config, Type type) {
+  public InvalidReturnTypeException(ApiMethodConfig config, TypeToken<?> type) {
     super(config, getErrorMessage(type));
   }
 
-  private static String getErrorMessage(Type type) {
+  private static String getErrorMessage(TypeToken<?> type) {
     return String.format("Invalid return type: %s. Primitives and enums are not allowed.", type);
   }
 }

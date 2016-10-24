@@ -98,16 +98,15 @@ public final class Serializers {
    */
   @SuppressWarnings({"unchecked"})
   public static <S extends Transformer<?, ?>> S instantiate(final Class<S> serializerClass,
-      Type sourceType) {
-    if (!TypeToken.of(getSourceType(serializerClass)).isSupertypeOf(sourceType)) {
+      TypeToken<?> sourceType) {
+    if (!getSourceType(serializerClass).isSupertypeOf(sourceType)) {
       throw new IllegalArgumentException(String.format(
           "Can not instantiate %s, the serializer source %s is not assignable from %s",
           serializerClass, getSourceType(serializerClass), sourceType));
     }
-    Exception parentException = null;
     for (SerializerConstructor constructor : SerializerConstructor.values()) {
       try {
-        return constructor.construct(serializerClass, sourceType);
+        return constructor.construct(serializerClass, sourceType.getType());
       } catch (NoSuchMethodException e) {
         continue;
       } catch (Exception e) {
@@ -123,7 +122,7 @@ public final class Serializers {
         "Failed to instantiate custom serializer %s, constructors not found: %s",
         serializerClass.getName(),
         Arrays.toString(SerializerConstructor.values()));
-    throw new IllegalStateException(message, parentException);
+    throw new IllegalStateException(message);
   }
 
   /**
@@ -140,10 +139,18 @@ public final class Serializers {
     if (type == null) {
       return Collections.emptyList();
     }
+    return getSerializerClasses(TypeToken.of(type), config);
+  }
+
+  public static List<Class<? extends Transformer<?, ?>>> getSerializerClasses(
+      TypeToken<?> type, @Nullable final ApiSerializationConfig config) {
+    if (type == null) {
+      return Collections.emptyList();
+    }
 
     List<Class<? extends Transformer<?, ?>>> allParentSerializers = Lists.newArrayList();
     List<TypeToken<?>> serializedTypes = Lists.newArrayList();
-    for (TypeToken<?> typeToken : TypeToken.of(type).getTypes()) {
+    for (TypeToken<?> typeToken : type.getTypes()) {
       ApiTransformer apiSerialization = typeToken.getRawType().getAnnotation(ApiTransformer.class);
       if (isSupertypeOf(typeToken, serializedTypes)) {
         continue;
@@ -153,7 +160,7 @@ public final class Serializers {
         serializedTypes.add(typeToken);
       } else if (config != null) {
         ApiSerializationConfig.SerializerConfig serializerConfig =
-            config.getSerializerConfig(typeToken.getType());
+            config.getSerializerConfig(typeToken);
         if (serializerConfig != null) {
           allParentSerializers.add(serializerConfig.getSerializer());
           serializedTypes.add(typeToken);
@@ -167,26 +174,37 @@ public final class Serializers {
   /**
    * Gets the {@code Serializer} source type for a class. This resolves placeholders in generics.
    *
-   * @param clazz a class, possibly implementing {@code Serializer}
+   * @param clazz a class, possibly implementing {@code Transformer}
    * @return the resolved source type, null if clazz is not a serializer
    */
   @Nullable
-  public static Type getSourceType(@Nullable Class<? extends Transformer<?, ?>> clazz) {
-    ParameterizedType types = Serializers.getResolvedType(clazz);
-    return types == null ? null : types.getActualTypeArguments()[0];
+  public static TypeToken<?> getSourceType(Class<? extends Transformer<?, ?>> clazz) {
+    try {
+      TypeToken<?> token = TypeToken.of(clazz);
+      return token.resolveType(
+          Transformer.class.getMethod("transformFrom", Object.class).getGenericReturnType());
+    } catch (NoSuchMethodException e) {
+      return null;
+    }
   }
 
   /**
    * Gets the {@code Serializer} target type for a class. This resolves placeholders in generics.
    *
-   * @param clazz a class, possibly implementing {@code Serializer}
+   * @param clazz a class, possibly implementing {@code Transformer}
    * @return the resolved target type, null if clazz is not a serializer
    */
   @Nullable
-  public static Type getTargetType(@Nullable Class<? extends Transformer<?, ?>> clazz) {
-    ParameterizedType types = Serializers.getResolvedType(clazz);
-    return types == null ? null : types.getActualTypeArguments()[1];
+  public static TypeToken<?> getTargetType(Class<? extends Transformer<?, ?>> clazz) {
+    try {
+      TypeToken<?> token = TypeToken.of(clazz);
+      return token.resolveType(
+          Transformer.class.getMethod("transformTo", Object.class).getGenericReturnType());
+    } catch (NoSuchMethodException e) {
+      return null;
+    }
   }
+
 
   @Nullable
   private static ParameterizedType getResolvedType(

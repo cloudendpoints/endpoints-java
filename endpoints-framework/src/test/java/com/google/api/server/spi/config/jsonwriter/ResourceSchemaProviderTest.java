@@ -29,10 +29,12 @@ import com.google.api.server.spi.config.ResourceTransformer;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.testing.DefaultValueSerializer;
 import com.google.api.server.spi.testing.TestEndpoint;
+import com.google.common.reflect.TypeToken;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.Map;
 
@@ -52,38 +54,38 @@ public abstract class ResourceSchemaProviderTest {
 
   @Test
   public void testNoClassPropertyReturned() {
-    ResourceSchema schema = provider.getResourceSchema(SinglePropertyBean.class, config);
+    ResourceSchema schema = getResourceSchema(SinglePropertyBean.class);
     assertThat(schema.getProperties().keySet()).containsExactly("foo");
   }
 
   @Test
   public void testIgnoredPropertyNotReturned() {
-    ResourceSchema schema = provider.getResourceSchema(IgnoredPropertyBean.class, config);
+    ResourceSchema schema = getResourceSchema(IgnoredPropertyBean.class);
     assertThat(schema.getProperties().keySet()).containsExactly("foo");
   }
 
   @Test
   public void testRenamedProperty() {
-    ResourceSchema schema = provider.getResourceSchema(RenamedPropertyBean.class, config);
+    ResourceSchema schema = getResourceSchema(RenamedPropertyBean.class);
     assertThat(schema.getProperties().keySet()).containsExactly("bar");
   }
 
   @Test
   public void testMissingPropertyType() {
-    ResourceSchema schema = provider.getResourceSchema(MissingPropertyTypeBean.class, config);
+    ResourceSchema schema = getResourceSchema(MissingPropertyTypeBean.class);
     assertThat(schema.getProperties().keySet()).containsExactly("bar");
   }
 
   @Test
   public void testCustomSerializedPropertyReturns() {
-    ResourceSchema schema = provider.getResourceSchema(CustomSerializerParentBean.class, config);
+    ResourceSchema schema = getResourceSchema(CustomSerializerParentBean.class);
     assertThat(schema.getProperties().keySet()).containsExactly("foo");
     assertEquals(String.class, schema.getProperties().get("foo").getJavaType());
   }
 
   @Test
   public void testAnnotationCustomResourceSerializedPropertyReturnsSchema() {
-    ResourceSchema schema = provider.getResourceSchema(CustomResourceSerializerBean.class, config);
+    ResourceSchema schema = getResourceSchema(CustomResourceSerializerBean.class);
     assertEquals("CustomizedName", schema.getName());
     assertThat(schema.getProperties().keySet()).containsExactly("baz", "qux");
     assertEquals(Integer.class, schema.getProperties().get("baz").getJavaType());
@@ -93,8 +95,7 @@ public abstract class ResourceSchemaProviderTest {
   @Test
   public void testConfigCustomResourceSerializedPropertyReturnsSchema() {
     config.getSerializationConfig().addSerializationConfig(SinglePropertyResourceSerializer.class);
-    ResourceSchema schema =
-        provider.getResourceSchema(SinglePropertyBean.class, config);
+    ResourceSchema schema = getResourceSchema(SinglePropertyBean.class);
     String name = SinglePropertyBean.class.getSimpleName();
     assertThat(schema.getProperties().keySet()).containsExactly(name);
     assertEquals(Long.class, schema.getProperties().get(name).getJavaType());
@@ -103,8 +104,7 @@ public abstract class ResourceSchemaProviderTest {
   @Test
   public void testConfigCustomResourceSerializedInheritedPropertyReturnsSchema() {
     config.getSerializationConfig().addSerializationConfig(SinglePropertyResourceSerializer.class);
-    ResourceSchema schema =
-        provider.getResourceSchema(SinglePropertyBeanChild.class, config);
+    ResourceSchema schema = getResourceSchema(SinglePropertyBeanChild.class);
     String name = SinglePropertyBeanChild.class.getSimpleName();
     assertThat(schema.getProperties().keySet()).containsExactly(name);
     assertEquals(Long.class, schema.getProperties().get(name).getJavaType());
@@ -112,22 +112,21 @@ public abstract class ResourceSchemaProviderTest {
 
   @Test
   public void testBeanPropertyWithGetterAndSetter() throws Exception {
-    ResourceSchema schema = provider.getResourceSchema(Bean.class, config);
+    ResourceSchema schema = getResourceSchema(Bean.class);
     assertThat(schema.getProperties().keySet()).containsExactly("date");
     assertEquals(Date.class, schema.getProperties().get("date").getJavaType());
   }
 
   @Test
   public void testPrivateBeanPropertyWithAnnotation() throws Exception {
-    ResourceSchema schema =
-        provider.getResourceSchema(PrivatePropertyBean.class, config);
+    ResourceSchema schema = getResourceSchema(PrivatePropertyBean.class);
     assertEquals(1, schema.getProperties().size());
     assertEquals(String.class, schema.getProperties().get("foo").getJavaType());
   }
 
   @Test
   public void testBeanPropertyWithSetterOnly() throws Exception {
-    ResourceSchema schema = provider.getResourceSchema(BeanWithSetterOnlyProperty.class, config);
+    ResourceSchema schema = getResourceSchema(BeanWithSetterOnlyProperty.class);
     assertThat(schema.getProperties().keySet()).containsExactly("a");
     assertEquals(String.class, schema.getProperties().get("a").getJavaType());
   }
@@ -221,8 +220,8 @@ public abstract class ResourceSchemaProviderTest {
     public ResourceSchema getResourceSchema() {
       return ResourceSchema.builderForType(CustomResourceSerializer.class)
           .setName("CustomizedName")
-          .addProperty("baz", ResourcePropertySchema.of(Integer.class))
-          .addProperty("qux", ResourcePropertySchema.of(Boolean.class))
+          .addProperty("baz", ResourcePropertySchema.of(TypeToken.of(Integer.class)))
+          .addProperty("qux", ResourcePropertySchema.of(TypeToken.of(Boolean.class)))
           .build();
     }
   }
@@ -239,7 +238,7 @@ public abstract class ResourceSchemaProviderTest {
     @Override
     public ResourceSchema getResourceSchema() {
       return ResourceSchema.builderForType(clazz)
-          .addProperty(clazz.getSimpleName(), ResourcePropertySchema.of(Long.class))
+          .addProperty(clazz.getSimpleName(), ResourcePropertySchema.of(TypeToken.of(Long.class)))
           .build();
     }
   }
@@ -248,6 +247,10 @@ public abstract class ResourceSchemaProviderTest {
   public static class PrivatePropertyBean {
     @ApiResourceProperty(name = "foo") private String test;
     private String test2;
+  }
+
+  private ResourceSchema getResourceSchema(Type type) {
+    return provider.getResourceSchema(TypeToken.of(type), config);
   }
 
   public abstract ResourceSchemaProvider getResourceSchemaProvider();

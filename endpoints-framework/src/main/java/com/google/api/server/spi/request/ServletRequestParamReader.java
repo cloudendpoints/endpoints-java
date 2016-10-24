@@ -29,6 +29,7 @@ import com.google.api.server.spi.types.SimpleDate;
 import com.google.appengine.api.datastore.Blob;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.reflect.TypeToken;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.Version;
@@ -44,7 +45,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -118,11 +118,11 @@ public class ServletRequestParamReader extends AbstractParamReader {
       InvocationTargetException, NoSuchMethodException {
     EndpointMethod method = getMethod();
     Class<?>[] paramClasses = method.getParameterClasses();
-    Type[] paramTypes = method.getParameterTypes();
+    TypeToken<?>[] paramTypes = method.getParameterTypes();
     Object[] params = new Object[paramClasses.length];
     List<String> parameterNames = getParameterNames(method);
     for (int i = 0; i < paramClasses.length; i++) {
-      Type type = paramTypes[i];
+      TypeToken<?> type = paramTypes[i];
       Class<?> clazz = paramClasses[i];
       if (clazz == User.class) {
         // User type parameter requires no Named annotation (ignored if present)
@@ -155,8 +155,10 @@ public class ServletRequestParamReader extends AbstractParamReader {
             params[i] = null;
           } else {
             // Check for collection type
-            if (Collection.class.isAssignableFrom(clazz) && type instanceof ParameterizedType) {
-              params[i] = deserializeCollection(clazz, (ParameterizedType) type, nodeValue);
+            if (Collection.class.isAssignableFrom(clazz)
+                && type.getType() instanceof ParameterizedType) {
+              params[i] =
+                  deserializeCollection(clazz, (ParameterizedType) type.getType(), nodeValue);
             } else {
               params[i] = objectReader.forType(clazz).readValue(nodeValue);
             }

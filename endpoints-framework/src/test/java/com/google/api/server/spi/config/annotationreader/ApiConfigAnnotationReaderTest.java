@@ -87,6 +87,7 @@ import com.google.api.server.spi.testing.SubclassedOverridingEndpoint;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -363,9 +364,11 @@ public class ApiConfigAnnotationReaderTest {
     assertNull(config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
         RestfulResourceEndpointBase.FullySpecializedEndpoint.class.getMethod("list"))));
     assertNotNull(config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
+        RestfulResourceEndpointBase.PartiallySpecializedEndpoint.class,
         RestfulResourceEndpointBase.PartiallySpecializedEndpoint.class.getMethod(
             "get", long.class))));
     assertNotNull(config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
+        RestfulResourceEndpointBase.PartiallySpecializedEndpoint.class,
         RestfulResourceEndpointBase.class.getMethod("list"))));
   }
 
@@ -442,12 +445,14 @@ public class ApiConfigAnnotationReaderTest {
 
     ApiMethodConfig method1 =
         config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
+            DeepGenericHierarchyFailEndpoint.class,
             DeepGenericHierarchyFailEndpoint.class.getMethod("foo", String.class, Integer.class,
                 Collection.class)));
     assertEquals("DeepGenericHierarchyFailEndpoint.foo", method1.getName());
 
     ApiMethodConfig method2 =
         config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
+            DeepGenericHierarchyFailEndpoint.class,
             DeepGenericHierarchyFailEndpoint.class.getSuperclass().getSuperclass().getSuperclass()
                 .getMethod("foo", Object.class, Object.class, Object.class)));
     assertEquals("Endpoint3.foo", method2.getName());
@@ -1256,8 +1261,8 @@ public class ApiConfigAnnotationReaderTest {
     ApiSerializationConfig serialization = config.getSerializationConfig();
     assertEquals(1, serialization.getSerializerConfigs().size());
     ApiSerializationConfig.SerializerConfig serializerConfig =
-        serialization.getSerializerConfig(SimpleBean.class);
-    assertEquals(SimpleBean.class, serializerConfig.getSourceType());
+        serialization.getSerializerConfig(TypeToken.of(SimpleBean.class));
+    assertEquals(TypeToken.of(SimpleBean.class), serializerConfig.getSourceType());
     assertEquals(DumbSerializer1.class, serializerConfig.getSerializer());
 
     String[] defaultScopes = {"ss0", "ss1 ss2"};
@@ -1411,17 +1416,21 @@ public class ApiConfigAnnotationReaderTest {
     assertEquals(name, parameter.getName());
     assertEquals(nullable, parameter.getNullable());
     assertEquals(defaultValue, parameter.getDefaultValue());
-    assertEquals(type, parameter.getType());
+    assertEquals(TypeToken.of(type), parameter.getType());
     if (serializer == null) {
       assertTrue(parameter.getSerializers().isEmpty());
     } else {
       assertEquals(Collections.singletonList(serializer), parameter.getSerializers());
     }
-    assertEquals(serializedType, parameter.getSchemaBaseType());
+    assertEquals(TypeToken.of(serializedType), parameter.getSchemaBaseType());
   }
 
   private EndpointMethod methodToEndpointMethod(Method method) {
     return EndpointMethod.create(method.getDeclaringClass(), method);
+  }
+
+  private EndpointMethod methodToEndpointMethod(Class<?> endpointClass, Method method) {
+    return EndpointMethod.create(endpointClass, method, TypeToken.of(method.getDeclaringClass()));
   }
 
   private static AuthScopeExpression toScopeExpression(String... scopes) {

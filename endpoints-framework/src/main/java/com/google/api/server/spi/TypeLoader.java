@@ -18,11 +18,7 @@ package com.google.api.server.spi;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -199,31 +195,6 @@ public final class TypeLoader {
     return Collections.unmodifiableSet(injectedClassTypes);
   }
 
-  /**
-   * Gets the element type of a type we want to treat as an array. Actual arrays or subtypes of
-   * {@link java.util.Collection} can be treated as arrays. Returns null if the type cannot be
-   * treated as an array.
-   */
-  public static Type getArrayItemType(Type type) {
-    if (type instanceof ParameterizedType) {
-      ParameterizedType parameterizedType = (ParameterizedType) type;
-      Type rawParameterizedType = parameterizedType.getRawType();
-      if (rawParameterizedType instanceof Class) {
-        Class<?> classType = (Class<?>) rawParameterizedType;
-        if (Collection.class.isAssignableFrom(classType)) {
-          Type[] typeArgs = parameterizedType.getActualTypeArguments();
-          return typeArgs.length > 0 ? typeArgs[0] : null;
-        }
-      }
-    } else if (type instanceof GenericArrayType) {
-      return ((GenericArrayType) type).getGenericComponentType();
-    } else if (type instanceof Class) {
-      // Returns null for non-array types, so this works for non-array cases
-      return ((Class<?>) type).getComponentType();
-    }
-    return null;
-  }
-
   public Map<String, Class<?>> getClassTypes() {
     return classTypes;
   }
@@ -244,31 +215,23 @@ public final class TypeLoader {
     return annotationTypes;
   }
 
-  public boolean isInjectedType(Type type) {
-    return injectedClassTypes.contains(type);
+  public boolean isInjectedType(TypeToken<?> type) {
+    return injectedClassTypes.contains(type.getRawType());
   }
 
-  public boolean isSchemaType(Type type) {
-    return schemaTypes.containsKey(type);
+  public String getSchemaType(TypeToken<?> type) {
+    return schemaTypes.get(type.getRawType());
   }
 
-  public boolean isParameterType(Type type) {
-    return parameterTypes.containsKey(type);
+  public boolean isSchemaType(TypeToken<?> type) {
+    return getSchemaType(type) != null;
   }
 
-  public static boolean isArrayType(Type type) {
-    return getArrayItemType(type) != null && type != byte[].class;
+  public String getSchemaFormat(TypeToken<?> type) {
+    return schemaFormats.get(type.getRawType());
   }
 
-  public static boolean isEnumType(Type enumType) {
-    return TypeToken.of(enumType).getRawType().isEnum();
-  }
-
-  public boolean isMapType(Type collectionType) {
-    return TypeToken.of(classTypes.get("Map")).isSupertypeOf(collectionType);
-  }
-
-  public static boolean isGenericType(Type type) {
-    return type instanceof TypeVariable;
+  public boolean isParameterType(TypeToken<?> type) {
+    return parameterTypes.containsKey(type.getRawType());
   }
 }

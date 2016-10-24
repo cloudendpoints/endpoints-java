@@ -25,6 +25,7 @@ import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -106,7 +107,7 @@ public class ApiMethodConfigTest {
 
   @Test
   public void addInjectedParameter_notInPath() {
-    methodConfig.addParameter("alt", null, false, null, String.class);
+    methodConfig.addParameter("alt", null, false, null, TypeToken.of(String.class));
     assertThat(methodConfig.getPath()).doesNotContain("{alt}");
   }
 }

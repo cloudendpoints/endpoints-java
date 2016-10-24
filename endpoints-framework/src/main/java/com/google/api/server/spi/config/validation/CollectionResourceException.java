@@ -16,8 +16,7 @@
 package com.google.api.server.spi.config.validation;
 
 import com.google.api.server.spi.config.model.ApiParameterConfig;
-
-import java.lang.reflect.Type;
+import com.google.common.reflect.TypeToken;
 
 /**
  * Exception for arrays or collections of entity (resource) type parameters.
@@ -25,11 +24,12 @@ import java.lang.reflect.Type;
  * @author Eric Orth
  */
 public class CollectionResourceException extends ApiParameterConfigInvalidException {
-  public CollectionResourceException(ApiParameterConfig config, Type repeatedItemType, Type type) {
+  public CollectionResourceException(
+      ApiParameterConfig config, TypeToken<?> repeatedItemType, TypeToken<?> type) {
     super(config, getErrorMessage(repeatedItemType, type));
   }
 
-  private static String getErrorMessage(Type repeatedItemType, Type type) {
+  private static String getErrorMessage(TypeToken<?> repeatedItemType, TypeToken<?> type) {
     return String.format(
         "Illegal parameter type ('%s' in collection type '%s').  Arrays or collections of entity "
             + "types are not allowed.",

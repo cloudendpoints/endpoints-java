@@ -17,6 +17,7 @@ package com.google.api.server.spi.config.jsonwriter;
 
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.model.ApiConfig;
+import com.google.common.reflect.TypeToken;
 
 /**
  * An interface that provides a way to get properties of a Resource
@@ -25,5 +26,5 @@ public interface ResourceSchemaProvider {
   /**
    * Gets a schema for a resource.
    */
-  ResourceSchema getResourceSchema(Class<?> clazz, ApiConfig serializationConfig);
+  ResourceSchema getResourceSchema(TypeToken<?> type, ApiConfig serializationConfig);
 }

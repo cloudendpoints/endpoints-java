@@ -16,8 +16,7 @@
 package com.google.api.server.spi.config.validation;
 
 import com.google.api.server.spi.config.model.ApiParameterConfig;
-
-import java.lang.reflect.Type;
+import com.google.common.reflect.TypeToken;
 
 /**
  * Exception for entity (resource) type parameters that have an @named annotation.
@@ -25,11 +24,11 @@ import java.lang.reflect.Type;
  * @author Eric Orth
  */
 public class NamedResourceException extends ApiParameterConfigInvalidException {
-  public NamedResourceException(ApiParameterConfig config, Type type) {
+  public NamedResourceException(ApiParameterConfig config, TypeToken<?> type) {
     super(config, getErrorMessage(type));
   }
 
-  private static String getErrorMessage(Type type) {
+  private static String getErrorMessage(TypeToken<?> type) {
     return String.format(
         "Bad parameter name. Parameter is entity type (%s) and should not be named.", type);
   }

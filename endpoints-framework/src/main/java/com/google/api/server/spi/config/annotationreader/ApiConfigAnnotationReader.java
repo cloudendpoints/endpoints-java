@@ -36,11 +36,11 @@ import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -363,7 +363,7 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
           IllegalAccessException, InvocationTargetException, NoSuchMethodException {
     Method method = endpointMethod.getMethod();
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-    Type[] parameterTypes = endpointMethod.getParameterTypes();
+    TypeToken<?>[] parameterTypes = endpointMethod.getParameterTypes();
 
     if (parameterAnnotations.length != parameterTypes.length) {
       throw new IllegalArgumentException();
@@ -384,7 +384,7 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
   }
 
   private void readMethodRequestParameter(ApiMethodConfig methodConfig, Annotation parameterName,
-      Annotation description, Annotation nullable, Annotation defaultValue, Type type) 
+      Annotation description, Annotation nullable, Annotation defaultValue, TypeToken<?> type)
       throws IllegalArgumentException, SecurityException, IllegalAccessException, 
       InvocationTargetException, NoSuchMethodException {
     String parameterNameString = null;
@@ -404,26 +404,22 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
         methodConfig.addParameter(parameterNameString, descriptionString, nullable != null, 
             defaultValueString, type);
 
-    if (type instanceof Class) {
-      Class<?> clazz = (Class<?>) type;
-      Annotation apiSerializer = clazz.getAnnotation(annotationTypes.get("ApiTransformer"));
-      if (apiSerializer != null) {
-        Class<? extends Transformer<?, ?>> serializer =
-            getAnnotationProperty(apiSerializer, "value");
-        parameterConfig.setSerializer(serializer);
-      }
+    Annotation apiSerializer =
+        type.getRawType().getAnnotation(annotationTypes.get("ApiTransformer"));
+    if (apiSerializer != null) {
+      Class<? extends Transformer<?, ?>> serializer =
+          getAnnotationProperty(apiSerializer, "value");
+      parameterConfig.setSerializer(serializer);
     }
 
     if (parameterConfig.isRepeated()) {
-      Type repeatedItemType = parameterConfig.getRepeatedItemType();
-      if (repeatedItemType instanceof Class) {
-        Class<?> clazz = (Class<?>) repeatedItemType;
-        Annotation apiSerializer = clazz.getAnnotation(annotationTypes.get("ApiTransformer"));
-        if (apiSerializer != null) {
-          Class<? extends Transformer<?, ?>> repeatedItemSerializer =
-              getAnnotationProperty(apiSerializer, "value");
-          parameterConfig.setRepeatedItemSerializer(repeatedItemSerializer);
-        }
+      TypeToken<?> repeatedItemType = parameterConfig.getRepeatedItemType();
+      apiSerializer =
+          repeatedItemType.getRawType().getAnnotation(annotationTypes.get("ApiTransformer"));
+      if (apiSerializer != null) {
+        Class<? extends Transformer<?, ?>> repeatedItemSerializer =
+            getAnnotationProperty(apiSerializer, "value");
+        parameterConfig.setRepeatedItemSerializer(repeatedItemSerializer);
       }
     }
   }

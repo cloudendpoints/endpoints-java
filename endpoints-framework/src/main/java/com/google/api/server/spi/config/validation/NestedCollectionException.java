@@ -16,8 +16,7 @@
 package com.google.api.server.spi.config.validation;
 
 import com.google.api.server.spi.config.model.ApiParameterConfig;
-
-import java.lang.reflect.Type;
+import com.google.common.reflect.TypeToken;
 
 /**
  * Exception for parameter types containing multiple levels of collections or arrays.
@@ -25,11 +24,11 @@ import java.lang.reflect.Type;
  * @author Eric Orth
  */
 public class NestedCollectionException extends ApiParameterConfigInvalidException {
-  public NestedCollectionException(ApiParameterConfig config, Type type) {
+  public NestedCollectionException(ApiParameterConfig config, TypeToken<?> type) {
     super(config, getErrorMessage(type));
   }
 
-  private static String getErrorMessage(Type type) {
+  private static String getErrorMessage(TypeToken<?> type) {
     return String.format("Illegal nested collection type '%s'.", type);
   }
 }

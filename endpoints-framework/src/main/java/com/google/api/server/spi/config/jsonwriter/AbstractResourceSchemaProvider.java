@@ -21,6 +21,7 @@ import com.google.api.server.spi.config.ResourceTransformer;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.Serializers;
+import com.google.common.reflect.TypeToken;
 
 import java.util.List;
 
@@ -33,19 +34,20 @@ abstract class AbstractResourceSchemaProvider implements ResourceSchemaProvider 
 
   @Nullable
   @Override
-  public ResourceSchema getResourceSchema(Class<?> clazz, ApiConfig config) {
-    return getResourceSchemaImpl(clazz, config);
+  public ResourceSchema getResourceSchema(TypeToken<?> type, ApiConfig config) {
+    return getResourceSchemaImpl(type, config);
   }
 
   @Nullable
-  private <T> ResourceSchema getResourceSchemaImpl(Class<T> clazz, ApiConfig config) {
+  private <T> ResourceSchema getResourceSchemaImpl(TypeToken<T> type, ApiConfig config) {
+    Class<? super T> clazz = type.getRawType();
     List<Class<? extends Transformer<?, ?>>> serializerClasses =
-        Serializers.getSerializerClasses(clazz, config.getSerializationConfig());
+        Serializers.getSerializerClasses(type, config.getSerializationConfig());
     if (!serializerClasses.isEmpty() &&
         ResourceTransformer.class.isAssignableFrom(serializerClasses.get(0))) {
       @SuppressWarnings("unchecked")
       ResourceTransformer<T> resourceSerializer =
-          (ResourceTransformer<T>) Serializers.instantiate(serializerClasses.get(0), clazz);
+          (ResourceTransformer<T>) Serializers.instantiate(serializerClasses.get(0), type);
       return resourceSerializer.getResourceSchema();
     }
     return null;

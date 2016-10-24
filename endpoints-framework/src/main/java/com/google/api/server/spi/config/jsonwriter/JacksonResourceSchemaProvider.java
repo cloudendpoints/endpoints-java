@@ -20,6 +20,7 @@ import com.google.api.server.spi.config.ResourcePropertySchema;
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.model.ApiConfig;
+import com.google.common.reflect.TypeToken;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
@@ -38,31 +39,31 @@ import javax.annotation.Nullable;
 /**
  * Provider for a resource schema using Jacksons serialization configuration.
  */
-class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvider {
+public class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvider {
 
   private static final Logger logger =
       Logger.getLogger(JacksonResourceSchemaProvider.class.getName());
 
   @Override
-  public ResourceSchema getResourceSchema(Class<?> clazz, ApiConfig config) {
-    ResourceSchema schema = super.getResourceSchema(clazz, config);
+  public ResourceSchema getResourceSchema(TypeToken<?> type, ApiConfig config) {
+    ResourceSchema schema = super.getResourceSchema(type, config);
     if (schema != null) {
       return schema;
     }
     ObjectMapper objectMapper =
         ObjectMapperUtil.createStandardObjectMapper(config.getSerializationConfig());
-    JavaType javaType = objectMapper.getTypeFactory().constructType(clazz);
+    JavaType javaType = objectMapper.getTypeFactory().constructType(type.getRawType());
     BeanDescription beanDescription = objectMapper.getSerializationConfig().introspect(javaType);
     List<BeanPropertyDefinition> definitions = beanDescription.findProperties();
-    ResourceSchema.Builder schemaBuilder = ResourceSchema.builderForType(clazz);
+    ResourceSchema.Builder schemaBuilder = ResourceSchema.builderForType(type.getRawType());
     for (BeanPropertyDefinition definition : definitions) {
-      Type type = getPropertyType(toMethod(definition.getGetter()),
+      TypeToken<?> propertyType = getPropertyType(type, toMethod(definition.getGetter()),
           toMethod(definition.getSetter()), definition.getField(), config);
-      if (type != null) {
-        schemaBuilder.addProperty(definition.getName(), ResourcePropertySchema.of(type));
+      if (propertyType != null) {
+        schemaBuilder.addProperty(definition.getName(), ResourcePropertySchema.of(propertyType));
       } else {
         logger.warning(
-            "No type found for property " + definition.getName() + " on class " + clazz.getName());
+            "No type found for property " + definition.getName() + " on class " + type);
       }
     }
     return schemaBuilder.build();
@@ -76,25 +77,23 @@ class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvider {
   }
 
   @Nullable
-  private Type getPropertyType(
-      Method readMethod, Method writeMethod, AnnotatedField field, ApiConfig config) {
+  private TypeToken<?> getPropertyType(TypeToken<?> beanType, Method readMethod, Method writeMethod,
+      AnnotatedField field, ApiConfig config) {
     if (readMethod != null) {
       // read method's return type is the property type
-      return ApiAnnotationIntrospector.getSchemaType(readMethod.getGenericReturnType(), config);
-    }
-
-    if (writeMethod != null) {
+      return ApiAnnotationIntrospector.getSchemaType(
+          beanType.resolveType(readMethod.getGenericReturnType()), config);
+    } else if (writeMethod != null) {
       Type[] paramTypes = writeMethod.getGenericParameterTypes();
       if (paramTypes.length == 1) {
         // write method's first parameter type is the property type
-        return ApiAnnotationIntrospector.getSchemaType(paramTypes[0], config);
+        return ApiAnnotationIntrospector.getSchemaType(
+            beanType.resolveType(paramTypes[0]), config);
       }
+    } else if (field != null) {
+      return ApiAnnotationIntrospector.getSchemaType(
+          beanType.resolveType(field.getGenericType()), config);
     }
-
-    if (field != null) {
-      return ApiAnnotationIntrospector.getSchemaType(field.getGenericType(), config);
-    }
-
     return null;
   }
 }

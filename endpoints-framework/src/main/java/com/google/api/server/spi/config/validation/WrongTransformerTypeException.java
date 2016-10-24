@@ -17,8 +17,7 @@ package com.google.api.server.spi.config.validation;
 
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
-
-import java.lang.reflect.Type;
+import com.google.common.reflect.TypeToken;
 
 
 /**
@@ -29,12 +28,13 @@ import java.lang.reflect.Type;
  */
 public class WrongTransformerTypeException extends ApiParameterConfigInvalidException {
   public WrongTransformerTypeException(ApiParameterConfig config,
-      Class<? extends Transformer<?, ?>> transformer, Type parameterType, Type sourceType) {
+      Class<? extends Transformer<?, ?>> transformer, TypeToken<?> parameterType,
+      TypeToken<?> sourceType) {
     super(config, getErrorMessage(transformer, parameterType, sourceType));
   }
 
   private static String getErrorMessage(Class<? extends Transformer<?, ?>> transformer,
-      Type parameterType, Type sourceType) {
+      TypeToken<?> parameterType, TypeToken<?> sourceType) {
     return String.format("Bad transformer (%s). Specified for %s, but only transforms %s.",
         transformer, parameterType, sourceType);
   }
