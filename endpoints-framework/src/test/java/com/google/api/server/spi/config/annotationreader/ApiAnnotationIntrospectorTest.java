@@ -37,6 +37,7 @@ import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.reflect.TypeToken;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -282,7 +283,7 @@ public class ApiAnnotationIntrospectorTest {
     try {
       ApiConfig config = new ApiConfig.Factory().create(
           ServiceContext.create(), new TypeLoader(), TestEndpoint.class);
-      ApiAnnotationIntrospector.getSchemaType(BadSerializerBean.class, config);
+      ApiAnnotationIntrospector.getSchemaType(TypeToken.of(BadSerializerBean.class), config);
       fail("no exception thrown when a bad serializer was specified");
     } catch (IllegalArgumentException e) {
       // expected
@@ -607,11 +608,12 @@ public class ApiAnnotationIntrospectorTest {
     @Override
     public ResourceSchema getResourceSchema() {
       ResourceSchema.Builder builder = ResourceSchema.builderForType(clazz)
-          .addProperty("x", ResourcePropertySchema.of(Integer.class))
-          .addProperty("y", ResourcePropertySchema.of(Integer.class))
-          .addProperty("nestedResource", ResourcePropertySchema.of(TestSerializePublicField.class));
+          .addProperty("x", ResourcePropertySchema.of(TypeToken.of(Integer.class)))
+          .addProperty("y", ResourcePropertySchema.of(TypeToken.of(Integer.class)))
+          .addProperty("nestedResource",
+              ResourcePropertySchema.of(TypeToken.of(TestSerializePublicField.class)));
       if (TestChildResourceWithCustomSerializer.class.isAssignableFrom(clazz)) {
-        builder.addProperty("aShort", ResourcePropertySchema.of(Short.class));
+        builder.addProperty("aShort", ResourcePropertySchema.of(TypeToken.of(Short.class)));
       }
       return builder.build();
     }

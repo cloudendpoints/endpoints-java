@@ -22,18 +22,12 @@ import com.google.api.server.spi.config.ApiConfigInconsistency;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.PeerAuthenticator;
-import com.google.api.server.spi.config.ResourceSchema;
-import com.google.api.server.spi.config.ResourceTransformer;
-import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.reflect.TypeToken;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -504,37 +498,5 @@ public class ApiConfig {
 
   public ApiClassConfig getApiClassConfig() {
     return apiClassConfig;
-  }
-
-  public String getSimpleName(Type type) {
-    Type itemType = TypeLoader.getArrayItemType(type);
-
-    if (type == null) {
-      return null;
-    } else if (itemType != null) {
-      return getSimpleName(itemType) + "Collection";
-    } else if (type instanceof ParameterizedType) {
-      ParameterizedType p = (ParameterizedType) type;
-      StringBuilder builder = new StringBuilder();
-      builder.append(getSimpleName(p.getRawType()));
-      for (Type typeArg : p.getActualTypeArguments()) {
-        builder.append('_');
-        builder.append(getSimpleName(typeArg));
-      }
-      return builder.toString();
-    } else {
-      Class<? extends Transformer<?, ?>> serializerClass = Iterables.getOnlyElement(
-          Serializers.getSerializerClasses(type, getSerializationConfig()), null);
-      if (serializerClass != null && ResourceTransformer.class.isAssignableFrom(serializerClass)) {
-        @SuppressWarnings("unchecked")
-        ResourceTransformer<?> resourceSerializer =
-            (ResourceTransformer<?>) Serializers.instantiate(serializerClass, type);
-        ResourceSchema resourceSchema = resourceSerializer.getResourceSchema();
-        if (resourceSchema != null && resourceSchema.getName() != null) {
-          return resourceSchema.getName();
-        }
-      }
-      return TypeToken.of(type).getRawType().getSimpleName();
-    }
   }
 }

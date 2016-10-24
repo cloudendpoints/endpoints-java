@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi;
 
+import com.google.api.server.spi.config.model.Types;
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 
@@ -23,7 +24,6 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -86,6 +86,7 @@ public class EndpointMethod {
    * The endpoint class.
    */
   private final Class<?> endpointClass;
+  private final TypeToken<?> endpointToken;
 
   /**
    * The underlying method.
@@ -101,29 +102,30 @@ public class EndpointMethod {
 
   private List<String> parameterNames;
 
-  private EndpointMethod(Class<?> endpointClass, Method method, TypeToken<?> token) {
+  private EndpointMethod(Class<?> endpointClass, Method method, TypeToken<?> declaringClass) {
     this.endpointClass = endpointClass;
+    this.endpointToken = TypeToken.of(endpointClass);
     this.method = method;
     this.resolvedMethodSignature = new ResolvedSignature();
-    this.typeToken = token;
+    this.typeToken = declaringClass;
   }
 
-  private Type resolve(Type type) {
-    return typeToken.resolveType(type).getType();
+  private TypeToken<?> resolve(Type type) {
+    return endpointToken.resolveType(type);
   }
 
-  private Type[] resolve(Type[] types) {
-    Type[] resolved = new Type[types.length];
+  private TypeToken<?>[] resolve(Type[] types) {
+    TypeToken<?>[] resolved = new TypeToken<?>[types.length];
     for (int i = 0; i < types.length; ++i) {
       resolved[i] = resolve(types[i]);
     }
     return resolved;
   }
 
-  private static Class<?>[] resolveClasses(Type[] types) {
+  private static Class<?>[] resolveClasses(TypeToken<?>[] types) {
     Class<?>[] resolved = new Class<?>[types.length];
     for (int i = 0; i < types.length; ++i) {
-      resolved[i] = getClassFromType(types[i]);
+      resolved[i] = types[i].getRawType();
     }
     return resolved;
   }
@@ -166,14 +168,14 @@ public class EndpointMethod {
   /**
    * Returns the return type of the method.
    */
-  public Type getReturnType() {
+  public TypeToken<?> getReturnType() {
     return resolve(method.getGenericReturnType());
   }
 
   /**
    * Returns the parameter types of the method.
    */
-  public Type[] getParameterTypes() {
+  public TypeToken<?>[] getParameterTypes() {
     return resolve(method.getGenericParameterTypes());
   }
 
@@ -184,12 +186,25 @@ public class EndpointMethod {
     return resolveClasses(getParameterTypes());
   }
 
-  private void validateNoWildcards(Type[] types) {
-    for (Type type : types) {
-      Type resolved = typeToken.resolveType(type).getType();
+  /**
+   * Returns whether or not the method has a resource (is non-void) in the response.
+   */
+  public boolean hasResourceInResponse() {
+    Type returnType = getReturnType().getRawType();
+    return returnType != Void.TYPE && returnType != Void.class;
+  }
+
+  private void validateNoWildcards(TypeToken<?>[] types) {
+    for (TypeToken<?> type : types) {
+      Type resolved = type.getType();
       if (resolved instanceof ParameterizedType) {
-        validateNoWildcards(((ParameterizedType) resolved).getActualTypeArguments());
-      } else if (resolved instanceof WildcardType) {
+        Class<?> clazz = type.getRawType();
+        TypeToken<?>[] typeArgs = new TypeToken<?>[clazz.getTypeParameters().length];
+        for (int i = 0; i < typeArgs.length; i++) {
+          typeArgs[i] = type.resolveType(clazz.getTypeParameters()[i]);
+        }
+        validateNoWildcards(typeArgs);
+      } else if (Types.isWildcardType(type)) {
         throw new IllegalArgumentException(
             // TODO: Figure out a more useful error message.  Maybe try to provide the
             // location of the wildcard instead of just its name ('T' is not the most useful info).
@@ -203,20 +218,20 @@ public class EndpointMethod {
    *
    * @param method Must not have wildcard types (all generic types must be resolvable to a concrete
    *        type using the given {@link TypeToken}).
-   * @param token A token for the method's declaring class.
+   * @param declaringClass A token for the method's declaring class.
    */
   public static EndpointMethod create(
-      Class<?> endpointClass, Method method, TypeToken<?> token) {
+      Class<?> endpointClass, Method method, TypeToken<?> declaringClass) {
     Preconditions.checkNotNull(endpointClass, "endpointClass");
     Preconditions.checkNotNull(method, "method");
     Preconditions.checkArgument(method.getDeclaringClass().isAssignableFrom(endpointClass),
           "Method '%s' does belong to interface of class '%s'", method, endpointClass);
-    Preconditions.checkArgument(method.getDeclaringClass().equals(token.getRawType()),
+    Preconditions.checkArgument(method.getDeclaringClass().equals(declaringClass.getRawType()),
           "Token must be of the method's declaring class '%s'.", method.getDeclaringClass());
 
-    EndpointMethod endpointMethod = new EndpointMethod(endpointClass, method, token);
+    EndpointMethod endpointMethod = new EndpointMethod(endpointClass, method, declaringClass);
 
-    endpointMethod.validateNoWildcards(new Type[] { endpointMethod.getReturnType() });
+    endpointMethod.validateNoWildcards(new TypeToken<?>[] { endpointMethod.getReturnType() });
     endpointMethod.validateNoWildcards(endpointMethod.getParameterTypes());
 
     return endpointMethod;

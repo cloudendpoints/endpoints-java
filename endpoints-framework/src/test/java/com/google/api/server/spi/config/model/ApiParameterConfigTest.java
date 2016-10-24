@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.model.ApiParameterConfig.Classification;
 import com.google.api.server.spi.testing.DefaultValueSerializer;
+import com.google.common.reflect.TypeToken;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -85,24 +86,24 @@ public class ApiParameterConfigTest {
     Mockito.when(apiClassConfig.getApiConfig()).thenReturn(apiConfig);
     Mockito.when(apiConfig.getSerializationConfig()).thenReturn(serializationConfig);
 
-    config = new ApiParameterConfig(apiMethodConfig, "bleh", null, false, null, String.class, 
-        typeLoader);
-    configWithArray = new ApiParameterConfig(apiMethodConfig, "bleh", null, false, null, 
-        Boolean[].class, typeLoader);
+    config = new ApiParameterConfig(
+        apiMethodConfig, "bleh", null, false, null, TypeToken.of(String.class), typeLoader);
+    configWithArray = new ApiParameterConfig(
+        apiMethodConfig, "bleh", null, false, null, TypeToken.of(Boolean[].class), typeLoader);
   }
 
   @Test
   public void testRepeated() {
     assertTrue(configWithArray.isRepeated());
-    assertEquals(Boolean[].class, configWithArray.getSchemaBaseType());
-    assertEquals(Boolean.class, configWithArray.getRepeatedItemType());
-    assertEquals(Boolean.class, configWithArray.getRepeatedItemSerializedType());
+    assertEquals(TypeToken.of(Boolean[].class), configWithArray.getSchemaBaseType());
+    assertEquals(TypeToken.of(Boolean.class), configWithArray.getRepeatedItemType());
+    assertEquals(TypeToken.of(Boolean.class), configWithArray.getRepeatedItemSerializedType());
   }
 
   @Test
   public void testNotRepeated() {
     assertFalse(config.isRepeated());
-    assertEquals(String.class, config.getSchemaBaseType());
+    assertEquals(TypeToken.of(String.class), config.getSchemaBaseType());
     assertNull(config.getRepeatedItemType());
     assertNull(config.getRepeatedItemSerializedType());
   }
@@ -112,10 +113,10 @@ public class ApiParameterConfigTest {
     config.setSerializer(TestSerializer1.class);
     config.setRepeatedItemSerializer(TestSerializer3.class);
 
-    assertEquals(Integer[].class, config.getSchemaBaseType());
+    assertEquals(TypeToken.of(Integer[].class), config.getSchemaBaseType());
     assertTrue(config.isRepeated());
-    assertEquals(Integer.class, config.getRepeatedItemType());
-    assertEquals(Boolean.class, config.getRepeatedItemSerializedType());
+    assertEquals(TypeToken.of(Integer.class), config.getRepeatedItemType());
+    assertEquals(TypeToken.of(Boolean.class), config.getRepeatedItemSerializedType());
   }
 
   @Test
@@ -155,7 +156,7 @@ public class ApiParameterConfigTest {
   }
 
   private ApiParameterConfig createStandardParameter(String name) {
-    return new ApiParameterConfig(apiMethodConfig, "alt", null, false, null, String.class, 
-        typeLoader);
+    return new ApiParameterConfig(
+        apiMethodConfig, "alt", null, false, null, TypeToken.of(String.class), typeLoader);
   }
 }

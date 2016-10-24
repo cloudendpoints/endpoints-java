@@ -17,7 +17,6 @@ package com.google.api.server.spi.config.model;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import com.google.api.server.spi.ServiceContext;
 import com.google.api.server.spi.TypeLoader;
@@ -27,11 +26,11 @@ import com.google.api.server.spi.config.ApiConfigInconsistency;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.PeerAuthenticator;
-import com.google.api.server.spi.config.ResourceSchema;
-import com.google.api.server.spi.config.ResourceTransformer;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
-import com.google.api.server.spi.testing.DefaultValueSerializer;
 import com.google.api.server.spi.testing.DumbSerializer1;
+import com.google.api.server.spi.testing.FloatToStringSerializer;
+import com.google.api.server.spi.testing.IntegerToStringSerializer;
+import com.google.api.server.spi.testing.LongToStringSerializer;
 import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -41,9 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.List;
-import java.util.Map;
 
 /** Unit tests for {@link ApiConfig}. */
 @RunWith(JUnit4.class)
@@ -78,44 +75,6 @@ public class ApiConfigTest {
   @Test
   public void testGetBns() {
     assertEquals("https://myapp.appspot.com/_ah/spi", apiConfig.getBackendRoot());
-  }
-
-  @Test
-  public void testGetSimpleName_null() {
-    assertNull(apiConfig.getSimpleName(null));
-  }
-
-  @Test
-  public void testGetSimpleName_array() {
-    assertEquals("StringCollection", apiConfig.getSimpleName(String[].class));
-  }
-
-  @Test
-  public void testGetSimpleName_basic() {
-    assertEquals("String", apiConfig.getSimpleName(String.class));
-  }
-
-  @Test
-  public void testGetSimpleName_withSerializer() {
-    assertEquals("Integer", apiConfig.getSimpleName(Integer.class));
-  }
-
-  @Test
-  public void testGetSimpleName_withResourceSerializerNameOverride() {
-    assertEquals("Number", apiConfig.getSimpleName(Long.class));
-  }
-
-  @Test
-  public void testGetSimpleName_withResourceSerializerNoNameOverride() {
-    assertEquals("Float", apiConfig.getSimpleName(Float.class));
-  }
-
-  @Test
-  public void testGetSimpleName_parameterized() {
-    class Foo extends Base2<Integer, Base<String>> {}
-
-    ParameterizedType type = (ParameterizedType) Foo.class.getGenericSuperclass();
-    assertEquals("Base2_Integer_Base_String", apiConfig.getSimpleName(type));
   }
 
   @Test
@@ -222,28 +181,4 @@ public class ApiConfigTest {
         ImmutableList.<Class<? extends PeerAuthenticator>>of(EndpointsPeerAuthenticator.class));
     assertThat(apiConfig).isEqualTo(new ApiConfig(apiConfig));
   }
-
-  static class IntegerToStringSerializer extends DefaultValueSerializer<Integer, String> {
-  }
-
-  static class LongToStringSerializer extends DefaultValueSerializer<Long, Map<String, Object>>
-      implements ResourceTransformer<Long> {
-
-    @Override
-    public ResourceSchema getResourceSchema() {
-      return ResourceSchema.builderForType(Long.class).setName("Number").build();
-    }
-  }
-
-  static class FloatToStringSerializer extends DefaultValueSerializer<Float, Map<String, Object>>
-      implements ResourceTransformer<Float> {
-
-    @Override
-    public ResourceSchema getResourceSchema() {
-      return ResourceSchema.builderForType(Float.class).build();
-    }
-  }
-
-  private static class Base<T> {}
-  private static class Base2<T1, T2> {}
 }

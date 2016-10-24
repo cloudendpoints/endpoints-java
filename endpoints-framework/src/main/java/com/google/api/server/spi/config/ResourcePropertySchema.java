@@ -17,6 +17,7 @@ package com.google.api.server.spi.config;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.Objects;
@@ -27,11 +28,10 @@ import java.util.Objects;
  * @see ResourceSchema
  */
 public class ResourcePropertySchema {
+  private final TypeToken<?> type;
 
-  private final Type javaType;
-
-  private ResourcePropertySchema(Type javaType) {
-    this.javaType = javaType;
+  private ResourcePropertySchema(TypeToken<?> type) {
+    this.type = type;
   }
 
   /**
@@ -41,17 +41,21 @@ public class ResourcePropertySchema {
    * @return the property's type
    */
   public Type getJavaType() {
-    return javaType;
+    return type.getType();
+  }
+
+  public TypeToken<?> getType() {
+    return type;
   }
 
   /**
    * Returns a default resource property schema for a given type.
    *
-   * @param javaType the property type
+   * @param type the property type
    * @return a default schema for this type
    */
-  public static ResourcePropertySchema of(Type javaType) {
-    return new ResourcePropertySchema(Preconditions.checkNotNull(javaType));
+  public static ResourcePropertySchema of(TypeToken<?> type) {
+    return new ResourcePropertySchema(Preconditions.checkNotNull(type));
   }
 
   @Override
@@ -63,18 +67,18 @@ public class ResourcePropertySchema {
       return false;
     }
     ResourcePropertySchema that = (ResourcePropertySchema) obj;
-    return Objects.equals(this.javaType, that.javaType);
+    return Objects.equals(this.type, that.type);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(javaType);
+    return Objects.hash(type);
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this.getClass())
-        .add("type", javaType)
+        .add("type", type)
         .toString();
   }
 }

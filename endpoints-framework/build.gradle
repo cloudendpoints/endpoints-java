@@ -62,6 +62,12 @@ task siteJavadoc(type: Javadoc) {
 
 configureMaven(project, 'Endpoints Framework', 'A framework for building RESTful web APIs.')
 
+task copyTestResources(type: Copy) {
+  from "${projectDir}/src/test/resources"
+  into "${buildDir}/classes/test"
+}
+processTestResources.dependsOn copyTestResources
+
 dependencies {
   include(project(":discovery-client")) {
     // We already include all of the dependencies needed for the discovery

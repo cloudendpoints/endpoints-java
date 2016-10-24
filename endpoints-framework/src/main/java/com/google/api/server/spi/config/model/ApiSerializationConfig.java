@@ -20,7 +20,6 @@ import com.google.api.server.spi.config.Transformer;
 import com.google.common.collect.Iterables;
 import com.google.common.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,14 +31,14 @@ import java.util.Map;
  */
 public class ApiSerializationConfig {
 
-  private final Map<Type, SerializerConfig> configs;
+  private final Map<TypeToken<?>, SerializerConfig> configs;
 
   public ApiSerializationConfig() {
-    this.configs = new LinkedHashMap<Type, SerializerConfig>();
+    this.configs = new LinkedHashMap<>();
   }
 
   public ApiSerializationConfig(ApiSerializationConfig original) {
-    this.configs = new LinkedHashMap<Type, SerializerConfig>(original.configs);
+    this.configs = new LinkedHashMap<>(original.configs);
   }
 
   @Override
@@ -54,9 +53,9 @@ public class ApiSerializationConfig {
     }
   }
 
-  public Iterable<ApiConfigInconsistency<Map<Type, SerializerConfig>>>
+  public Iterable<ApiConfigInconsistency<Map<TypeToken<?>, SerializerConfig>>>
       getConfigurationInconsistencies(ApiSerializationConfig config) {
-    return ApiConfigInconsistency.<Map<Type, SerializerConfig>>listBuilder()
+    return ApiConfigInconsistency.<Map<TypeToken<?>, SerializerConfig>>listBuilder()
         .addIfInconsistent("serialization.configs", configs, config.configs)
         .build();
   }
@@ -67,31 +66,32 @@ public class ApiSerializationConfig {
   }
 
   public void addSerializationConfig(Class<? extends Transformer<?, ?>> serializer) {
-    Type sourceType = Serializers.getSourceType(serializer);
+    TypeToken<?> sourceType = Serializers.getSourceType(serializer);
     configs.put(sourceType, new SerializerConfig(sourceType, serializer));
   }
 
   public List<SerializerConfig> getSerializerConfigs() {
-    return new ArrayList<SerializerConfig>(configs.values());
+    return new ArrayList<>(configs.values());
   }
 
-  public SerializerConfig getSerializerConfig(Type type) {
-    return configs.get(TypeToken.of(type).getRawType());
+  public SerializerConfig getSerializerConfig(TypeToken<?> type) {
+    return configs.get(type);
   }
 
   /**
    * A single serialization rule.
    */
   public static class SerializerConfig {
-    private final Type sourceType;
+    private final TypeToken<?> sourceType;
     private final Class<? extends Transformer<?, ?>> serializer;
 
-    public SerializerConfig(Type sourceType, Class<? extends Transformer<?, ?>> serializer) {
+    public SerializerConfig(
+        TypeToken<?> sourceType, Class<? extends Transformer<?, ?>> serializer) {
       this.sourceType = sourceType;
       this.serializer = serializer;
     }
 
-    public Type getSourceType() {
+    public TypeToken<?> getSourceType() {
       return sourceType;
     }
 

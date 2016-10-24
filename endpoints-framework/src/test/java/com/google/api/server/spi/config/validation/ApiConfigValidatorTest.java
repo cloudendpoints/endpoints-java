@@ -43,6 +43,7 @@ import com.google.api.server.spi.testing.PassPeerAuthenticator;
 import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -202,7 +203,7 @@ public class ApiConfigValidatorTest {
 
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
-        .addParameter("param", null, false, null, Integer.class)
+        .addParameter("param", null, false, null, TypeToken.of(Integer.class))
         .setSerializer(TestSerializer.class);
 
     try {
@@ -218,7 +219,7 @@ public class ApiConfigValidatorTest {
 
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
-        .addParameter("param", null, false, null, Integer[].class)
+        .addParameter("param", null, false, null, TypeToken.of(Integer[].class))
         .setRepeatedItemSerializer(TestSerializer.class);
 
     try {
@@ -233,14 +234,14 @@ public class ApiConfigValidatorTest {
     // TODO: The generic component of Comparable causes validation to miss certain error
     // cases like this.
     @SuppressWarnings("rawtypes")
-    final class ComparableSerializer extends DefaultValueSerializer<Comparable, Integer> {}
+    final class ComparableSerializer extends DefaultValueSerializer<Comparable<String>, Integer> {}
     final class CharSequenceSerializer extends DefaultValueSerializer<CharSequence, Long> {}
     config.getSerializationConfig().addSerializationConfig(ComparableSerializer.class);
     config.getSerializationConfig().addSerializationConfig(CharSequenceSerializer.class);
 
     try {
       validator.validate(config);
-      fail("Expected MultipleSerializersException.");
+      fail("Expected MultipleTransformersException.");
     } catch (MultipleTransformersException expected) {
     }
   }
@@ -263,7 +264,7 @@ public class ApiConfigValidatorTest {
 
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
-        .addParameter("param", null, false, null, Integer.class)
+        .addParameter("param", null, false, null, TypeToken.of(Integer.class))
         .setSerializer((Class<? extends Transformer<?, ?>>) (Class<?>) TestSerializer.class);
 
     try {
@@ -279,7 +280,7 @@ public class ApiConfigValidatorTest {
 
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
-        .addParameter("param", null, false, null, Integer[].class)
+        .addParameter("param", null, false, null, TypeToken.of(Integer[].class))
         .setRepeatedItemSerializer(
             (Class<? extends Transformer<?, ?>>) (Class<?>) TestSerializer.class);
 
@@ -299,7 +300,8 @@ public class ApiConfigValidatorTest {
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
         .addParameter("param", null, false, null,
-            Foo.class.getDeclaredMethod("foo", List.class).getGenericParameterTypes()[0]);
+            TypeToken.of(
+                Foo.class.getDeclaredMethod("foo", List.class).getGenericParameterTypes()[0]));
 
     try {
       validator.validate(config);
@@ -317,7 +319,8 @@ public class ApiConfigValidatorTest {
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
         .addParameter("param", null, false, null,
-            Foo.class.getDeclaredMethod("foo", List[].class).getGenericParameterTypes()[0]);
+            TypeToken.of(
+                Foo.class.getDeclaredMethod("foo", List[].class).getGenericParameterTypes()[0]));
 
     try {
       validator.validate(config);
@@ -335,7 +338,8 @@ public class ApiConfigValidatorTest {
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
         .addParameter("param", null, false, null,
-            Foo.class.getDeclaredMethod("foo", List.class).getGenericParameterTypes()[0]);
+            TypeToken.of(
+                Foo.class.getDeclaredMethod("foo", List.class).getGenericParameterTypes()[0]));
 
     try {
       validator.validate(config);
@@ -348,7 +352,7 @@ public class ApiConfigValidatorTest {
   public void testArrayOfArraysParameter() throws Exception {
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
-        .addParameter("param", null, false, null, Integer[][].class);
+        .addParameter("param", null, false, null, TypeToken.of(Integer[][].class));
 
     try {
       validator.validate(config);
@@ -363,8 +367,8 @@ public class ApiConfigValidatorTest {
       @SuppressWarnings("unused")
       public void foo(T t) {}
     }
-    Type unknownType =
-        Foo.class.getDeclaredMethod("foo", Object.class).getGenericParameterTypes()[0];
+    TypeToken<?> unknownType = TypeToken.of(
+        Foo.class.getDeclaredMethod("foo", Object.class).getGenericParameterTypes()[0]);
 
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))

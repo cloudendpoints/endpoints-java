@@ -32,6 +32,7 @@ import com.google.api.server.spi.config.model.ApiKey;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiNamespaceConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
+import com.google.api.server.spi.config.model.Types;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.config.validation.ApiConfigValidator;
 import com.google.api.server.spi.config.validation.InvalidReturnTypeException;
@@ -42,6 +43,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.reflect.TypeToken;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,8 +52,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.List;
@@ -378,7 +378,7 @@ public class JsonConfigWriter implements ApiConfigWriter {
   private void convertSimpleParameter(ApiParameterConfig config, ObjectNode parametersNode) {
     ObjectNode parameterNode = objectMapper.createObjectNode();
 
-    Type type;
+    TypeToken<?> type;
     if (config.isRepeated()) {
       parameterNode.put("repeated", true);
       type = config.getRepeatedItemSerializedType();
@@ -388,16 +388,16 @@ public class JsonConfigWriter implements ApiConfigWriter {
 
     if (config.isEnum()) {
       ObjectNode enumValuesNode = objectMapper.createObjectNode();
-      for (Object enumConstant : ((Class<?>) type).getEnumConstants()) {
+      for (Object enumConstant : type.getRawType().getEnumConstants()) {
         ObjectNode enumNode = objectMapper.createObjectNode();
         enumValuesNode.set(enumConstant.toString(), enumNode);
       }
       parameterNode.set("enum", enumValuesNode);
 
-      type = String.class;
+      type = TypeToken.of(String.class);
     }
 
-    parameterNode.put("type", typeLoader.getParameterTypes().get(type));
+    parameterNode.put("type", typeLoader.getParameterTypes().get(type.getRawType()));
     parameterNode.put("description", config.getDescription());
     parameterNode.put("required", !config.getNullable() && config.getDefaultValue() == null);
 
@@ -405,7 +405,7 @@ public class JsonConfigWriter implements ApiConfigWriter {
     // general configuration code.
     String defaultValue = config.getDefaultValue();
     if (defaultValue != null) {
-      Class<?> parameterClass = (Class<?>) type;
+      Class<?> parameterClass = type.getRawType();
       try {
         objectMapper.convertValue(defaultValue, parameterClass);
       } catch (IllegalArgumentException e) {
@@ -425,7 +425,7 @@ public class JsonConfigWriter implements ApiConfigWriter {
   private void convertComplexParameter(ApiParameterConfig config, Method method,
       ObjectNode descriptorSchemasNode, ObjectNode descriptorMethodNode,
       ApiConfig apiConfig, List<ApiParameterConfig> parameterConfigs) throws ApiConfigException {
-    Type type = config.getSchemaBaseType();
+    TypeToken<?> type = config.getSchemaBaseType();
     ObjectNode requestTypeNode = objectMapper.createObjectNode();
     addTypeToNode(descriptorSchemasNode, type, null, requestTypeNode, apiConfig, parameterConfigs);
 
@@ -439,11 +439,11 @@ public class JsonConfigWriter implements ApiConfigWriter {
       ApiMethodConfig config) throws ApiConfigException {
     ObjectNode responseNode = objectMapper.createObjectNode();
     methodNode.set("response", responseNode);
-    if (methodHasResourceInResponse(serviceMethod)) {
+    if (serviceMethod.hasResourceInResponse()) {
       responseNode.put("body", "autoTemplate(backendResponse)");
 
       // TODO: Get from ApiMethodConfig.
-      Type returnType = ApiAnnotationIntrospector.getSchemaType(
+      TypeToken<?> returnType = ApiAnnotationIntrospector.getSchemaType(
           serviceMethod.getReturnType(), config.getApiClassConfig().getApiConfig());
       descriptorMethodNode.set("response",
           convertMethodResponseType(descriptorSchemasNode, returnType, config));
@@ -456,8 +456,8 @@ public class JsonConfigWriter implements ApiConfigWriter {
   /**
    * Returns a node with the response object type, wrapping any arrays into a new Collection schema.
    */
-  private ObjectNode convertMethodResponseType(ObjectNode descriptorSchemasNode, Type returnType,
-      ApiMethodConfig config) throws ApiConfigException {
+  private ObjectNode convertMethodResponseType(ObjectNode descriptorSchemasNode,
+      TypeToken<?> returnType, ApiMethodConfig config) throws ApiConfigException {
     ObjectNode returnTypeNode = objectMapper.createObjectNode();
     String responseTypeName =
         addTypeToNode(descriptorSchemasNode, returnType, null, returnTypeNode,
@@ -465,11 +465,11 @@ public class JsonConfigWriter implements ApiConfigWriter {
 
     // TODO: Move to ApiConfigValidator once return type parsing is pulled out of the
     // writer.
-    if (typeLoader.isSchemaType(returnType) || TypeLoader.isEnumType(returnType)) {
+    if (typeLoader.isSchemaType(returnType) || Types.isEnumType(returnType)) {
       throw new InvalidReturnTypeException(config, returnType);
     }
 
-    if (TypeLoader.getArrayItemType(returnType) != null && returnType != byte[].class) {
+    if (Types.isArrayType(returnType)) {
       ObjectNode propertiesNode = objectMapper.createObjectNode();
       propertiesNode.set("items", returnTypeNode);
 
@@ -485,13 +485,8 @@ public class JsonConfigWriter implements ApiConfigWriter {
     return returnTypeNode;
   }
 
-  private boolean methodHasResourceInResponse(EndpointMethod serviceMethod) {
-    Type returnType = serviceMethod.getReturnType();
-    return returnType != Void.TYPE && returnType != Void.class;
-  }
-
   @VisibleForTesting
-  String addTypeToSchema(ObjectNode schemasNode, Type type, ApiConfig apiConfig,
+  String addTypeToSchema(ObjectNode schemasNode, TypeToken<?> type, ApiConfig apiConfig,
       List<ApiParameterConfig> parameterConfigs) throws ApiConfigException {
     return addTypeToSchema(schemasNode, type, null, apiConfig, parameterConfigs);
   }
@@ -507,11 +502,11 @@ public class JsonConfigWriter implements ApiConfigWriter {
    */
   @VisibleForTesting
   String addTypeToSchema(
-      ObjectNode schemasNode, Type type, Type enclosingType, ApiConfig apiConfig,
+      ObjectNode schemasNode, TypeToken<?> type, TypeToken<?> enclosingType, ApiConfig apiConfig,
       List<ApiParameterConfig> parameterConfigs) throws ApiConfigException {
     if (typeLoader.isSchemaType(type)) {
-      return typeLoader.getSchemaTypes().get(type);
-    } else if (type == Object.class) {
+      return typeLoader.getSchemaType(type);
+    } else if (Types.isObject(type)) {
       if (!schemasNode.has(ANY_SCHEMA_NAME)) {
         ObjectNode anySchema = objectMapper.createObjectNode();
         anySchema.put("id", ANY_SCHEMA_NAME);
@@ -519,7 +514,7 @@ public class JsonConfigWriter implements ApiConfigWriter {
         schemasNode.set(ANY_SCHEMA_NAME, anySchema);
       }
       return ANY_SCHEMA_NAME;
-    } else if (typeLoader.isMapType(type)) {
+    } else if (Types.isMapType(type)) {
       if (!schemasNode.has(MAP_SCHEMA_NAME)) {
         ObjectNode mapSchema = objectMapper.createObjectNode();
         mapSchema.put("id", MAP_SCHEMA_NAME);
@@ -530,62 +525,39 @@ public class JsonConfigWriter implements ApiConfigWriter {
     }
 
     // If we already have this schema defined, don't define it again!
-    String typeName = apiConfig.getSimpleName(type);
+    String typeName = Types.getSimpleName(type, apiConfig.getSerializationConfig());
     JsonNode existing = schemasNode.get(typeName);
     if (existing != null && existing.isObject()) {
       return typeName;
     }
 
     ObjectNode schemaNode = objectMapper.createObjectNode();
-    if (type instanceof ParameterizedType) {
-      Type collectionType = ((ParameterizedType) type).getRawType();
+    Class<?> c = type.getRawType();
+    if (c.isEnum()) {
+      schemasNode.set(typeName, schemaNode);
+      schemaNode.put("id", typeName);
+      schemaNode.put("type", "string");
 
-      // This check is necessary for parameterized types that have a specific schema format, e.g.
-      // for Objectify Key types.
-      if (typeLoader.isSchemaType(collectionType)) {
-        return typeLoader.getSchemaTypes().get(collectionType);
+      ArrayNode enumNode = objectMapper.createArrayNode();
+      for (Object enumConstant : c.getEnumConstants()) {
+        enumNode.add(enumConstant.toString());
       }
-
-      if (typeLoader.getClassTypes().get("CollectionResponses").isAssignableFrom(
-              (Class<?>) collectionType)) {
-        // treat CollectionResponse or its subclass as a regular bean
-        // TODO: Handle parameterized beans in general?
-        addBeanTypeToSchema(
-            schemasNode, apiConfig.getSimpleName(type), schemaNode, type, apiConfig,
+      schemaNode.set("enum", enumNode);
+    } else {
+      // JavaBean
+      TypeToken<?> serializedType = ApiAnnotationIntrospector.getSchemaType(type, apiConfig);
+      if (!type.equals(serializedType)) {
+        return addTypeToSchema(schemasNode, serializedType, enclosingType, apiConfig,
             parameterConfigs);
       } else {
-        throw new IllegalArgumentException("Parameterized type " + type + " not supported.");
+        addBeanTypeToSchema(schemasNode, typeName, schemaNode, type, apiConfig, parameterConfigs);
       }
-    } else if (type instanceof Class) {
-      Class<?> c = (Class<?>) type;
-      if (c.isEnum()) {
-        schemasNode.set(typeName, schemaNode);
-        schemaNode.put("id", typeName);
-        schemaNode.put("type", "string");
-
-        ArrayNode enumNode = objectMapper.createArrayNode();
-        for (Object enumConstant : c.getEnumConstants()) {
-          enumNode.add(enumConstant.toString());
-        }
-        schemaNode.set("enum", enumNode);
-      } else {
-        // JavaBean
-        Type serializedType = ApiAnnotationIntrospector.getSchemaType(c, apiConfig);
-        if (!c.equals(serializedType)) {
-          return addTypeToSchema(schemasNode, serializedType, enclosingType, apiConfig,
-              parameterConfigs);
-        } else {
-          addBeanTypeToSchema(schemasNode, typeName, schemaNode, c, apiConfig, parameterConfigs);
-        }
-      }
-    } else {
-      throw new IllegalArgumentException(String.format("Object type %s not supported.", type));
     }
     return typeName;
   }
 
   private void addBeanTypeToSchema(ObjectNode schemasNode, String typeName, ObjectNode schemaNode,
-      Type type, ApiConfig apiConfig, List<ApiParameterConfig> parameterConfigs)
+      TypeToken<?> type, ApiConfig apiConfig, List<ApiParameterConfig> parameterConfigs)
           throws ApiConfigException {
     schemasNode.set(typeName, schemaNode);
     schemaNode.put("id", typeName);
@@ -600,17 +572,15 @@ public class JsonConfigWriter implements ApiConfigWriter {
    * (the value of "properties" of a schema object): "&lt;name&gt;": {"type": "&lt;type&gt;"}, where
    * "name" is the name of the JavaBean property and "type" the type of its value.
    */
-  protected void addBeanProperties(ObjectNode schemasNode, ObjectNode node, Type beanType,
+  private void addBeanProperties(ObjectNode schemasNode, ObjectNode node, TypeToken<?> beanType,
       ApiConfig apiConfig, List<ApiParameterConfig> parameterConfigs) throws ApiConfigException {
     // CollectionResponse<T> is treated as a bean but it is a parameterized type, too.
-    Class<?> beanClass = beanType instanceof ParameterizedType ?
-        (Class<?>) ((ParameterizedType) beanType).getRawType() : (Class<?>) beanType;
-    ResourceSchema schema = resourceSchemaProvider.getResourceSchema(beanClass, apiConfig);
+    ResourceSchema schema = resourceSchemaProvider.getResourceSchema(beanType, apiConfig);
     for (Entry<String, ResourcePropertySchema> entry : schema.getProperties().entrySet()) {
       String propertyName = entry.getKey();
       validatePropertyName(propertyName, parameterConfigs);
       ObjectNode propertyNode = objectMapper.createObjectNode();
-      Type propertyType = entry.getValue().getJavaType();
+      TypeToken<?> propertyType = entry.getValue().getType();
       if (propertyType != null) {
         addTypeToNode(schemasNode, propertyType, beanType, propertyNode,
             apiConfig, parameterConfigs);
@@ -644,13 +614,13 @@ public class JsonConfigWriter implements ApiConfigWriter {
    *
    * @return an appropriate name for the schema if one isn't already assigned
    */
-  protected String addTypeToNode(ObjectNode schemasNode, Type type, Type enclosingType,
-      ObjectNode node, ApiConfig apiConfig, List<ApiParameterConfig> parameterConfigs)
-          throws ApiConfigException {
-    Type itemType = TypeLoader.getArrayItemType(type);
+  private String addTypeToNode(ObjectNode schemasNode, TypeToken<?> type,
+      TypeToken<?> enclosingType, ObjectNode node, ApiConfig apiConfig,
+      List<ApiParameterConfig> parameterConfigs) throws ApiConfigException {
+    TypeToken<?> itemType = Types.getArrayItemType(type);
 
-    if (typeLoader.getSchemaTypes().containsKey(type)) {
-      String basicTypeName = typeLoader.getSchemaTypes().get(type);
+    if (typeLoader.isSchemaType(type)) {
+      String basicTypeName = typeLoader.getSchemaType(type);
       addElementTypeToNode(schemasNode, type, basicTypeName, node, apiConfig);
       return basicTypeName;
     } else if (itemType != null) {
@@ -666,15 +636,8 @@ public class JsonConfigWriter implements ApiConfigWriter {
       sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
       return sb.toString();
     } else if (type instanceof TypeVariable) {
-      if (enclosingType instanceof ParameterizedType) {
-        // TODO: Fix this if/when parameterized beans are supported.
-        Type[] typeArgs = ((ParameterizedType) enclosingType).getActualTypeArguments();
-        Type actualArg = typeArgs.length > 0 ? typeArgs[0] : null;
-        return addTypeToNode(schemasNode, actualArg, null, node, apiConfig, parameterConfigs);
-      } else {
-        throw new IllegalArgumentException(
-            String.format("Object type %s not supported.", type));
-      }
+      throw new IllegalArgumentException(
+          String.format("Object type %s not supported.", type));
     } else {
       String typeName = addTypeToSchema(schemasNode, type, enclosingType, apiConfig,
           parameterConfigs);
@@ -687,8 +650,8 @@ public class JsonConfigWriter implements ApiConfigWriter {
    * Adds a basic (non-array) type to an output node, assuming the type has a corresponding schema
    * in the provided configuration if it will ever have one.
    */
-  private void addElementTypeToNode(
-      ObjectNode schemasNode, Type type, String typeName, ObjectNode node, ApiConfig apiConfig) {
+  private void addElementTypeToNode(ObjectNode schemasNode, TypeToken<?> type, String typeName,
+      ObjectNode node, ApiConfig apiConfig) {
 
     // This check works better than checking schemaTypes in the case of Map<K, V>
     if (schemasNode.has(typeName)) {
@@ -705,11 +668,11 @@ public class JsonConfigWriter implements ApiConfigWriter {
   // If a type has a serializer installed, resolve down to target type of the serialization chain to
   // find the schema format.
   @Nullable
-  private String schemaFormatForType(Type type, ApiConfig apiConfig) {
-    Type serializedType = ApiAnnotationIntrospector.getSchemaType(type, apiConfig);
+  private String schemaFormatForType(TypeToken<?> type, ApiConfig apiConfig) {
+    TypeToken<?> serializedType = ApiAnnotationIntrospector.getSchemaType(type, apiConfig);
     if (!type.equals(serializedType)) {
       return schemaFormatForType(serializedType, apiConfig);
     }
-    return typeLoader.getSchemaFormats().get(type);
+    return typeLoader.getSchemaFormat(type);
  }
 }

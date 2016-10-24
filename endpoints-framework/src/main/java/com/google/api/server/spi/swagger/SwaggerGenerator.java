@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
@@ -194,7 +195,7 @@ public class SwaggerGenerator {
           boolean required = isPathParameter || (!parameterConfig.getNullable()
               && parameterConfig.getDefaultValue() == null);
           if (parameterConfig.isRepeated()) {
-            Type t = parameterConfig.getRepeatedItemSerializedType();
+            TypeToken<?> t = parameterConfig.getRepeatedItemSerializedType();
             parameter.setType("array");
             Property p = getSwaggerArrayProperty(t);
             if (parameterConfig.isEnum()) {  // TODO: Not sure if this is the right check
@@ -206,8 +207,10 @@ public class SwaggerGenerator {
             parameter.setEnum(getEnumValues(parameterConfig.getType()));
             parameter.setRequired(required);
           } else {
-            parameter.setType(TYPE_TO_STRING_MAP.get(parameterConfig.getSchemaBaseType()));
-            parameter.setFormat(TYPE_TO_FORMAT_MAP.get(parameterConfig.getSchemaBaseType()));
+            parameter.setType(
+                TYPE_TO_STRING_MAP.get(parameterConfig.getSchemaBaseType().getType()));
+            parameter.setFormat(
+                TYPE_TO_FORMAT_MAP.get(parameterConfig.getSchemaBaseType().getType()));
             parameter.setRequired(required);
           }
           operation.parameter(parameter);
@@ -260,7 +263,8 @@ public class SwaggerGenerator {
         CONVERTER.convert(methodConfig.getEndpointMethodName());
   }
 
-  private static Property getSwaggerArrayProperty(Type type) {
+  private static Property getSwaggerArrayProperty(TypeToken<?> typeToken) {
+    Class<?> type = typeToken.getRawType();
     if (type == String.class) {
       return new StringProperty();
     } else if (type == Boolean.class || type == Boolean.TYPE) {
@@ -275,7 +279,7 @@ public class SwaggerGenerator {
       return new DoubleProperty();
     } else if (type == byte[].class) {
       return new ByteArrayProperty();
-    } else if (type instanceof Class<?> && ((Class<?>) type).isEnum()) {
+    } else if (type.isEnum()) {
       return new StringProperty();
     }
     throw new IllegalArgumentException("invalid property type");
@@ -292,9 +296,9 @@ public class SwaggerGenerator {
     return path;
   }
 
-  private static List<String> getEnumValues(Type t) {
+  private static List<String> getEnumValues(TypeToken<?> t) {
     List<String> values = Lists.newArrayList();
-    for (Object value : ((Class<?>) t).getEnumConstants()) {
+    for (Object value : t.getRawType().getEnumConstants()) {
       values.add(value.toString());
     }
     return values;

@@ -47,17 +47,17 @@ public class SerializersTest {
   public void testGetSerializerSourceAndTarget_simple() {
     abstract class TestSerializer implements Transformer<Long, Double> {
     }
-    assertEquals(Long.class, Serializers.getSourceType(TestSerializer.class));
-    assertEquals(Double.class, Serializers.getTargetType(TestSerializer.class));
+    assertEquals(TypeToken.of(Long.class), Serializers.getSourceType(TestSerializer.class));
+    assertEquals(TypeToken.of(Double.class), Serializers.getTargetType(TestSerializer.class));
   }
 
   @Test
   public void testGetSerializerSourceAndTarget_parameterized() {
     abstract class TestSerializer implements Transformer<List<String>, Map<String, Boolean>> {
     }
-    assertEquals(new TypeToken<List<String>>() {}.getType(),
+    assertEquals(new TypeToken<List<String>>() {},
         Serializers.getSourceType(TestSerializer.class));
-    assertEquals(new TypeToken<Map<String, Boolean>>() {}.getType(),
+    assertEquals(new TypeToken<Map<String, Boolean>>() {},
         Serializers.getTargetType(TestSerializer.class));
   }
 
@@ -67,9 +67,9 @@ public class SerializersTest {
     }
     abstract class TestSerializer extends ParentTestSerializer<Float, Map<String, Boolean>> {
     }
-    assertEquals(new TypeToken<List<Float>>() {}.getType(),
+    assertEquals(new TypeToken<List<Float>>() {},
         Serializers.getSourceType(TestSerializer.class));
-    assertEquals(new TypeToken<Map<String, Boolean>>() {}.getType(),
+    assertEquals(new TypeToken<Map<String, Boolean>>() {},
         Serializers.getTargetType(TestSerializer.class));
   }
 
@@ -77,9 +77,9 @@ public class SerializersTest {
   public void testGetSerializerSourceAndTarget_interfaceInheritance() {
     abstract class TestSerializer implements ChildSerializerInterface<Float, List<Double>> {
     }
-    assertEquals(new TypeToken<List<Float>>() {}.getType(),
+    assertEquals(new TypeToken<List<Float>>() {},
         Serializers.getSourceType(TestSerializer.class));
-    assertEquals(new TypeToken<List<Double>>() {}.getType(),
+    assertEquals(new TypeToken<List<Double>>() {},
         Serializers.getTargetType(TestSerializer.class));
   }
 
@@ -96,14 +96,14 @@ public class SerializersTest {
   @SuppressWarnings("unchecked")
   public void testInstantiate_valid() {
     ToMagicNumberSerializer serializer = Serializers.instantiate(
-        ToMagicNumberSerializer.class, String.class);
+        ToMagicNumberSerializer.class, TypeToken.of(String.class));
     assertEquals(42, serializer.transformTo("").intValue());
   }
 
   @Test
   public void testInstantiate_invalid() {
     try {
-      Serializers.instantiate(PrivateConstructorSerializer.class, String.class);
+      Serializers.instantiate(PrivateConstructorSerializer.class, TypeToken.of(String.class));
       fail("Instatiation should fail for non-serializers.");
     } catch (RuntimeException expected) {
       // expected
@@ -113,14 +113,15 @@ public class SerializersTest {
   @Test
   public void testInstantiate_typeConstructor() {
     Transformer<List<?>, Type> serializer;
-    serializer = Serializers.instantiate(ListToTypeSerializer.class, ImmutableList.class);
+    serializer =
+        Serializers.instantiate(ListToTypeSerializer.class, TypeToken.of(ImmutableList.class));
     assertEquals(ImmutableList.class, serializer.transformTo(ImmutableList.of()));
     Type typeWithGeneric = new TypeToken<List<?>>() {}.getType();
-    serializer = Serializers.instantiate(ListToTypeSerializer.class, typeWithGeneric);
+    serializer = Serializers.instantiate(ListToTypeSerializer.class, TypeToken.of(typeWithGeneric));
     assertEquals(typeWithGeneric, serializer.transformTo(ImmutableList.of()));
     assertEquals(ImmutableList.of(typeWithGeneric), serializer.transformFrom(List.class));
     try {
-      Serializers.instantiate(ListToTypeSerializer.class, Collection.class);
+      Serializers.instantiate(ListToTypeSerializer.class, TypeToken.of(Collection.class));
       fail("Shouldn't be able to instantiate with Collection");
     } catch (IllegalArgumentException e) {
       // expected
@@ -130,12 +131,13 @@ public class SerializersTest {
   @Test
   public void testInstantiate_classConstructor() {
     Transformer<Set<?>, Type> serializer;
-    serializer = Serializers.instantiate(SetToTypeSerializer.class, ImmutableSet.class);
-    Type typeWithGeneric = new TypeToken<TreeSet<?>>() {}.getType();
+    serializer =
+        Serializers.instantiate(SetToTypeSerializer.class, TypeToken.of(ImmutableSet.class));
+    TypeToken<?> typeWithGeneric = new TypeToken<TreeSet<?>>() {};
     serializer = Serializers.instantiate(SetToTypeSerializer.class, typeWithGeneric);
     assertEquals(TreeSet.class, serializer.transformTo(ImmutableSet.of()));
     try {
-      Serializers.instantiate(SetToTypeSerializer.class, Collection.class);
+      Serializers.instantiate(SetToTypeSerializer.class, TypeToken.of(Collection.class));
       fail("Shouldn't be able to instantiate with Collection");
     } catch (IllegalArgumentException e) {
       // expected
@@ -145,7 +147,7 @@ public class SerializersTest {
   @Test
   public void testInstantiate_noConstructor() {
     try {
-      Serializers.instantiate(NoValidConstructorSerializer.class, String.class);
+      Serializers.instantiate(NoValidConstructorSerializer.class, TypeToken.of(String.class));
       fail("Shouldn't be able to instantiate with Collection");
     } catch (IllegalStateException e) {
       String expected = "Failed to instantiate custom serializer "

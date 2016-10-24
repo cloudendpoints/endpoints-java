@@ -41,6 +41,7 @@ import com.google.api.server.spi.testing.Baz;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -133,7 +134,7 @@ public class JsonConfigWriterTest {
   public void testEnumType() throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode schemasConfig = mapper.createObjectNode();
-    writer.addTypeToSchema(schemasConfig, Outcome.class, apiConfig, null);
+    writer.addTypeToSchema(schemasConfig, TypeToken.of(Outcome.class), apiConfig, null);
 
     JsonNode outcome = schemasConfig.path("Outcome");
     assertEquals("Outcome", outcome.path("id").asText());
@@ -168,7 +169,7 @@ public class JsonConfigWriterTest {
   public void testBeanPropertyDateType() throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode schemasConfig = mapper.createObjectNode();
-    writer.addTypeToSchema(schemasConfig, Bean.class, apiConfig, null);
+    writer.addTypeToSchema(schemasConfig, TypeToken.of(Bean.class), apiConfig, null);
 
     JsonNode beanConfig = schemasConfig.path("Bean");
     assertEquals("Bean", beanConfig.path("id").asText());
@@ -425,8 +426,8 @@ public class JsonConfigWriterTest {
   }
 
   /**
-   * This tests writeConfig with a parameterized type which is transformed to {@code String}.
-   * When the transformer is not present, writeConfig should throw an exception.
+   * This tests writeConfig with a parameterized type, which should be supported by adding a schema
+   * named Qux_String.
    */
   @Test
   public void writeConfigWithParameterizedTypeNoTransformerConfig() throws Exception {
@@ -440,12 +441,9 @@ public class JsonConfigWriterTest {
     new ApiConfigAnnotationReader().loadEndpointMethods(
         serviceContext, Endpoint.class, apiConfig.getApiClassConfig().getMethods());
 
-    try {
-      writer.writeConfig(Collections.singleton(apiConfig));
-      fail("Parameterized Type with no transformer should throw IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
-      // Pass the test
-    }
+    Map<ApiKey, String> apiKeyStringMap = writer.writeConfig(Collections.singleton(apiConfig));
+    String configString = Iterables.getFirst(apiKeyStringMap.values(), null);
+    assertThat(configString).contains("Qux_String");
   }
 
   /**

@@ -82,6 +82,7 @@ import com.google.api.server.spi.testing.SimpleOverrideEndpoint;
 import com.google.api.server.spi.testing.SubclassedEndpoint;
 import com.google.api.server.spi.testing.SubclassedOverridingEndpoint;
 import com.google.appengine.api.users.User;
+import com.google.common.reflect.TypeToken;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1304,7 +1305,7 @@ public class AnnotationApiConfigGeneratorTest {
     @Override
     public ResourceSchema getResourceSchema() {
       return ResourceSchema.builderForType(Bar.class)
-          .addProperty("someBaz", ResourcePropertySchema.of(Baz.class))
+          .addProperty("someBaz", ResourcePropertySchema.of(TypeToken.of(Baz.class)))
           .build();
     }
   }

@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 
 import com.google.api.server.spi.config.ResourcePropertySchema;
 import com.google.api.server.spi.config.ResourceSchema;
+import com.google.common.reflect.TypeToken;
 import com.google.common.testing.NullPointerTester;
 
 import org.junit.Test;
@@ -56,8 +57,8 @@ public class ResourceSchemaTest {
   @Test
   public void testDefaultSchemaWithProperties() {
     ResourceSchema schema = ResourceSchema.builderForType(Integer.class)
-        .addProperty("foo", ResourcePropertySchema.of(Float.class))
-        .addProperty("bar", ResourcePropertySchema.of(Double.class))
+        .addProperty("foo", ResourcePropertySchema.of(TypeToken.of(Float.class)))
+        .addProperty("bar", ResourcePropertySchema.of(TypeToken.of(Double.class)))
         .build();
     assertThat(schema.getProperties().keySet()).containsExactly("foo", "bar");
     assertEquals(Float.class, schema.getProperties().get("foo").getJavaType());
@@ -68,8 +69,8 @@ public class ResourceSchemaTest {
   public void testDuplicateProperties() {
     try {
       ResourceSchema schema = ResourceSchema.builderForType(Integer.class)
-          .addProperty("foo", ResourcePropertySchema.of(Float.class))
-          .addProperty("foo", ResourcePropertySchema.of(Double.class))
+          .addProperty("foo", ResourcePropertySchema.of(TypeToken.of(Float.class)))
+          .addProperty("foo", ResourcePropertySchema.of(TypeToken.of(Double.class)))
           .build();
       fail("Expected " + IllegalArgumentException.class);
     } catch (IllegalArgumentException e) {
@@ -80,11 +81,11 @@ public class ResourceSchemaTest {
   @Test
   public void testBuilderWithResource() {
     ResourceSchema originalSchema = ResourceSchema.builderForType(Integer.class)
-        .addProperty("foo", ResourcePropertySchema.of(Float.class))
+        .addProperty("foo", ResourcePropertySchema.of(TypeToken.of(Float.class)))
         .build();
     ResourceSchema.Builder newSchemaBuilder = ResourceSchema.builderWithSchema(originalSchema);
     assertEquals(originalSchema, newSchemaBuilder.build());
-    newSchemaBuilder.addProperty("bar", ResourcePropertySchema.of(Double.class));
+    newSchemaBuilder.addProperty("bar", ResourcePropertySchema.of(TypeToken.of(Double.class)));
     newSchemaBuilder.setName("Number");
     assertThat(newSchemaBuilder.build().getProperties().keySet()).containsExactly("foo", "bar");
     assertEquals(newSchemaBuilder.build().getName(), "Number");

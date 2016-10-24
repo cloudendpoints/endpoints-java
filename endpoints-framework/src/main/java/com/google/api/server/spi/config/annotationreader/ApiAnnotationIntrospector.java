@@ -146,18 +146,19 @@ public class ApiAnnotationIntrospector extends NopAnnotationIntrospector {
    * the type. If there is a {@link com.google.api.server.spi.config.ResourceTransformer} installed,
    * the source type determines schema, not the output map.
    */
-  public static Type getSchemaType(Type type, ApiConfig config) {
-    if (type instanceof Class || type instanceof ParameterizedType) {
+  public static TypeToken<?> getSchemaType(TypeToken<?> type, ApiConfig config) {
+    Type rawType = type.getType();
+    if (rawType instanceof Class || rawType instanceof ParameterizedType) {
       List<Class<? extends Transformer<?, ?>>> serializers =
           Serializers.getSerializerClasses(type, config.getSerializationConfig());
 
       if (!serializers.isEmpty() &&
           !(ResourceTransformer.class.isAssignableFrom(serializers.get(0)))) {
-        Type sourceType = Serializers.getSourceType(serializers.get(0));
-        Type serializedType = Serializers.getTargetType(serializers.get(0));
+        TypeToken<?> sourceType = Serializers.getSourceType(serializers.get(0));
+        TypeToken<?> serializedType = Serializers.getTargetType(serializers.get(0));
 
         Preconditions.checkArgument(
-            TypeToken.of(sourceType).isSupertypeOf(type),
+            sourceType.isSupertypeOf(type),
             "Serializer specified for %s, but only serializes for %s: %s",
             type,
             sourceType,
@@ -180,7 +181,7 @@ public class ApiAnnotationIntrospector extends NopAnnotationIntrospector {
       List<Class<? extends Transformer<?, ?>>> serializerClasses =
           Serializers.getSerializerClasses(clazz.getRawType(), config);
       if (!serializerClasses.isEmpty()) {
-        return Serializers.instantiate(serializerClasses.get(0), a.getRawType());
+        return Serializers.instantiate(serializerClasses.get(0), TypeToken.of(a.getRawType()));
       }
     }
     return null;
@@ -190,11 +191,11 @@ public class ApiAnnotationIntrospector extends NopAnnotationIntrospector {
     @SuppressWarnings("unchecked")
     Class<? extends Transformer<?, T>> serializerClass =
         (Class<? extends Transformer<?, T>>) serializer.getClass();
-    final Type type = Serializers.getTargetType(serializerClass);
+    final TypeToken<?> type = Serializers.getTargetType(serializerClass);
     return new TypeReference<T> (){
       @Override
       public Type getType() {
-        return type;
+        return type.getType();
       }
     };
   }

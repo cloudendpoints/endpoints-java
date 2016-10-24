@@ -27,8 +27,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -50,22 +48,16 @@ public class ApiMethodConfig {
       @Override
       public String guessResourceName(
           ApiConfig config, EndpointMethod method, Map<String, Class<?>> classTypes) {
-        Type returnType = method.getReturnType();
-        if (isValidCollectionType(returnType, classTypes)) {
-          Type[] typeArgs = ((ParameterizedType) returnType).getActualTypeArguments();
-          Type resourceType = typeArgs.length > 0 ? typeArgs[0] : null;
-          return config.getSimpleName(resourceType).toLowerCase();
+        TypeToken<?> returnType = method.getReturnType();
+        if (isValidCollectionType(returnType)) {
+          return Types.getSimpleName(
+              Types.getTypeParameter(returnType, 0), config.getSerializationConfig()).toLowerCase();
         }
         return null;
       }
 
-      private boolean isValidCollectionType(Type type, Map<String, Class<?>> classTypes) {
-        if (type instanceof ParameterizedType) {
-          Class<?> collectionClass = TypeToken.of(type).getRawType();
-          return classTypes.get("Collection").isAssignableFrom(collectionClass) ||
-              classTypes.get("CollectionResponses").isAssignableFrom(collectionClass);
-        }
-        return false;
+      private boolean isValidCollectionType(TypeToken<?> type) {
+        return type.isSubtypeOf(Collection.class) || Types.isCollectionResponseType(type);
       }
     },
     GET("get", "GET"),
@@ -136,7 +128,8 @@ public class ApiMethodConfig {
      */
     public String guessResourceName(
         ApiConfig config, EndpointMethod method, Map<String, Class<?>> classTypes) {
-      return config.getSimpleName(method.getReturnType()).toLowerCase();
+      return Types.getSimpleName(method.getReturnType(), config.getSerializationConfig())
+          .toLowerCase();
     }
   }
 
@@ -274,6 +267,13 @@ public class ApiMethodConfig {
     return apiClassConfig;
   }
 
+  /**
+   * Shorthand for {@code getApiClassConfig().getApiConfig()}.
+   */
+  public ApiConfig getApiConfig() {
+    return apiClassConfig.getApiConfig();
+  }
+
   public String getEndpointMethodName() {
     return endpointMethodName;
   }
@@ -292,8 +292,8 @@ public class ApiMethodConfig {
    * Adds the given parameter to the configuration and updates the path to add the new parameter if
    * it is non-optional and has no default.
    */
-  public ApiParameterConfig addParameter(String name, String description, boolean nullable, 
-      String defaultValue, Type type) {
+  public ApiParameterConfig addParameter(String name, String description, boolean nullable,
+      String defaultValue, TypeToken<?> type) {
     ApiParameterConfig config =
         new ApiParameterConfig(this, name, description, nullable, defaultValue, type, typeLoader);
     parameterConfigs.add(config);

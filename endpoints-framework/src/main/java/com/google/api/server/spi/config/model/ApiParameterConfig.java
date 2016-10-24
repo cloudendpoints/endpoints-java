@@ -19,8 +19,8 @@ import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.config.ResourceTransformer;
 import com.google.api.server.spi.config.Transformer;
+import com.google.common.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +34,7 @@ public class ApiParameterConfig {
   private final String description;
   private final boolean nullable;
   private final String defaultValue;
-  private final Type type;
+  private final TypeToken<?> type;
 
   private Class<? extends Transformer<?, ?>> serializer;
   private Class<? extends Transformer<?, ?>> repeatedItemSerializer;
@@ -57,8 +57,8 @@ public class ApiParameterConfig {
     UNKNOWN
   }
 
-  public ApiParameterConfig(ApiMethodConfig apiMethodConfig, String name, String description, 
-      boolean nullable, String defaultValue, Type type, TypeLoader typeLoader) {
+  public ApiParameterConfig(ApiMethodConfig apiMethodConfig, String name, String description,
+      boolean nullable, String defaultValue, TypeToken<?> type, TypeLoader typeLoader) {
     this.apiMethodConfig = apiMethodConfig;
     this.name = name;
     this.description = description;
@@ -126,7 +126,7 @@ public class ApiParameterConfig {
     return defaultValue;
   }
 
-  public Type getType() {
+  public TypeToken<?> getType() {
     return type;
   }
 
@@ -134,19 +134,15 @@ public class ApiParameterConfig {
    * If the serialized type of the parameter is a repeated type, returns the individual item type.
    * Otherwise returns {@code null}.
    */
-  public Type getRepeatedItemType() {
-    return TypeLoader.getArrayItemType(getSchemaBaseType());
+  public TypeToken<?> getRepeatedItemType() {
+    return Types.getArrayItemType(getSchemaBaseType());
   }
 
   /**
    * @return {@code true} iff the serialized type of the parameter is a repeated type.
    */
   public boolean isRepeated() {
-    if (typeLoader.isInjectedType(getType())) {
-      return false;
-    } else {
-      return TypeLoader.isArrayType(getSchemaBaseType());
-    }
+    return !typeLoader.isInjectedType(getType()) && Types.isArrayType(getSchemaBaseType());
   }
 
   /**
@@ -158,18 +154,18 @@ public class ApiParameterConfig {
       return false;
     }
 
-    Type type;
+    TypeToken<?> type;
     if (isRepeated()) {
       type = getRepeatedItemSerializedType();
     } else {
       type = getSchemaBaseType();
     }
 
-    return TypeLoader.isEnumType(type);
+    return Types.isEnumType(type);
   }
 
   private List<Class<? extends Transformer<?, ?>>> tryFindDefaultSerializers(
-      @Nullable Type type) {
+      @Nullable TypeToken<?> type) {
     ApiSerializationConfig serializerConfig =
         apiMethodConfig.getApiClassConfig().getApiConfig().getSerializationConfig();
     return Serializers.getSerializerClasses(type, serializerConfig);
@@ -198,7 +194,7 @@ public class ApiParameterConfig {
     if (repeatedItemSerializer != null) {
       return Collections.<Class<? extends Transformer<?, ?>>>singletonList(repeatedItemSerializer);
     } else {
-      return tryFindDefaultSerializers(TypeLoader.getArrayItemType(getSchemaBaseType()));
+      return tryFindDefaultSerializers(Types.getArrayItemType(getSchemaBaseType()));
     }
   }
 
@@ -212,7 +208,7 @@ public class ApiParameterConfig {
    * convert from one type to another, in which case the schema would be derived from the target
    * type instead.
    */
-  public Type getSchemaBaseType() {
+  public TypeToken<?> getSchemaBaseType() {
     List<Class<? extends Transformer<?, ?>>> serializers = getSerializers();
     if (serializers.isEmpty()) {
       return getType();
@@ -227,7 +223,7 @@ public class ApiParameterConfig {
    * If the serialized type of the parameter is a repeated type, returns the serialized individual
    * item type.  Otherwise returns {@code null}.
    */
-  public Type getRepeatedItemSerializedType() {
+  public TypeToken<?> getRepeatedItemSerializedType() {
     List<Class<? extends Transformer<?, ?>>> serializers = getRepeatedItemSerializers();
     if (serializers.isEmpty()) {
       return getRepeatedItemType();
@@ -244,16 +240,16 @@ public class ApiParameterConfig {
       return Classification.INJECTED;
     }
 
-    Type type;
+    TypeToken<?> type;
     if (isRepeated()) {
       type = getRepeatedItemSerializedType();
     } else {
       type = getSchemaBaseType();
     }
 
-    if (typeLoader.isParameterType(type) || TypeLoader.isEnumType(type)) {
+    if (typeLoader.isParameterType(type) || Types.isEnumType(type)) {
       return Classification.API_PARAMETER;
-    } else if (TypeLoader.isGenericType(type)) {
+    } else if (Types.isTypeVariable(type)) {
       return Classification.UNKNOWN;
     } else {
       return Classification.RESOURCE;

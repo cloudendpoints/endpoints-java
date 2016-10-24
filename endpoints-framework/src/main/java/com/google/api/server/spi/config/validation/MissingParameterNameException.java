@@ -16,8 +16,7 @@
 package com.google.api.server.spi.config.validation;
 
 import com.google.api.server.spi.config.model.ApiParameterConfig;
-
-import java.lang.reflect.Type;
+import com.google.common.reflect.TypeToken;
 
 /**
  * Exception for unnamed API parameters.
@@ -25,11 +24,11 @@ import java.lang.reflect.Type;
  * @author Eric Orth
  */
 public class MissingParameterNameException extends ApiParameterConfigInvalidException {
-  public MissingParameterNameException(ApiParameterConfig config, Type type) {
+  public MissingParameterNameException(ApiParameterConfig config, TypeToken<?> type) {
     super(config, getErrorMessage(type));
   }
 
-  private static String getErrorMessage(Type type) {
+  private static String getErrorMessage(TypeToken<?> type) {
     return String.format(
         "Missing parameter name. Parameter type (%s) is not an entity type and thus should be "
         + "annotated with @Named.", type);
