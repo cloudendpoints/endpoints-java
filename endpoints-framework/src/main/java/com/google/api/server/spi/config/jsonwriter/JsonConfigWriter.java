@@ -439,7 +439,7 @@ public class JsonConfigWriter implements ApiConfigWriter {
       ApiMethodConfig config) throws ApiConfigException {
     ObjectNode responseNode = objectMapper.createObjectNode();
     methodNode.set("response", responseNode);
-    if (serviceMethod.hasResourceInResponse()) {
+    if (config.hasResourceInResponse()) {
       responseNode.put("body", "autoTemplate(backendResponse)");
 
       // TODO: Get from ApiMethodConfig.

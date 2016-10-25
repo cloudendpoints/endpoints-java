@@ -186,14 +186,6 @@ public class EndpointMethod {
     return resolveClasses(getParameterTypes());
   }
 
-  /**
-   * Returns whether or not the method has a resource (is non-void) in the response.
-   */
-  public boolean hasResourceInResponse() {
-    Type returnType = getReturnType().getRawType();
-    return returnType != Void.TYPE && returnType != Void.class;
-  }
-
   private void validateNoWildcards(TypeToken<?>[] types) {
     for (TypeToken<?> type : types) {
       Type resolved = type.getType();
