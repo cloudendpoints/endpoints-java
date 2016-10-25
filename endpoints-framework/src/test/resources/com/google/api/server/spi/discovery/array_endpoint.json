@@ -1,0 +1,418 @@
+{
+  "kind": "discovery#restDescription",
+  "discoveryVersion": "v1",
+  "id": "myapi:v1",
+  "name": "myapi",
+  "version": "v1",
+  "description": "This is an API",
+  "icons": {
+    "x16": "http://www.google.com/images/icons/product/search-16.gif",
+    "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  },
+  "protocol": "rest",
+  "baseUrl": "https://myapi.appspot.com/_ah/api/myapi/v1/",
+  "basePath": "/_ah/api/myapi/v1/",
+  "rootUrl": "https://myapi.appspot.com/_ah/api/",
+  "servicePath": "myapi/v1/",
+  "batchPath": "batch",
+  "parameters": {
+    "alt": {
+      "type": "string",
+      "description": "Data format for the response.",
+      "default": "json",
+      "enum": [
+        "json"
+      ],
+      "enumDescriptions": [
+        "Responses with Content-Type of application/json"
+      ],
+      "location": "query"
+    },
+    "fields": {
+      "type": "string",
+      "description": "Selector specifying which fields to include in a partial response.",
+      "location": "query"
+    },
+    "key": {
+      "type": "string",
+      "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+      "location": "query"
+    },
+    "oauth_token": {
+      "type": "string",
+      "description": "OAuth 2.0 token for the current user.",
+      "location": "query"
+    },
+    "prettyPrint": {
+      "type": "boolean",
+      "description": "Returns response with indentations and line breaks.",
+      "default": "true",
+      "location": "query"
+    },
+    "quotaUser": {
+      "type": "string",
+      "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters. Overrides userIp if both are provided.",
+      "location": "query"
+    },
+    "userIp": {
+      "type": "string",
+      "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
+      "location": "query"
+    }
+  },
+  "auth": {
+    "oauth2": {
+      "scopes": {
+        "https://www.googleapis.com/auth/userinfo.email": {
+          "description": "View your email address"
+        }
+      }
+    }
+  },
+  "schemas": {
+    "ArrayEndpoint": {
+      "id": "ArrayEndpoint",
+      "type": "object",
+      "properties": {
+        "allArrayedFoos": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "Foo"
+            }
+          }
+        },
+        "allFoos": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "Foo"
+            }
+          }
+        },
+        "allFoosResponse": {
+          "$ref": "CollectionResponse_FooCollection"
+        },
+        "allNestedFoosResponse": {
+          "$ref": "CollectionResponse_FooCollectionCollection"
+        },
+        "arrayService": {
+          "$ref": "ArrayEndpoint"
+        },
+        "arrayedFoos": {
+          "type": "array",
+          "items": {
+            "$ref": "Foo"
+          }
+        },
+        "baz": {
+          "$ref": "Baz"
+        },
+        "foos": {
+          "type": "array",
+          "items": {
+            "$ref": "Foo"
+          }
+        },
+        "foosResponse": {
+          "$ref": "CollectionResponse_Foo"
+        },
+        "integers": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "integersResponse": {
+          "$ref": "CollectionResponse_Integer"
+        },
+        "objectIntegers": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "Baz": {
+      "id": "Baz",
+      "type": "object",
+      "properties": {
+        "foo": {
+          "$ref": "Foo"
+        },
+        "foos": {
+          "type": "array",
+          "items": {
+            "$ref": "Foo"
+          }
+        }
+      }
+    },
+    "CollectionResponse_Foo": {
+      "id": "CollectionResponse_Foo",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "Foo"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "CollectionResponse_FooCollection": {
+      "id": "CollectionResponse_FooCollection",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "Foo"
+            }
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "CollectionResponse_FooCollectionCollection": {
+      "id": "CollectionResponse_FooCollectionCollection",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "Foo"
+              }
+            }
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "CollectionResponse_Integer": {
+      "id": "CollectionResponse_Integer",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "Foo": {
+      "id": "Foo",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "FooCollection": {
+      "id": "FooCollection",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "Foo"
+          }
+        }
+      }
+    },
+    "FooCollectionCollection": {
+      "id": "FooCollectionCollection",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "Foo"
+            }
+          }
+        }
+      }
+    },
+    "IntegerCollection": {
+      "id": "IntegerCollection",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    }
+  },
+  "resources": {
+    "arrayEndpoint": {
+      "methods": {
+        "getAllArrayedFoos": {
+          "id": "myapi.arrayEndpoint.getAllArrayedFoos",
+          "path": "foocollectioncollection",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "FooCollectionCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getAllFoos": {
+          "id": "myapi.arrayEndpoint.getAllFoos",
+          "path": "getAllFoos",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "FooCollectionCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getAllFoosResponse": {
+          "id": "myapi.arrayEndpoint.getAllFoosResponse",
+          "path": "getAllFoosResponse",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "CollectionResponse_FooCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getAllNestedFoosResponse": {
+          "id": "myapi.arrayEndpoint.getAllNestedFoosResponse",
+          "path": "getAllNestedFoosResponse",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "CollectionResponse_FooCollectionCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getArrayService": {
+          "id": "myapi.arrayEndpoint.getArrayService",
+          "path": "arrayendpoint",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "ArrayEndpoint"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getArrayedFoos": {
+          "id": "myapi.arrayEndpoint.getArrayedFoos",
+          "path": "getArrayedFoos",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "FooCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getBaz": {
+          "id": "myapi.arrayEndpoint.getBaz",
+          "path": "baz",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "Baz"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getFoos": {
+          "id": "myapi.arrayEndpoint.getFoos",
+          "path": "foocollection",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "FooCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getFoosResponse": {
+          "id": "myapi.arrayEndpoint.getFoosResponse",
+          "path": "collectionresponse_foo",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "CollectionResponse_Foo"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getIntegers": {
+          "id": "myapi.arrayEndpoint.getIntegers",
+          "path": "integercollection",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "IntegerCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getIntegersResponse": {
+          "id": "myapi.arrayEndpoint.getIntegersResponse",
+          "path": "getIntegersResponse",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "CollectionResponse_Integer"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getObjectIntegers": {
+          "id": "myapi.arrayEndpoint.getObjectIntegers",
+          "path": "getObjectIntegers",
+          "httpMethod": "GET",
+          "response": {
+            "$ref": "IntegerCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        }
+      }
+    }
+  }
+}

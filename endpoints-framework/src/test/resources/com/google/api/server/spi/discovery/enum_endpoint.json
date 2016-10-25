@@ -1,0 +1,120 @@
+{
+  "auth": {
+    "oauth2": {
+      "scopes": {
+        "https://www.googleapis.com/auth/userinfo.email": {
+          "description": "View your email address"
+        }
+      }
+    }
+  },
+  "basePath": "/_ah/api/enum/v1/",
+  "baseUrl": "https://myapi.appspot.com/_ah/api/enum/v1/",
+  "batchPath": "batch",
+  "description": "This is an API",
+  "discoveryVersion": "v1",
+  "icons": {
+    "x16": "http://www.google.com/images/icons/product/search-16.gif",
+    "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  },
+  "id": "enum:v1",
+  "kind": "discovery#restDescription",
+  "methods": {
+    "create": {
+      "httpMethod": "POST",
+      "id": "enum.create",
+      "parameterOrder": [
+        "value"
+      ],
+      "parameters": {
+        "value": {
+          "enum": [
+            "VALUE1",
+            "VALUE2"
+          ],
+          "enumDescriptions": [
+            "",
+            ""
+          ],
+          "location": "path",
+          "required": true,
+          "type": "string"
+        }
+      },
+      "path": "{value}",
+      "response": {
+        "$ref": "EnumValue"
+      },
+      "scopes": [
+        "https://www.googleapis.com/auth/userinfo.email"
+      ]
+    }
+  },
+  "name": "enum",
+  "parameters": {
+    "alt": {
+      "default": "json",
+      "description": "Data format for the response.",
+      "enum": [
+        "json"
+      ],
+      "enumDescriptions": [
+        "Responses with Content-Type of application/json"
+      ],
+      "location": "query",
+      "type": "string"
+    },
+    "fields": {
+      "description": "Selector specifying which fields to include in a partial response.",
+      "location": "query",
+      "type": "string"
+    },
+    "key": {
+      "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+      "location": "query",
+      "type": "string"
+    },
+    "oauth_token": {
+      "description": "OAuth 2.0 token for the current user.",
+      "location": "query",
+      "type": "string"
+    },
+    "prettyPrint": {
+      "default": "true",
+      "description": "Returns response with indentations and line breaks.",
+      "location": "query",
+      "type": "boolean"
+    },
+    "quotaUser": {
+      "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters. Overrides userIp if both are provided.",
+      "location": "query",
+      "type": "string"
+    },
+    "userIp": {
+      "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
+      "location": "query",
+      "type": "string"
+    }
+  },
+  "protocol": "rest",
+  "rootUrl": "https://myapi.appspot.com/_ah/api/",
+  "schemas": {
+    "EnumValue": {
+      "id": "EnumValue",
+      "properties": {
+        "value": {
+          "$ref": "TestEnum"
+        }
+      },
+      "type": "object"
+    },
+    "TestEnum": {
+      "id": "TestEnum",
+      "enum" : [ "VALUE1", "VALUE2" ],
+      "enumDescriptions" : [ "", "" ],
+      "type": "string"
+    }
+  },
+  "servicePath": "enum/v1/",
+  "version": "v1"
+}

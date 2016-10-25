@@ -22,5 +22,11 @@ import com.google.api.server.spi.config.Named;
 @Api(name = "enum", version = "v1")
 public class EnumEndpoint {
   @ApiMethod(name = "create", path = "{value}")
-  public void create(@Named("value") TestEnum value) {}
+  public EnumValue create(@Named("value") TestEnum value) {
+    return null;
+  }
+
+  private static class EnumValue {
+    public TestEnum value;
+  }
 }
