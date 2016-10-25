@@ -15,7 +15,7 @@
  */
 package com.google.api.server.spi.response;
 
-import static junit.framework.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -50,8 +50,8 @@ public class CollectionResponseTest {
 
     ObjectNode json = new ObjectMapper().readValue(
         servletResponse.getContentAsString(), ObjectNode.class);
-    assertEquals(2, json.path("items").size());
-    assertEquals("next", json.path("nextPageToken").asText());
+    assertThat(json.path("items")).hasSize(2);
+    assertThat(json.path("nextPageToken").asText()).isEqualTo("next");
   }
 
   private CollectionResponse<Bean> getBeans(int beanCount) {
