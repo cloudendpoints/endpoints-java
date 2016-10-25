@@ -202,7 +202,8 @@ public class ApiConfigValidatorTest {
 
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
-        .addParameter("param", null, false, null, Integer.class).setSerializer(TestSerializer.class);
+        .addParameter("param", null, false, null, Integer.class)
+        .setSerializer(TestSerializer.class);
 
     try {
       validator.validate(config);

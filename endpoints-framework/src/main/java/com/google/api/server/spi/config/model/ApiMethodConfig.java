@@ -292,8 +292,8 @@ public class ApiMethodConfig {
    * Adds the given parameter to the configuration and updates the path to add the new parameter if
    * it is non-optional and has no default.
    */
-  public ApiParameterConfig addParameter(String name, String description, boolean nullable, String defaultValue,
-      Type type) {
+  public ApiParameterConfig addParameter(String name, String description, boolean nullable, 
+      String defaultValue, Type type) {
     ApiParameterConfig config =
         new ApiParameterConfig(this, name, description, nullable, defaultValue, type, typeLoader);
     parameterConfigs.add(config);

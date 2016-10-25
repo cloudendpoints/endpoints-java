@@ -57,8 +57,8 @@ public class ApiParameterConfig {
     UNKNOWN
   }
 
-  public ApiParameterConfig(ApiMethodConfig apiMethodConfig, String name, String description, boolean nullable,
-      String defaultValue, Type type, TypeLoader typeLoader) {
+  public ApiParameterConfig(ApiMethodConfig apiMethodConfig, String name, String description, 
+      boolean nullable, String defaultValue, Type type, TypeLoader typeLoader) {
     this.apiMethodConfig = apiMethodConfig;
     this.name = name;
     this.description = description;

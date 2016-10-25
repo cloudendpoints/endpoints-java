@@ -384,9 +384,9 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
   }
 
   private void readMethodRequestParameter(ApiMethodConfig methodConfig, Annotation parameterName,
-      Annotation description, Annotation nullable, Annotation defaultValue, Type type) throws IllegalArgumentException,
-          SecurityException, IllegalAccessException, InvocationTargetException,
-          NoSuchMethodException {
+      Annotation description, Annotation nullable, Annotation defaultValue, Type type) 
+      throws IllegalArgumentException, SecurityException, IllegalAccessException, 
+      InvocationTargetException, NoSuchMethodException {
     String parameterNameString = null;
     if (parameterName != null) {
       parameterNameString = getAnnotationProperty(parameterName, "value");
@@ -401,7 +401,8 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     }
 
     ApiParameterConfig parameterConfig =
-        methodConfig.addParameter(parameterNameString, descriptionString, nullable != null, defaultValueString, type);
+        methodConfig.addParameter(parameterNameString, descriptionString, nullable != null, 
+            defaultValueString, type);
 
     if (type instanceof Class) {
       Class<?> clazz = (Class<?>) type;
