@@ -27,6 +27,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -488,5 +489,13 @@ public class ApiMethodConfig {
 
   public TypeToken<?> getReturnType() {
     return returnType;
+  }
+
+  /**
+   * Returns whether or not the method has a resource (is non-void) in the response.
+   */
+  public boolean hasResourceInResponse() {
+    Type returnType = getReturnType().getRawType();
+    return returnType != Void.TYPE && returnType != Void.class;
   }
 }
