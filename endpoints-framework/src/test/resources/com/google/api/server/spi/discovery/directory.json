@@ -1,0 +1,34 @@
+{
+  "discoveryVersion": "v1",
+  "items": [
+    {
+      "description": "This is an API",
+      "discoveryLink": "./apis/myapi/v1/rest",
+      "discoveryRestUrl": "https://myapi.appspot.com/_ah/api/discovery/v1/apis/myapi/v1/rest",
+      "icons": {
+        "x16": "http://www.google.com/images/icons/product/search-16.gif",
+        "x32": "http://www.google.com/images/icons/product/search-32.gif"
+      },
+      "id": "myapi:v1",
+      "kind": "discovery#directoryItem",
+      "name": "myapi",
+      "preferred": true,
+      "version": "v1"
+    },
+    {
+      "description": "This is an API",
+      "discoveryLink": "./apis/enum/v1/rest",
+      "discoveryRestUrl": "https://myapi.appspot.com/_ah/api/discovery/v1/apis/enum/v1/rest",
+      "icons": {
+        "x16": "http://www.google.com/images/icons/product/search-16.gif",
+        "x32": "http://www.google.com/images/icons/product/search-32.gif"
+      },
+      "id": "enum:v1",
+      "kind": "discovery#directoryItem",
+      "name": "enum",
+      "preferred": true,
+      "version": "v1"
+    }
+  ],
+  "kind": "discovery#directoryList"
+}

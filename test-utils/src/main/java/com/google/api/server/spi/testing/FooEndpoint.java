@@ -19,6 +19,7 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.response.CollectionResponse;
 
 @Api(name = "foo", version = "v1", audiences = {"audience"})
 public class FooEndpoint {
@@ -40,6 +41,15 @@ public class FooEndpoint {
   @ApiMethod(name = "foo.delete", description = "delete desc", path = "foos/{id}",
       httpMethod = HttpMethod.DELETE)
   public Foo deleteFoo(@Named("id") String id) {
+    return null;
+  }
+  @ApiMethod(name = "foo.list", description = "list desc", path = "foos",
+      httpMethod = HttpMethod.GET)
+  public CollectionResponse<Foo> listFoos(@Named("n") Integer n) {
+    return null;
+  }
+  @ApiMethod(name = "toplevel", path = "foos", httpMethod = HttpMethod.POST)
+  public CollectionResponse<Foo> toplevel() {
     return null;
   }
 }

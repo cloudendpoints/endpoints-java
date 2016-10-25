@@ -1,0 +1,401 @@
+{
+  "auth": {
+    "oauth2": {
+      "scopes": {
+        "https://www.googleapis.com/auth/userinfo.email": {
+          "description": "View your email address"
+        }
+      }
+    }
+  },
+  "basePath": "/_ah/api/tictactoe/v1/",
+  "baseUrl": "https://dev-dot-tangd-customer.appspot.com/_ah/api/tictactoe/v1/",
+  "batchPath": "batch",
+  "description": "This is an API",
+  "discoveryVersion": "v1",
+  "etag": "\"zRMgE0l9nVDW4S28VYYcYQF9UW4/JGTFfoDuVVdzoKDgyqpFMu-y3OU\"",
+  "icons": {
+    "x16": "http://www.google.com/images/icons/product/search-16.gif",
+    "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  },
+  "id": "tictactoe:v1",
+  "kind": "discovery#restDescription",
+  "name": "tictactoe",
+  "ownerDomain": "compat-tests.com",
+  "ownerName": "Compat Tests",
+  "parameters": {
+    "alt": {
+      "default": "json",
+      "description": "Data format for the response.",
+      "enum": [
+        "json"
+      ],
+      "enumDescriptions": [
+        "Responses with Content-Type of application/json"
+      ],
+      "location": "query",
+      "type": "string"
+    },
+    "fields": {
+      "description": "Selector specifying which fields to include in a partial response.",
+      "location": "query",
+      "type": "string"
+    },
+    "key": {
+      "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+      "location": "query",
+      "type": "string"
+    },
+    "oauth_token": {
+      "description": "OAuth 2.0 token for the current user.",
+      "location": "query",
+      "type": "string"
+    },
+    "prettyPrint": {
+      "default": "true",
+      "description": "Returns response with indentations and line breaks.",
+      "location": "query",
+      "type": "boolean"
+    },
+    "quotaUser": {
+      "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters. Overrides userIp if both are provided.",
+      "location": "query",
+      "type": "string"
+    },
+    "userIp": {
+      "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
+      "location": "query",
+      "type": "string"
+    }
+  },
+  "protocol": "rest",
+  "resources": {
+    "testEndpoint": {
+      "methods": {
+        "echo": {
+          "httpMethod": "GET",
+          "id": "tictactoe.testEndpoint.echo",
+          "parameterOrder": [
+            "value"
+          ],
+          "parameters": {
+            "value": {
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "echo/{value}",
+          "response": {
+            "$ref": "StringValue"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getCollidingPath": {
+          "httpMethod": "GET",
+          "id": "tictactoe.testEndpoint.getCollidingPath",
+          "parameterOrder": [
+            "id"
+          ],
+          "parameters": {
+            "id": {
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "collidingpath/{id}",
+          "response": {
+            "$ref": "StringValue"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "putCollidingPath": {
+          "httpMethod": "PUT",
+          "id": "tictactoe.testEndpoint.putCollidingPath",
+          "parameterOrder": [
+            "anotherId"
+          ],
+          "parameters": {
+            "anotherId": {
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "collidingpath/{anotherId}",
+          "response": {
+            "$ref": "StringValue"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "test": {
+          "httpMethod": "GET",
+          "id": "tictactoe.testEndpoint.test",
+          "path": "test",
+          "response": {
+            "$ref": "StringValue"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "testParamsPath": {
+          "httpMethod": "GET",
+          "id": "tictactoe.testEndpoint.testParamsPath",
+          "parameterOrder": [
+            "anint",
+            "along",
+            "afloat",
+            "adouble",
+            "aboolean",
+            "astring",
+            "asimpledate",
+            "adateandtime",
+            "adate",
+            "anenum"
+          ],
+          "parameters": {
+            "aboolean": {
+              "location": "path",
+              "required": true,
+              "type": "boolean"
+            },
+            "adate": {
+              "format": "date-time",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "adateandtime": {
+              "format": "date-time",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "adouble": {
+              "format": "double",
+              "location": "path",
+              "required": true,
+              "type": "number"
+            },
+            "afloat": {
+              "format": "float",
+              "location": "path",
+              "required": true,
+              "type": "number"
+            },
+            "along": {
+              "format": "int64",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "anenum": {
+              "enum": [
+                "VALUE1",
+                "VALUE2"
+              ],
+              "enumDescriptions": [
+                "",
+                ""
+              ],
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "anint": {
+              "format": "int32",
+              "location": "path",
+              "required": true,
+              "type": "integer"
+            },
+            "asimpledate": {
+              "format": "date",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "astring": {
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "testparamspath/{anint}/{along}/{afloat}/{adouble}/{aboolean}/{astring}/{asimpledate}/{adateandtime}/{adate}/{anenum}",
+          "response": {
+            "$ref": "FieldContainer"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "testParamsQuery": {
+          "httpMethod": "GET",
+          "id": "tictactoe.testEndpoint.testParamsQuery",
+          "parameterOrder": [
+            "aboolean",
+            "adate",
+            "adateandtime",
+            "adouble",
+            "afloat",
+            "along",
+            "anenum",
+            "anint",
+            "asimpledate",
+            "astring"
+          ],
+          "parameters": {
+            "aboolean": {
+              "location": "query",
+              "required": true,
+              "type": "boolean"
+            },
+            "adate": {
+              "format": "date-time",
+              "location": "query",
+              "required": true,
+              "type": "string"
+            },
+            "adateandtime": {
+              "format": "date-time",
+              "location": "query",
+              "required": true,
+              "type": "string"
+            },
+            "adouble": {
+              "format": "double",
+              "location": "query",
+              "required": true,
+              "type": "number"
+            },
+            "afloat": {
+              "format": "float",
+              "location": "query",
+              "required": true,
+              "type": "number"
+            },
+            "along": {
+              "format": "int64",
+              "location": "query",
+              "required": true,
+              "type": "string"
+            },
+            "anenum": {
+              "enum": [
+                "VALUE1",
+                "VALUE2"
+              ],
+              "enumDescriptions": [
+                "",
+                ""
+              ],
+              "location": "query",
+              "required": true,
+              "type": "string"
+            },
+            "anint": {
+              "format": "int32",
+              "location": "query",
+              "required": true,
+              "type": "integer"
+            },
+            "asimpledate": {
+              "format": "date",
+              "location": "query",
+              "required": true,
+              "type": "string"
+            },
+            "astring": {
+              "location": "query",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "testparamsquery",
+          "response": {
+            "$ref": "FieldContainer"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        }
+      }
+    }
+  },
+  "rootUrl": "https://dev-dot-tangd-customer.appspot.com/_ah/api/",
+  "schemas": {
+    "FieldContainer": {
+      "id": "FieldContainer",
+      "properties": {
+        "aBoolean": {
+          "type": "boolean"
+        },
+        "aDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "aDateAndTime": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "aDouble": {
+          "format": "double",
+          "type": "number"
+        },
+        "aFloat": {
+          "format": "float",
+          "type": "number"
+        },
+        "aLong": {
+          "format": "int64",
+          "type": "string"
+        },
+        "aSimpleDate": {
+          "format": "date",
+          "type": "string"
+        },
+        "aString": {
+          "type": "string"
+        },
+        "anEnum": {
+          "$ref": "TestEnum"
+        },
+        "anInt": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "StringValue": {
+      "id": "StringValue",
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TestEnum": {
+      "enum": [
+        "VALUE1",
+        "VALUE2"
+      ],
+      "enumDescriptions": [
+        "",
+        ""
+      ],
+      "id": "TestEnum",
+      "type": "string"
+    }
+  },
+  "servicePath": "tictactoe/v1/",
+  "version": "v1"
+}
