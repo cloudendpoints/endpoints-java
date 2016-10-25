@@ -174,6 +174,8 @@ public final class TypeLoader {
         loadAnnotation(classLoader, "com.google.api.server.spi.config.ApiTransformer"));
     annotationTypes.put("DefaultValue",
         loadAnnotation(classLoader, "com.google.api.server.spi.config.DefaultValue"));
+    annotationTypes.put("Description",
+        loadAnnotation(classLoader, "com.google.api.server.spi.config.Description"));
     annotationTypes.put("Named",
         loadAnnotation(classLoader, "com.google.api.server.spi.config.Named"));
     annotationTypes.put("Nullable",

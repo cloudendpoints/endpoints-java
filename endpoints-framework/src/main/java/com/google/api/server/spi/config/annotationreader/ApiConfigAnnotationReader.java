@@ -372,22 +372,28 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     for (int i = 0; i < parameterAnnotations.length; i++) {
       Annotation parameterName =
           AnnotationUtil.getNamedParameter(method, i, annotationTypes.get("Named"));
+      Annotation description =
+          AnnotationUtil.getParameterAnnotation(method, i, annotationTypes.get("Description"));
       Annotation nullable =
           AnnotationUtil.getNullableParameter(method, i, annotationTypes.get("Nullable"));
       Annotation defaultValue =
           AnnotationUtil.getParameterAnnotation(method, i, annotationTypes.get("DefaultValue"));
-      readMethodRequestParameter(methodConfig, parameterName, nullable, defaultValue,
+      readMethodRequestParameter(methodConfig, parameterName, description, nullable, defaultValue,
           parameterTypes[i]);
     }
   }
 
   private void readMethodRequestParameter(ApiMethodConfig methodConfig, Annotation parameterName,
-      Annotation nullable, Annotation defaultValue, Type type) throws IllegalArgumentException,
-          SecurityException, IllegalAccessException, InvocationTargetException,
-          NoSuchMethodException {
+      Annotation description, Annotation nullable, Annotation defaultValue, Type type) 
+      throws IllegalArgumentException, SecurityException, IllegalAccessException, 
+      InvocationTargetException, NoSuchMethodException {
     String parameterNameString = null;
     if (parameterName != null) {
       parameterNameString = getAnnotationProperty(parameterName, "value");
+    }
+    String descriptionString = null;
+    if (description != null) {
+      descriptionString = getAnnotationProperty(description, "value");
     }
     String defaultValueString = null;
     if (defaultValue != null) {
@@ -395,7 +401,8 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     }
 
     ApiParameterConfig parameterConfig =
-        methodConfig.addParameter(parameterNameString, nullable != null, defaultValueString, type);
+        methodConfig.addParameter(parameterNameString, descriptionString, nullable != null, 
+            defaultValueString, type);
 
     if (type instanceof Class) {
       Class<?> clazz = (Class<?>) type;

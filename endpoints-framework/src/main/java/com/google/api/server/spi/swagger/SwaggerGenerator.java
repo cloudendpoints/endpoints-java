@@ -190,6 +190,7 @@ public class SwaggerGenerator {
           SerializableParameter parameter =
               isPathParameter ? new PathParameter() : new QueryParameter();
           parameter.setName(parameterConfig.getName());
+          parameter.setDescription(parameterConfig.getDescription());
           boolean required = isPathParameter || (!parameterConfig.getNullable()
               && parameterConfig.getDefaultValue() == null);
           if (parameterConfig.isRepeated()) {

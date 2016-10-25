@@ -106,7 +106,7 @@ public class ApiMethodConfigTest {
 
   @Test
   public void addInjectedParameter_notInPath() {
-    methodConfig.addParameter("alt", false, null, String.class);
+    methodConfig.addParameter("alt", null, false, null, String.class);
     assertThat(methodConfig.getPath()).doesNotContain("{alt}");
   }
 }

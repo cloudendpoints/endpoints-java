@@ -24,6 +24,7 @@
           {
             "name": "id",
             "in": "path",
+            "description": "id desc",
             "required": true,
             "type": "string"
           }
@@ -65,6 +66,7 @@
           {
             "name": "id",
             "in": "path",
+            "description": "id desc",
             "required": true,
             "type": "string"
           }
@@ -106,6 +108,7 @@
           {
             "name": "id",
             "in": "path",
+            "description": "id desc",
             "required": true,
             "type": "string"
           }
@@ -147,6 +150,7 @@
           {
             "name": "id",
             "in": "path",
+            "description": "id desc",
             "required": true,
             "type": "string"
           }

@@ -110,10 +110,11 @@ public class ApiMethodAnnotationConfigTest {
   public void testAddParameter() {
     assertEquals(0, config.getParameterConfigs().size());
 
-    config.addParameter("bleh", false, null, String.class);
+    config.addParameter("bleh", "desc", false, null, String.class);
 
     assertEquals(1, config.getParameterConfigs().size());
     assertEquals("bleh", config.getParameterConfigs().get(0).getName());
+    assertEquals("desc", config.getParameterConfigs().get(0).getDescription());
     assertEquals(String.class, config.getParameterConfigs().get(0).getType());
     assertTrue(config.getParameterConfigs().get(0).getSerializers().isEmpty());
     assertEquals(String.class, config.getParameterConfigs().get(0).getSchemaBaseType());
@@ -124,12 +125,12 @@ public class ApiMethodAnnotationConfigTest {
   public void testAddParameter_nullableOrDefault() {
     assertEquals(0, config.getParameterConfigs().size());
 
-    config.addParameter("bleh", true, null, String.class);
+    config.addParameter("bleh", null, true, null, String.class);
     assertEquals(1, config.getParameterConfigs().size());
     assertEquals("bleh", config.getParameterConfigs().get(0).getName());
     assertEquals("overrideMethod1", config.getPath());
 
-    config.addParameter("foo", false, "42", String.class);
+    config.addParameter("foo", null, false, "42", String.class);
     assertEquals(2, config.getParameterConfigs().size());
     assertEquals("foo", config.getParameterConfigs().get(1).getName());
     assertEquals("overrideMethod1", config.getPath());
