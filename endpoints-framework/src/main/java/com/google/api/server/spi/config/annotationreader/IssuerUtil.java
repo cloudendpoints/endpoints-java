@@ -15,7 +15,6 @@
  */
 package com.google.api.server.spi.config.annotationreader;
 
-import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiIssuer;
 import com.google.api.server.spi.config.ApiIssuerAudience;
@@ -42,22 +41,15 @@ public class IssuerUtil {
     return builder.build();
   }
 
-  public static ApiIssuerAudienceConfig toConfig(ApiIssuerAudience[] issuers, String[] googleAudiences) {
+  public static ApiIssuerAudienceConfig toConfig(ApiIssuerAudience[] issuers) {
     boolean thirdPartyIssuersUnspecified =
         issuers.length == 1 && Api.UNSPECIFIED_STRING_FOR_LIST.equals(issuers[0].name());
-    boolean googleAudiencesUnspecified = AnnotationUtil.isUnspecified(googleAudiences);
-    if (thirdPartyIssuersUnspecified && googleAudiencesUnspecified) {
+    if (thirdPartyIssuersUnspecified) {
       return ApiIssuerAudienceConfig.UNSPECIFIED;
     }
     ApiIssuerAudienceConfig.Builder builder = ApiIssuerAudienceConfig.builder();
-    if (!thirdPartyIssuersUnspecified) {
-      for (ApiIssuerAudience issuer : issuers) {
-        builder.addIssuerAudiences(issuer.name(), issuer.audiences());
-      }
-    }
-    if (!googleAudiencesUnspecified) {
-      builder.addIssuerAudiences(Constant.GOOGLE_ID_TOKEN_NAME, googleAudiences);
-      builder.addIssuerAudiences(Constant.GOOGLE_ID_TOKEN_NAME_HTTPS, googleAudiences);
+    for (ApiIssuerAudience issuer : issuers) {
+      builder.addIssuerAudiences(issuer.name(), issuer.audiences());
     }
     return builder.build();
   }

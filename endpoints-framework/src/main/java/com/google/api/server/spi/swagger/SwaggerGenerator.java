@@ -15,11 +15,13 @@
  */
 package com.google.api.server.spi.swagger;
 
+import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.config.ApiConfigException;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiIssuerAudienceConfig;
+import com.google.api.server.spi.config.model.ApiIssuerConfigs;
 import com.google.api.server.spi.config.model.ApiIssuerConfigs.IssuerConfig;
 import com.google.api.server.spi.config.model.ApiKey;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
@@ -146,26 +148,19 @@ public class SwaggerGenerator {
     for (ApiConfig apiConfig : apiConfigs) {
       validator.validate(apiConfig);
       for (IssuerConfig issuerConfig : apiConfig.getIssuers().asMap().values()) {
-        SecuritySchemeDefinition newDef = toScheme(issuerConfig);
-        Map<String, SecuritySchemeDefinition> securityDefinitions = swagger
-            .getSecurityDefinitions();
-        if (securityDefinitions == null) {
-          securityDefinitions = new HashMap<>();
-          swagger.setSecurityDefinitions(securityDefinitions);
-        }
-        SecuritySchemeDefinition existingDef = securityDefinitions.get(issuerConfig.getName());
-        if (existingDef != null && !existingDef.equals(newDef)) {
-          throw new ApiConfigException(
-              "Multiple conflicting definitions found for issuer " + issuerConfig.getName());
-        }
-        swagger.securityDefinition(issuerConfig.getName(), newDef);
+        addNonConflictingSecurityDefinition(swagger, issuerConfig);
+      }
+      List<String> legacyAudiences = apiConfig.getApiClassConfig().getAudiences();
+      if (legacyAudiences != null && !legacyAudiences.isEmpty()) {
+        addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER);
+        addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT);
       }
       writeApiClass(apiConfig, swagger, context, writeInternal);
     }
   }
 
   private void writeApiClass(ApiConfig apiConfig, Swagger swagger, SwaggerContext context,
-      boolean writeInternal) {
+      boolean writeInternal) throws ApiConfigException {
     Map<EndpointMethod, ApiMethodConfig> methodConfigs = apiConfig.getApiClassConfig().getMethods();
     for (Map.Entry<EndpointMethod, ApiMethodConfig> methodConfig : methodConfigs.entrySet()) {
       if (!methodConfig.getValue().isIgnored()) {
@@ -177,7 +172,8 @@ public class SwaggerGenerator {
   }
 
   private void writeApiMethod(ApiMethodConfig methodConfig, EndpointMethod endpointMethod,
-      ApiConfig apiConfig, Swagger swagger, SwaggerContext context, boolean writeInternal) {
+      ApiConfig apiConfig, Swagger swagger, SwaggerContext context, boolean writeInternal)
+      throws ApiConfigException {
     Path path = getOrCreatePath(swagger, apiConfig, methodConfig);
     Operation operation = new Operation();
     operation.setOperationId(getOperationId(apiConfig, methodConfig));
@@ -222,7 +218,7 @@ public class SwaggerGenerator {
       }
     }
     operation.response(200, new Response().description("A successful response"));
-    writeAudiences(methodConfig, writeInternal, operation);
+    writeAudiences(swagger, methodConfig, writeInternal, operation);
     if (methodConfig.isApiKeyRequired()) {
       operation.addSecurity(API_KEY, ImmutableList.<String>of());
       Map<String, SecuritySchemeDefinition> definitions = swagger.getSecurityDefinitions();
@@ -233,10 +229,13 @@ public class SwaggerGenerator {
     path.set(methodConfig.getHttpMethod().toLowerCase(), operation);
   }
 
-  private void writeAudiences(ApiMethodConfig methodConfig, boolean writeInternal,
-      Operation operation) {
+  private void writeAudiences(Swagger swagger, ApiMethodConfig methodConfig, boolean writeInternal,
+      Operation operation) throws ApiConfigException {
     ApiIssuerAudienceConfig issuerAudiences = methodConfig.getIssuerAudiences();
-    if (!issuerAudiences.isSpecified() || issuerAudiences.isEmpty()) {
+    boolean issuerAudiencesIsEmpty = !issuerAudiences.isSpecified() || issuerAudiences.isEmpty();
+    List<String> legacyAudiences = methodConfig.getAudiences();
+    boolean legacyAudiencesIsEmpty = legacyAudiences == null || legacyAudiences.isEmpty();
+    if (issuerAudiencesIsEmpty && legacyAudiencesIsEmpty) {
       return;
     }
     ImmutableMap<String, Collection<String>> audiences = issuerAudiences.asMap();
@@ -244,10 +243,26 @@ public class SwaggerGenerator {
     // the document back in, it uses primitive data structures.
     ImmutableList.Builder<ImmutableMap<String, ImmutableMap<String, List<String>>>> xSecurity =
         ImmutableList.builder();
-    for (Map.Entry<String, Collection<String>> entry : audiences.entrySet()) {
-      operation.addSecurity(entry.getKey(), ImmutableList.<String>of());
+    if (!issuerAudiencesIsEmpty) {
+      for (Map.Entry<String, Collection<String>> entry : audiences.entrySet()) {
+        operation.addSecurity(entry.getKey(), ImmutableList.<String>of());
+        if (writeInternal) {
+          xSecurity.add(ImmutableMap.of(entry.getKey(), createAudiences(entry.getValue())));
+        }
+      }
+    }
+    if (!legacyAudiencesIsEmpty) {
+      addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER);
+      addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT);
+      operation.addSecurity(Constant.GOOGLE_ID_TOKEN_NAME, ImmutableList.<String>of());
+      operation.addSecurity(Constant.GOOGLE_ID_TOKEN_NAME_HTTPS, ImmutableList.<String>of());
       if (writeInternal) {
-        xSecurity.add(ImmutableMap.of(entry.getKey(), createAudiences(entry.getValue())));
+        ImmutableMap<String, List<String>> legacySwaggerAudiences =
+            createAudiences(legacyAudiences);
+        xSecurity.add(
+            ImmutableMap.of(Constant.GOOGLE_ID_TOKEN_NAME, legacySwaggerAudiences));
+        xSecurity.add(
+            ImmutableMap.of(Constant.GOOGLE_ID_TOKEN_NAME_HTTPS, legacySwaggerAudiences));
       }
     }
     if (writeInternal) {
@@ -354,5 +369,28 @@ public class SwaggerGenerator {
       tokenDef.setVendorExtension("x-jwks_uri", issuerConfig.getJwksUri());
     }
     return tokenDef;
+  }
+
+  private static Map<String, SecuritySchemeDefinition> getOrCreateSecurityDefinitionMap(
+      Swagger swagger) {
+    Map<String, SecuritySchemeDefinition> securityDefinitions = swagger.getSecurityDefinitions();
+    if (securityDefinitions == null) {
+      securityDefinitions = new HashMap<>();
+      swagger.setSecurityDefinitions(securityDefinitions);
+    }
+    return securityDefinitions;
+  }
+
+  private static void addNonConflictingSecurityDefinition(
+      Swagger swagger, IssuerConfig issuerConfig) throws ApiConfigException {
+    Map<String, SecuritySchemeDefinition> securityDefinitions =
+        getOrCreateSecurityDefinitionMap(swagger);
+    SecuritySchemeDefinition existingDef = securityDefinitions.get(issuerConfig.getName());
+    SecuritySchemeDefinition newDef = toScheme(issuerConfig);
+    if (existingDef != null && !existingDef.equals(newDef)) {
+      throw new ApiConfigException(
+          "Multiple conflicting definitions found for issuer " + issuerConfig.getName());
+    }
+    swagger.securityDefinition(issuerConfig.getName(), newDef);
   }
 }
