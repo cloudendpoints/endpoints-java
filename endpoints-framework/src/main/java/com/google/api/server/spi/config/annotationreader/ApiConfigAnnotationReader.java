@@ -217,8 +217,8 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
 
   private ApiIssuerAudienceConfig getIssuerAudiences(Annotation annotation)
       throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-    return IssuerUtil.toConfig((ApiIssuerAudience[]) getAnnotationProperty(annotation, "issuerAudiences"),
-        (String[]) getAnnotationProperty(annotation, "audiences"));
+    return IssuerUtil.toConfig(
+        (ApiIssuerAudience[]) getAnnotationProperty(annotation, "issuerAudiences"));
   }
 
   private <T> T getAnnotationProperty(Annotation annotation, String name)
