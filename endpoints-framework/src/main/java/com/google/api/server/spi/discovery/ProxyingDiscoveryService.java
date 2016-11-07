@@ -57,7 +57,7 @@ public class ProxyingDiscoveryService {
   }
 
   @ApiMethod(
-      name = "discovery.apis.getRest",
+      name = "apis.getRest",
       path = "apis/{api}/{version}/rest"
   )
   public RestDescription getRestDocument(HttpServletRequest request, @Named("api") String name,
@@ -67,7 +67,7 @@ public class ProxyingDiscoveryService {
   }
 
   @ApiMethod(
-      name = "discovery.apis.getRpc",
+      name = "apis.getRpc",
       path = "apis/{api}/{version}/rpc"
   )
   public RpcDescription getRpcDocument(HttpServletRequest request, @Named("api") String name,
@@ -77,7 +77,7 @@ public class ProxyingDiscoveryService {
   }
 
   @ApiMethod(
-      name = "discovery.apis.list",
+      name = "apis.list",
       path = "apis"
   )
   public DirectoryList getApiList(HttpServletRequest request) throws InternalServerErrorException {
