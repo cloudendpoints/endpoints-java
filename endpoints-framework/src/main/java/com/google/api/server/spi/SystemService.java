@@ -27,9 +27,11 @@ import com.google.api.server.spi.config.model.ApiKey;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.api.server.spi.config.model.ApiSerializationConfig.SerializerConfig;
+import com.google.api.server.spi.config.model.SchemaRepository;
 import com.google.api.server.spi.config.validation.ApiConfigValidator;
 import com.google.api.server.spi.discovery.CachingDiscoveryProvider;
-import com.google.api.server.spi.discovery.ProxyingDiscoveryProvider;
+import com.google.api.server.spi.discovery.DiscoveryGenerator;
+import com.google.api.server.spi.discovery.LocalDiscoveryProvider;
 import com.google.api.server.spi.discovery.ProxyingDiscoveryService;
 import com.google.api.server.spi.request.ParamReader;
 import com.google.api.server.spi.response.BadRequestException;
@@ -499,6 +501,7 @@ public class SystemService {
    */
   public static class Builder {
     private ApiConfigLoader configLoader;
+    private TypeLoader typeLoader;
     private ApiConfigValidator configValidator;
     private String appName;
     private ApiConfigWriter configWriter;
@@ -512,6 +515,7 @@ public class SystemService {
       setConfigValidator(new ApiConfigValidator());
       setAppName(new BackendProperties().getApplicationId());
       setConfigWriter(new JsonConfigWriter(classLoader, configValidator));
+      typeLoader = new TypeLoader(classLoader);
       isIllegalArgumentBackendError = false;
       enableBackendService = true;
       enableDiscoveryService = false;
@@ -583,8 +587,10 @@ public class SystemService {
       if (enableDiscoveryService) {
         ProxyingDiscoveryService discoveryService = new ProxyingDiscoveryService();
         systemService.registerService(discoveryService);
-        discoveryService.initialize(new CachingDiscoveryProvider(
-            new ProxyingDiscoveryProvider(getApiConfigs(systemService), configWriter)));
+        discoveryService.initialize(
+            new CachingDiscoveryProvider(new LocalDiscoveryProvider(
+                getApiConfigs(systemService), new DiscoveryGenerator(typeLoader),
+                new SchemaRepository(typeLoader))));
       }
       return systemService;
     }

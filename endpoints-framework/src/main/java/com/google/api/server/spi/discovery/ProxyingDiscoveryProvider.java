@@ -27,32 +27,19 @@ import com.google.api.services.discovery.model.ApiConfigs;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
 import com.google.api.services.discovery.model.RpcDescription;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Provides discovery information by proxying to the v1.0 discovery service.
  */
-public class ProxyingDiscoveryProvider implements DiscoveryProvider {
-  private static final Logger logger = Logger.getLogger(ProxyingDiscoveryProvider.class.getName());
-  private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
-      new Function<ApiConfig, ApiKey>() {
-        @Override public ApiKey apply(ApiConfig config) {
-          return new ApiKey(config.getName(), config.getVersion(), null /* root */);
-        }
-      };
+public class ProxyingDiscoveryProvider extends AbstractDiscoveryProvider {
 
-  private final ImmutableList<ApiConfig> apiConfigs;
-  private final ImmutableListMultimap<ApiKey, ApiConfig> configsByKey;
   private final ApiConfigWriter configWriter;
   private final Discovery discovery;
 
@@ -63,8 +50,7 @@ public class ProxyingDiscoveryProvider implements DiscoveryProvider {
 
   public ProxyingDiscoveryProvider(
       ImmutableList<ApiConfig> apiConfigs, ApiConfigWriter configWriter, Discovery discovery) {
-    this.apiConfigs = apiConfigs;
-    this.configsByKey = FluentIterable.from(apiConfigs).index(CONFIG_TO_ROOTLESS_KEY);
+    super(apiConfigs);
     this.configWriter = configWriter;
     this.discovery = discovery;
   }
@@ -73,15 +59,9 @@ public class ProxyingDiscoveryProvider implements DiscoveryProvider {
   public RestDescription getRestDocument(String root, String name, String version)
       throws NotFoundException, InternalServerErrorException {
     try {
-      ApiKey key = new ApiKey(name, version, null /* root */);
-      ImmutableList<ApiConfig> configs = configsByKey.get(key);
-      if (configs.isEmpty()) {
-        logger.info("No configuration found for name: " + name + ", version: " + version);
-        throw new NotFoundException("Not Found");
-      }
       return discovery.apis()
           .generateRest(new com.google.api.services.discovery.model.ApiConfig().setConfig(
-              getApiConfigStringWithRoot(configs, root))).execute();
+              getApiConfigStringWithRoot(getApiConfigs(name, version), root))).execute();
     } catch (IOException | ApiConfigException e) {
       logger.log(Level.SEVERE, "Could not generate or cache discovery doc", e);
       throw new InternalServerErrorException("Internal Server Error", e);
@@ -92,15 +72,9 @@ public class ProxyingDiscoveryProvider implements DiscoveryProvider {
   public RpcDescription getRpcDocument(String root, String name, String version)
       throws NotFoundException, InternalServerErrorException {
     try {
-      ApiKey key = new ApiKey(name, version, null /* root */);
-      ImmutableList<ApiConfig> configs = configsByKey.get(key);
-      if (configs.isEmpty()) {
-        logger.info("No configuration found for name: " + name + ", version: " + version);
-        throw new NotFoundException("Not Found");
-      }
       return discovery.apis()
           .generateRpc(new com.google.api.services.discovery.model.ApiConfig().setConfig(
-              getApiConfigStringWithRoot(configs, root))).execute();
+              getApiConfigStringWithRoot(getApiConfigs(name, version), root))).execute();
     } catch (IOException | ApiConfigException e) {
       logger.log(Level.SEVERE, "Could not generate or cache discovery doc", e);
       throw new InternalServerErrorException("Internal Server Error", e);
@@ -111,7 +85,7 @@ public class ProxyingDiscoveryProvider implements DiscoveryProvider {
   public DirectoryList getDirectory(String root) throws InternalServerErrorException {
     try {
       Map<ApiKey, String> configStrings =
-          configWriter.writeConfig(rewriteConfigsWithRoot(apiConfigs, root));
+          configWriter.writeConfig(rewriteConfigsWithRoot(getAllApiConfigs(), root));
       ApiConfigs configs = new ApiConfigs();
       configs.setConfigs(Lists.newArrayList(configStrings.values()));
       return discovery.apis().generateDirectory(configs).execute();
@@ -129,28 +103,6 @@ public class ProxyingDiscoveryProvider implements DiscoveryProvider {
       throw new InternalServerErrorException("Internal Server Error");
     }
     return Iterables.getFirst(configMap.values(), null);
-  }
-
-  private static Iterable<ApiConfig> rewriteConfigsWithRoot(Iterable<ApiConfig> configs,
-      String root) {
-    ApiConfig.Factory factory = new ApiConfig.Factory();
-    return FluentIterable.from(configs).transform(new RootRemapperFunction(root, factory));
-  }
-
-  private static class RootRemapperFunction implements Function<ApiConfig, ApiConfig> {
-    private final String root;
-    private final ApiConfig.Factory factory;
-
-    RootRemapperFunction(String root, ApiConfig.Factory factory) {
-      this.root = root;
-      this.factory = factory;
-    }
-
-    @Override public ApiConfig apply(ApiConfig input) {
-      ApiConfig copy = factory.copy(input);
-      copy.setRoot(root);
-      return copy;
-    }
   }
 
   private static Discovery createDiscovery() {
