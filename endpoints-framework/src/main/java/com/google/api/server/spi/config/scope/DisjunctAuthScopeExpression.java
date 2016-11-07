@@ -62,6 +62,11 @@ class DisjunctAuthScopeExpression extends AbstractAuthScopeExpression {
 
   @Override
   List<String> encode() {
+    return ImmutableList.copyOf(encodeMutable());
+  }
+
+  @Override
+  List<String> encodeMutable() {
     List<String> expression = new ArrayList<>();
     for (AbstractAuthScopeExpression innerExpression : innerExpressions) {
       expression.addAll(innerExpression.encode());
