@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.api.server.spi.tools.DiscoveryDocGenerator.Format;
 import com.google.common.collect.Lists;
 
 import org.junit.Before;
@@ -29,13 +28,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Tests for {@link GetDiscoveryDocAction}.
@@ -43,12 +39,10 @@ import java.util.Set;
 @RunWith(JUnit4.class)
 public class GetDiscoveryDocActionTest extends EndpointsToolTest {
 
-  private Format format;
   private URL[] classPath;
   private String outputDirPath;
   private String warPath;
   private List<String> serviceClassNames;
-  private Set<Format> formats;
   private GetDiscoveryDocAction testAction;
   private boolean debugOutput;
 
@@ -62,29 +56,20 @@ public class GetDiscoveryDocActionTest extends EndpointsToolTest {
     super.setUp();
 
     usagePrinted = false;
-    format = null;
     classPath = null;
     outputDirPath = null;
     warPath = null;
     serviceClassNames = null;
-    formats = new HashSet<>();
     testAction = new GetDiscoveryDocAction() {
 
       @Override
-      public Iterable<String> getDiscoveryDoc(
-          Format f, URL[] c, String o, String w, List<String> s, boolean d) {
-        format = f;
+      public Map<String, String> getDiscoveryDoc(
+          URL[] c, String o, String w, List<String> s, boolean d) {
         classPath = c;
         outputDirPath = o;
         warPath = w;
         serviceClassNames = s;
         debugOutput = d;
-        return null;
-      }
-
-      @Override
-      String generateDiscoveryDoc(Format format, String outputDirPath, String apiConfigFilePath) {
-        formats.add(format);
         return null;
       }
     };
@@ -132,13 +117,5 @@ public class GetDiscoveryDocActionTest extends EndpointsToolTest {
     assertEquals(EndpointsToolAction.DEFAULT_WAR_PATH, warPath);
     assertStringsEqual(Arrays.asList("MyService", "MyService2"), serviceClassNames);
     assertFalse(debugOutput);
-  }
-
-  @Test
-  public void testGenerateDiscoveryDocs() throws IOException {
-    testAction.generateDiscoveryDocs(Format.REST, null, null);
-
-    assertEquals(1, formats.size());
-    assertTrue(formats.remove(Format.REST));
   }
 }

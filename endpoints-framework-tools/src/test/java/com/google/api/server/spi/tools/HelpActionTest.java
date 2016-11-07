@@ -68,8 +68,6 @@ public class HelpActionTest extends EndpointsToolTest {
   public void testHelpInvisibleAction() throws Exception {
     tool.execute(new String[]{HelpAction.NAME, "gen-api-config"});
     assertTrue(action instanceof GenApiConfigAction);
-    tool.execute(new String[]{HelpAction.NAME, "gen-discovery-doc"});
-    assertTrue(action instanceof GenDiscoveryDocAction);
     tool.execute(new String[]{HelpAction.NAME, "gen-client-lib"});
     assertTrue(action instanceof GenClientLibAction);
   }

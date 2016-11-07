@@ -52,7 +52,6 @@ public class EndpointsTool {
     actions.put(GetDiscoveryDocAction.NAME, new GetDiscoveryDocAction());
     actions.put(GetClientLibAction.NAME, new GetClientLibAction());
     actions.put(GenApiConfigAction.NAME, new GenApiConfigAction());
-    actions.put(GenDiscoveryDocAction.NAME, new GenDiscoveryDocAction());
     actions.put(GenClientLibAction.NAME, new GenClientLibAction());
     actions.put(GetSwaggerDocAction.NAME, new GetSwaggerDocAction());
     actions.put(HelpAction.NAME, new HelpAction());
