@@ -17,6 +17,7 @@ package com.google.api.server.spi.config.scope;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import java.util.List;
 import java.util.Set;
@@ -49,6 +50,11 @@ class SingleAuthScopeExpression extends AbstractAuthScopeExpression {
   @Override
   List<String> encode() {
     return ImmutableList.of(scope);
+  }
+
+  @Override
+  List<String> encodeMutable() {
+    return Lists.newArrayList(scope);
   }
 
   @Override

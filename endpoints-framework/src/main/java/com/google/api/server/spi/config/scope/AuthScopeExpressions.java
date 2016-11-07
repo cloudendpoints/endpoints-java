@@ -73,6 +73,18 @@ public class AuthScopeExpressions {
     }
   }
 
+  /**
+   * Encodes an {@code AuthScopeExpression} back into its mutable String List form.
+   */
+  public static List<String> encodeMutable(AuthScopeExpression authScopeExpression) {
+    try {
+      return ((AbstractAuthScopeExpression) authScopeExpression).encodeMutable();
+    } catch (ClassCastException e) {
+      throw new IllegalArgumentException(
+          "Expressions of type " + authScopeExpression.getClass() + " are not supported.");
+    }
+  }
+
   private static AbstractAuthScopeExpression interpretConjunct(String conjunctScopeExpression) {
     List<String> scopes = CONJUNCT_SCOPE_SPLITTER.splitToList(conjunctScopeExpression);
     if (scopes.size() == 1) {

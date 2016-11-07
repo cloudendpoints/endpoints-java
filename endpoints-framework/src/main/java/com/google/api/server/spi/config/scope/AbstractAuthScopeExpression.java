@@ -28,6 +28,12 @@ abstract class AbstractAuthScopeExpression implements AuthScopeExpression {
    */
   abstract List<String> encode();
 
+  /**
+   * Encodes the expression to match what {@link AuthScopeExpressions#interpret(List)}
+   * accepts. The returned list is mutable.
+   */
+  abstract List<String> encodeMutable();
+
   @Override
   public String toString() {
     return toLoggingForm();

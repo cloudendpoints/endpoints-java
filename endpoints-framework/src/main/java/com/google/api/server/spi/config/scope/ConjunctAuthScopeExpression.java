@@ -62,11 +62,12 @@ class ConjunctAuthScopeExpression extends AbstractAuthScopeExpression {
 
   @Override
   List<String> encode() {
-    List<String> scopes = Lists.newArrayList();
-    for (SingleAuthScopeExpression innerExpression : innerExpressions) {
-      scopes.add(innerExpression.getScope());
-    }
-    return ImmutableList.of(AuthScopeExpressions.CONJUNCT_SCOPE_JOINER.join(scopes));
+    return ImmutableList.of(doEncode());
+  }
+
+  @Override
+  List<String> encodeMutable() {
+    return Lists.newArrayList(doEncode());
   }
 
   @Override
@@ -98,5 +99,13 @@ class ConjunctAuthScopeExpression extends AbstractAuthScopeExpression {
   @Override
   public int hashCode() {
     return innerExpressions.hashCode();
+  }
+
+  private String doEncode() {
+    List<String> scopes = Lists.newArrayList();
+    for (SingleAuthScopeExpression innerExpression : innerExpressions) {
+      scopes.add(innerExpression.getScope());
+    }
+    return AuthScopeExpressions.CONJUNCT_SCOPE_JOINER.join(scopes);
   }
 }
