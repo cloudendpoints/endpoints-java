@@ -63,9 +63,6 @@ public class HelpAction extends EndpointsToolAction {
       case "gen-api-config":
         printUsage(new GenApiConfigAction());
         return true;
-      case "gen-discovery-doc":
-        printUsage(new GenDiscoveryDocAction());
-        return true;
       case "gen-client-lib":
         printUsage(new GenClientLibAction());
         return true;

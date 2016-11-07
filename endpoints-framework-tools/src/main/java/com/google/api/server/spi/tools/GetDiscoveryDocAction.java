@@ -15,16 +15,34 @@
  */
 package com.google.api.server.spi.tools;
 
-import com.google.api.server.spi.config.ApiConfigException;
-import com.google.api.server.spi.tools.DiscoveryDocGenerator.Format;
-import com.google.appengine.tools.util.Option;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.google.api.server.spi.ObjectMapperUtil;
+import com.google.api.server.spi.ServiceContext;
+import com.google.api.server.spi.TypeLoader;
+import com.google.api.server.spi.config.ApiConfigException;
+import com.google.api.server.spi.config.ApiConfigLoader;
+import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
+import com.google.api.server.spi.config.model.ApiConfig;
+import com.google.api.server.spi.config.model.ApiKey;
+import com.google.api.server.spi.discovery.DiscoveryGenerator;
+import com.google.api.server.spi.discovery.DiscoveryGenerator.DiscoveryContext;
+import com.google.api.server.spi.response.EndpointsPrettyPrinter;
+import com.google.api.services.discovery.model.RestDescription;
+import com.google.appengine.tools.util.Option;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.io.Files;
+
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Command that combines 2 other ones and generates a discovery doc from service classes.
@@ -42,11 +60,9 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
 
   private Option debugOption = makeDebugOption();
 
-  private Option formatOption = makeFormatOption();
-
   public GetDiscoveryDocAction() {
     super(NAME);
-    setOptions(Arrays.asList(classPathOption, formatOption, outputOption, warOption, debugOption));
+    setOptions(Arrays.asList(classPathOption, outputOption, warOption, debugOption));
     setShortDescription("Generates discovery documents");
     setExampleString("<Endpoints tool> get-discovery-doc --format=rpc "
         + "com.google.devrel.samples.ttt.spi.BoardV1 com.google.devrel.samples.ttt.spi.ScoresV1");
@@ -60,8 +76,7 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
     if (serviceClassNames.isEmpty()) {
       return false;
     }
-    Format format = Format.valueOf(getFormat(formatOption).toUpperCase());
-    getDiscoveryDoc(format, computeClassPath(warPath, getClassPath(classPathOption)),
+    getDiscoveryDoc(computeClassPath(warPath, getClassPath(classPathOption)),
         getOutputPath(outputOption), warPath, serviceClassNames, getDebug(debugOption));
     return true;
   }
@@ -69,40 +84,60 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
   /**
    * Generates a Java client library for an API.  Combines the steps of generating API
    * configuration, generating Discovery doc and generating client library into one.
-   * @param format the discovery doc format to generate
    * @param classPath Class path to load service classes and their dependencies
    * @param outputDirPath Directory to write output files into
    * @param warPath Directory or file containing a WAR layout
    * @param serviceClassNames Array of service class names of the API
    * @param debug Whether or not to output intermediate output files
    */
-  public Iterable<String> getDiscoveryDoc(Format format, URL[] classPath, String outputDirPath,
+  public Map<String, String> getDiscoveryDoc(URL[] classPath, String outputDirPath,
       String warPath, List<String> serviceClassNames, boolean debug)
           throws ClassNotFoundException, IOException, ApiConfigException {
-    Iterable<String> apiConfigs = new GenApiConfigAction().genApiConfig(classPath, outputDirPath,
-        warPath, serviceClassNames, debug);
-    ImmutableList.Builder<String> builder = ImmutableList.builder();
-    for (String apiConfig : apiConfigs) {
-      builder.add(generateDiscoveryDocs(format, outputDirPath, apiConfig));
+    File outputDir = new File(outputDirPath);
+    if (!outputDir.isDirectory()) {
+      throw new IllegalArgumentException(outputDirPath + " is not a directory");
+    }
+
+    ClassLoader classLoader = new URLClassLoader(classPath, getClass().getClassLoader());
+    ApiConfig.Factory configFactory = new ApiConfig.Factory();
+    TypeLoader typeLoader = new TypeLoader(classLoader);
+    DiscoveryGenerator discoveryGenerator = new DiscoveryGenerator(typeLoader);
+    List<ApiConfig> apiConfigs = Lists.newArrayListWithCapacity(serviceClassNames.size());
+    ApiConfigLoader configLoader = new ApiConfigLoader(
+        configFactory, typeLoader, new ApiConfigAnnotationReader(typeLoader.getAnnotationTypes()));
+    ServiceContext serviceContext = ServiceContext.create(
+        AppEngineUtil.getApplicationId(warPath), ServiceContext.DEFAULT_API_NAME);
+    for (Class<?> serviceClass : loadClasses(classLoader, serviceClassNames)) {
+      apiConfigs.add(configLoader.loadConfiguration(serviceContext, serviceClass));
+    }
+    DiscoveryGenerator.Result result = discoveryGenerator.writeDiscovery(
+        apiConfigs, new DiscoveryContext().setHostname(serviceContext.getAppHostName()));
+    ObjectWriter writer =
+        ObjectMapperUtil.createStandardObjectMapper().writer(new EndpointsPrettyPrinter());
+    ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+    for (Map.Entry<ApiKey, RestDescription> entry : result.discoveryDocs().entrySet()) {
+      ApiKey key = entry.getKey();
+      String discoveryDocFilePath =
+          outputDir + "/" + key.getName() + "-" + key.getVersion() + "-rest.discovery";
+      String docString = writer.writeValueAsString(entry.getValue());
+      Files.write(docString, new File(discoveryDocFilePath), UTF_8);
+      builder.put(discoveryDocFilePath, docString);
+      System.out.println("API Discovery Document written to " + discoveryDocFilePath);
     }
     return builder.build();
-  }
-
-  // Generates and returns a REST discovery document for an API version.
-  @VisibleForTesting
-  String generateDiscoveryDocs(Format format, String outputDirPath, String apiConfig)
-      throws IOException {
-    return generateDiscoveryDoc(format, outputDirPath, apiConfig);
-  }
-
-  @VisibleForTesting
-  String generateDiscoveryDoc(Format format, String outputDirPath, String apiConfig)
-      throws IOException {
-    return new GenDiscoveryDocAction().genDiscoveryDoc(format, outputDirPath, apiConfig, true);
   }
 
   @Override
   public String getUsageString() {
     return NAME + " <options> <service class>...";
+  }
+
+  private static Class<?>[] loadClasses(ClassLoader classLoader, List<String> classNames)
+      throws ClassNotFoundException {
+    Class<?>[] classes = new Class<?>[classNames.size()];
+    for (int i = 0; i < classNames.size(); i++) {
+      classes[i] = classLoader.loadClass(classNames.get(i));
+    }
+    return classes;
   }
 }

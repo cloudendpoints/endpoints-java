@@ -16,13 +16,13 @@
 package com.google.api.server.spi.tools;
 
 import com.google.api.server.spi.config.ApiConfigException;
-import com.google.api.server.spi.tools.DiscoveryDocGenerator.Format;
 import com.google.appengine.tools.util.Option;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Command that combines 3 other ones and generates client libraries from service classes.
@@ -83,9 +83,10 @@ public class GetClientLibAction extends EndpointsToolAction {
           throws ClassNotFoundException, IOException, ApiConfigException {
     Iterable<String> apiConfigs = new GenApiConfigAction().genApiConfig(classPath, outputDirPath,
         warPath, serviceClassNames, debug);
-    for (String apiConfig : apiConfigs) {
-      String restDiscoveryDocPath = new GenDiscoveryDocAction().genDiscoveryDoc(Format.REST,
-          outputDirPath, apiConfig, debug);
+    Map<String, String> discoveryDocs = new GetDiscoveryDocAction().getDiscoveryDoc(
+        classPath, outputDirPath, warPath, serviceClassNames, debug);
+    for (Map.Entry<String, String> entry : discoveryDocs.entrySet()) {
+      String restDiscoveryDocPath = entry.getKey();
       new GenClientLibAction().genClientLib(language, outputDirPath, restDiscoveryDocPath,
           buildSystem);
     }
