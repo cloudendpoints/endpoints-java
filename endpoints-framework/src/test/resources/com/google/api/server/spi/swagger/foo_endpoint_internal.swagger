@@ -16,6 +16,89 @@
     "application/json"
   ],
   "paths": {
+    "/foo/v1/foos": {
+      "get": {
+        "description": "list desc",
+        "operationId": "FooListFoos",
+        "parameters": [
+          {
+            "name": "n",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_Foo"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token": []
+          },
+          {
+            "google_id_token_https": []
+          }
+        ],
+        "x-security": [
+          {
+            "google_id_token": {
+              "audiences": [
+                "audience"
+              ]
+            }
+          },
+          {
+            "google_id_token_https": {
+              "audiences": [
+                "audience"
+              ]
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "FooToplevel",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_Foo"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token": []
+          },
+          {
+            "google_id_token_https": []
+          }
+        ],
+        "x-security": [
+          {
+            "google_id_token": {
+              "audiences": [
+                "audience"
+              ]
+            }
+          },
+          {
+            "google_id_token_https": {
+              "audiences": [
+                "audience"
+              ]
+            }
+          }
+        ]
+      }
+    },
     "/foo/v1/foos/{id}": {
       "get": {
         "description": "get desc",
@@ -31,7 +114,10 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response"
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Foo"
+            }
           }
         },
         "security": [
@@ -69,11 +155,21 @@
             "description": "id desc",
             "required": true,
             "type": "string"
+          },
+          {
+            "in": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/Foo"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "A successful response"
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Foo"
+            }
           }
         },
         "security": [
@@ -111,11 +207,21 @@
             "description": "id desc",
             "required": true,
             "type": "string"
+          },
+          {
+            "in": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/Foo"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "A successful response"
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Foo"
+            }
           }
         },
         "security": [
@@ -157,7 +263,10 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response"
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Foo"
+            }
           }
         },
         "security": [
@@ -188,19 +297,45 @@
     }
   },
   "securityDefinitions": {
-    "google_id_token": {
-      "type": "oauth2",
-      "authorizationUrl": "",
-      "flow": "implicit",
-      "x-issuer": "accounts.google.com",
-      "x-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
-    },
     "google_id_token_https": {
       "type": "oauth2",
       "authorizationUrl": "",
       "flow": "implicit",
       "x-issuer": "https://accounts.google.com",
       "x-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
+    },
+    "google_id_token": {
+      "type": "oauth2",
+      "authorizationUrl": "",
+      "flow": "implicit",
+      "x-issuer": "accounts.google.com",
+      "x-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
+    }
+  },
+  "definitions": {
+    "CollectionResponse_Foo": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Foo"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "Foo": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
     }
   }
 }

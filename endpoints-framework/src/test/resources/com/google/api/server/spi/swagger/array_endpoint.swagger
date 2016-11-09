@@ -16,52 +16,359 @@
     "application/json"
   ],
   "paths": {
-    "/array/v1/array": {
-      "post": {
-        "operationId": "ArrayIntArray",
-        "parameters": [
-          {
-            "name": "ints",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "collectionFormat": "multi"
-          }
-        ],
+    "/myapi/v1/arrayendpoint": {
+      "get": {
+        "operationId": "MyapiGetArrayService",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response"
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/ArrayEndpoint"
+            }
           }
         }
       }
     },
-    "/array/v1/enumarray": {
-      "post": {
-        "operationId": "ArrayEnumArray",
-        "parameters": [
-          {
-            "name": "enums",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "VALUE1",
-                "VALUE2"
-              ]
-            },
-            "collectionFormat": "multi"
-          }
-        ],
+    "/myapi/v1/baz": {
+      "get": {
+        "operationId": "MyapiGetBaz",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response"
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Baz"
+            }
           }
+        }
+      }
+    },
+    "/myapi/v1/collectionresponse_foo": {
+      "get": {
+        "operationId": "MyapiGetFoosResponse",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_Foo"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/foocollection": {
+      "get": {
+        "operationId": "MyapiGetFoos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/FooCollection"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/foocollectioncollection": {
+      "get": {
+        "operationId": "MyapiGetAllArrayedFoos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/FooCollectionCollection"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/getAllFoos": {
+      "get": {
+        "operationId": "MyapiGetAllFoos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/FooCollectionCollection"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/getAllFoosResponse": {
+      "get": {
+        "operationId": "MyapiGetAllFoosResponse",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_FooCollection"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/getAllNestedFoosResponse": {
+      "get": {
+        "operationId": "MyapiGetAllNestedFoosResponse",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_FooCollectionCollection"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/getArrayedFoos": {
+      "get": {
+        "operationId": "MyapiGetArrayedFoos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/FooCollection"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/getIntegersResponse": {
+      "get": {
+        "operationId": "MyapiGetIntegersResponse",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_Integer"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/getObjectIntegers": {
+      "get": {
+        "operationId": "MyapiGetObjectIntegers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/IntegerCollection"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/integercollection": {
+      "get": {
+        "operationId": "MyapiGetIntegers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/IntegerCollection"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CollectionResponse_Integer": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "CollectionResponse_Foo": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Foo"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "Foo": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "FooCollectionCollection": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Foo"
+            }
+          }
+        }
+      }
+    },
+    "Baz": {
+      "properties": {
+        "foo": {
+          "$ref": "#/definitions/Foo"
+        },
+        "foos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Foo"
+          }
+        }
+      }
+    },
+    "CollectionResponse_FooCollection": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Foo"
+            }
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "ArrayEndpoint": {
+      "properties": {
+        "allArrayedFoos": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Foo"
+            }
+          }
+        },
+        "allFoos": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Foo"
+            }
+          }
+        },
+        "allFoosResponse": {
+          "$ref": "#/definitions/CollectionResponse_FooCollection"
+        },
+        "allNestedFoosResponse": {
+          "$ref": "#/definitions/CollectionResponse_FooCollectionCollection"
+        },
+        "arrayService": {
+          "$ref": "#/definitions/ArrayEndpoint"
+        },
+        "arrayedFoos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Foo"
+          }
+        },
+        "baz": {
+          "$ref": "#/definitions/Baz"
+        },
+        "foos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Foo"
+          }
+        },
+        "foosResponse": {
+          "$ref": "#/definitions/CollectionResponse_Foo"
+        },
+        "integers": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "integersResponse": {
+          "$ref": "#/definitions/CollectionResponse_Integer"
+        },
+        "objectIntegers": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "IntegerCollection": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "FooCollection": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Foo"
+          }
+        }
+      }
+    },
+    "CollectionResponse_FooCollectionCollection": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Foo"
+              }
+            }
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
         }
       }
     }

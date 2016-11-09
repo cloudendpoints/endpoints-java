@@ -33,10 +33,28 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response"
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/EnumValue"
+            }
           }
         }
       }
+    }
+  },
+  "definitions": {
+    "EnumValue": {
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/TestEnum"
+        }
+      }
+    },
+    "TestEnum": {
+      "enum": [
+        "VALUE1",
+        "VALUE2"
+      ]
     }
   }
 }

@@ -18,6 +18,7 @@ package com.google.api.server.spi.testing;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
+import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.CollectionResponse;
 
@@ -25,22 +26,22 @@ import com.google.api.server.spi.response.CollectionResponse;
 public class FooEndpoint {
   @ApiMethod(name = "foo.create", description = "create desc", path = "foos/{id}",
       httpMethod = HttpMethod.PUT)
-  public Foo createFoo(@Named("id") String id, Foo foo) {
+  public Foo createFoo(@Named("id") @Description("id desc") String id, Foo foo) {
     return null;
   }
   @ApiMethod(name = "foo.get", description = "get desc", path = "foos/{id}",
       httpMethod = HttpMethod.GET)
-  public Foo getFoo(@Named("id") String id) {
+  public Foo getFoo(@Named("id") @Description("id desc") String id) {
     return null;
   }
   @ApiMethod(name = "foo.update", description = "update desc", path = "foos/{id}",
       httpMethod = HttpMethod.POST)
-  public Foo updateFoo(@Named("id") String id, Foo foo) {
+  public Foo updateFoo(@Named("id") @Description("id desc") String id, Foo foo) {
     return null;
   }
   @ApiMethod(name = "foo.delete", description = "delete desc", path = "foos/{id}",
       httpMethod = HttpMethod.DELETE)
-  public Foo deleteFoo(@Named("id") String id) {
+  public Foo deleteFoo(@Named("id") @Description("id desc") String id) {
     return null;
   }
   @ApiMethod(name = "foo.list", description = "list desc", path = "foos",

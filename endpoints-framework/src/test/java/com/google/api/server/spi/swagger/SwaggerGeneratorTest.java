@@ -27,13 +27,12 @@ import com.google.api.server.spi.config.ApiConfigLoader;
 import com.google.api.server.spi.config.ApiIssuer;
 import com.google.api.server.spi.config.ApiIssuerAudience;
 import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.ApiMethod.HttpMethod;
-import com.google.api.server.spi.config.Description;
-import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.swagger.SwaggerGenerator.SwaggerContext;
-import com.google.api.server.spi.testing.Foo;
+import com.google.api.server.spi.testing.ArrayEndpoint;
+import com.google.api.server.spi.testing.EnumEndpoint;
+import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.common.collect.ImmutableList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,8 +41,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.List;
 
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
@@ -89,7 +86,7 @@ public class SwaggerGeneratorTest {
     Swagger swagger = getSwagger(
         FooEndpoint.class, new SwaggerContext().setApiRoot("http://localhost:8080/api"), false);
     Swagger expected = readExpectedAsSwagger("foo_endpoint_localhost.swagger");
-    assertThat(swagger).isEqualTo(expected);
+    compareSwagger(expected, swagger);
   }
 
   @Test
@@ -156,49 +153,6 @@ public class SwaggerGeneratorTest {
     System.out.println("Actual: " + mapper.writeValueAsString(actual));
     System.out.println("Expected: " + mapper.writeValueAsString(expected));
     assertThat(actual).isEqualTo(expected);
-  }
-
-  @Api(name = "foo", version = "v1", audiences = {"audience"})
-  private static class FooEndpoint {
-    @ApiMethod(name = "foo.create", description = "create desc", path = "foos/{id}", 
-        httpMethod = HttpMethod.PUT)
-    public Foo createFoo(@Named("id") @Description("id desc") String id, Foo foo) {
-      return null;
-    }
-    @ApiMethod(name = "foo.get", description = "get desc", path = "foos/{id}", 
-        httpMethod = HttpMethod.GET)
-    public Foo getFoo(@Named("id") @Description("id desc") String id) {
-      return null;
-    }
-    @ApiMethod(name = "foo.update", description = "update desc", path = "foos/{id}", 
-        httpMethod = HttpMethod.POST)
-    public Foo updateFoo(@Named("id") @Description("id desc") String id, Foo foo) {
-      return null;
-    }
-    @ApiMethod(name = "foo.delete", description = "delete desc", path = "foos/{id}", 
-        httpMethod = HttpMethod.DELETE)
-    public Foo deleteFoo(@Named("id") @Description("id desc") String id) {
-      return null;
-    }
-  }
-
-  private enum TestEnum {
-    VALUE1, VALUE2
-  }
-
-  @Api(name = "enum", version = "v1")
-  private static class EnumEndpoint {
-    @ApiMethod(name = "create", path = "{value}")
-    public void create(@Named("value") TestEnum value) {}
-  }
-
-  @Api(name = "array", version = "v1")
-  private static class ArrayEndpoint {
-    @ApiMethod(name = "intarray", path = "array")
-    public void intArray(@Named("ints") List<Integer> ints) {}
-
-    @ApiMethod(name = "enumarray", path = "enumarray")
-    public void enumArray(@Named("enums") List<TestEnum> ints) {}
   }
 
   @Api(name = "thirdparty", version = "v1",
