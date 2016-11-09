@@ -18,7 +18,9 @@ package com.google.api.server.spi.swagger;
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.Strings;
+import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.ApiConfigException;
+import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiIssuerAudienceConfig;
 import com.google.api.server.spi.config.model.ApiIssuerConfigs;
@@ -26,6 +28,10 @@ import com.google.api.server.spi.config.model.ApiIssuerConfigs.IssuerConfig;
 import com.google.api.server.spi.config.model.ApiKey;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
+import com.google.api.server.spi.config.model.FieldType;
+import com.google.api.server.spi.config.model.Schema;
+import com.google.api.server.spi.config.model.Schema.Field;
+import com.google.api.server.spi.config.model.SchemaRepository;
 import com.google.api.server.spi.config.validation.ApiConfigValidator;
 import com.google.api.server.spi.types.DateAndTime;
 import com.google.api.server.spi.types.SimpleDate;
@@ -37,6 +43,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -49,8 +56,11 @@ import java.util.List;
 import java.util.Map;
 
 import io.swagger.models.Info;
+import io.swagger.models.Model;
+import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
+import io.swagger.models.RefModel;
 import io.swagger.models.Response;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
@@ -58,16 +68,21 @@ import io.swagger.models.auth.ApiKeyAuthDefinition;
 import io.swagger.models.auth.In;
 import io.swagger.models.auth.OAuth2Definition;
 import io.swagger.models.auth.SecuritySchemeDefinition;
+import io.swagger.models.parameters.BodyParameter;
 import io.swagger.models.parameters.PathParameter;
 import io.swagger.models.parameters.QueryParameter;
 import io.swagger.models.parameters.SerializableParameter;
+import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.BooleanProperty;
 import io.swagger.models.properties.ByteArrayProperty;
+import io.swagger.models.properties.DateProperty;
+import io.swagger.models.properties.DateTimeProperty;
 import io.swagger.models.properties.DoubleProperty;
 import io.swagger.models.properties.FloatProperty;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.LongProperty;
 import io.swagger.models.properties.Property;
+import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.StringProperty;
 
 /**
@@ -111,6 +126,21 @@ public class SwaggerGenerator {
           .put(DateAndTime.class, "date-time")
           .put(Date.class, "date-time")
           .build();
+  private static final ImmutableMap<FieldType, Property> FIELD_TYPE_TO_PROPERTY_MAP =
+      ImmutableMap.<FieldType, Property>builder()
+          .put(FieldType.BOOLEAN, new BooleanProperty())
+          .put(FieldType.BYTE_STRING, new ByteArrayProperty())
+          .put(FieldType.DATE, new DateProperty())
+          .put(FieldType.DATE_TIME, new DateTimeProperty())
+          .put(FieldType.DOUBLE, new DoubleProperty())
+          .put(FieldType.FLOAT, new FloatProperty())
+          .put(FieldType.INT8, new IntegerProperty())
+          .put(FieldType.INT16, new IntegerProperty())
+          .put(FieldType.INT32, new IntegerProperty())
+          .put(FieldType.INT64, new LongProperty())
+          .put(FieldType.STRING, new StringProperty())
+          .build();
+
   private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
       new Function<ApiConfig, ApiKey>() {
         @Override
@@ -119,13 +149,18 @@ public class SwaggerGenerator {
         }
       };
 
-  public Swagger writeSwagger(Iterable<ApiConfig> configs, boolean writeInternal)
-      throws ApiConfigException {
-    return writeSwagger(configs, false, new SwaggerContext());
+  public Swagger writeSwagger(Iterable<ApiConfig> configs, boolean writeInternal,
+      SwaggerContext context) throws ApiConfigException {
+    try {
+      return writeSwagger(configs, writeInternal, context,
+          new SchemaRepository(new TypeLoader(SwaggerGenerator.class.getClassLoader())));
+    } catch (ClassNotFoundException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   public Swagger writeSwagger(Iterable<ApiConfig> configs, boolean writeInternal,
-      SwaggerContext context) throws ApiConfigException {
+      SwaggerContext context, SchemaRepository repo) throws ApiConfigException {
     ImmutableListMultimap<ApiKey, ? extends ApiConfig> configsByKey = FluentIterable.from(configs)
         .index(CONFIG_TO_ROOTLESS_KEY);
     Swagger swagger = new Swagger()
@@ -138,13 +173,14 @@ public class SwaggerGenerator {
             .title(context.hostname)
             .version(context.docVersion));
     for (ApiKey apiKey : configsByKey.keySet()) {
-      writeApi(configsByKey.get(apiKey), swagger, context, writeInternal);
+      writeApi(apiKey, configsByKey.get(apiKey), swagger, context, writeInternal, repo);
     }
     return swagger;
   }
 
-  private void writeApi(ImmutableList<? extends ApiConfig> apiConfigs, Swagger swagger,
-      SwaggerContext context, boolean writeInternal) throws ApiConfigException {
+  private void writeApi(ApiKey apiKey, ImmutableList<? extends ApiConfig> apiConfigs,
+      Swagger swagger, SwaggerContext context, boolean writeInternal, SchemaRepository repo)
+      throws ApiConfigException {
     ApiConfigValidator validator = new ApiConfigValidator();
     for (ApiConfig apiConfig : apiConfigs) {
       validator.validate(apiConfig);
@@ -156,25 +192,32 @@ public class SwaggerGenerator {
         addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER);
         addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT);
       }
-      writeApiClass(apiConfig, swagger, context, writeInternal);
+      writeApiClass(apiConfig, swagger, context, writeInternal, repo);
+    }
+    List<Schema> schemas = repo.getAllSchemaForApi(apiKey);
+    if (!schemas.isEmpty()) {
+      for (Schema schema : schemas) {
+        swagger.addDefinition(schema.name(), convertToSwaggerSchema(schema));
+      }
     }
   }
 
   private void writeApiClass(ApiConfig apiConfig, Swagger swagger, SwaggerContext context,
-      boolean writeInternal) throws ApiConfigException {
+      boolean writeInternal, SchemaRepository repo) throws ApiConfigException {
     Map<EndpointMethod, ApiMethodConfig> methodConfigs = apiConfig.getApiClassConfig().getMethods();
     for (Map.Entry<EndpointMethod, ApiMethodConfig> methodConfig : methodConfigs.entrySet()) {
       if (!methodConfig.getValue().isIgnored()) {
         EndpointMethod endpointMethod = methodConfig.getKey();
         ApiMethodConfig config = methodConfig.getValue();
-        writeApiMethod(config, endpointMethod, apiConfig, swagger, context, writeInternal);
+        writeApiMethod(
+            config, endpointMethod, apiConfig, swagger, context, writeInternal, repo);
       }
     }
   }
 
   private void writeApiMethod(ApiMethodConfig methodConfig, EndpointMethod endpointMethod,
-      ApiConfig apiConfig, Swagger swagger, SwaggerContext context, boolean writeInternal)
-      throws ApiConfigException {
+      ApiConfig apiConfig, Swagger swagger, SwaggerContext context, boolean writeInternal,
+      SchemaRepository repo) throws ApiConfigException {
     Path path = getOrCreatePath(swagger, apiConfig, methodConfig);
     Operation operation = new Operation();
     operation.setOperationId(getOperationId(apiConfig, methodConfig));
@@ -212,7 +255,11 @@ public class SwaggerGenerator {
           operation.parameter(parameter);
           break;
         case RESOURCE:
-          // TODO: Proper resource modeling
+          TypeToken<?> requestType = parameterConfig.getSchemaBaseType();
+          Schema schema = repo.getOrAdd(requestType, apiConfig);
+          BodyParameter bodyParameter = new BodyParameter();
+          bodyParameter.setSchema(new RefModel(schema.name()));
+          operation.addParameter(bodyParameter);
           break;
         case UNKNOWN:
           throw new IllegalArgumentException("Unclassifiable parameter type found.");
@@ -220,7 +267,14 @@ public class SwaggerGenerator {
           break;  // Do nothing, these are synthetic and created by the framework.
       }
     }
-    operation.response(200, new Response().description("A successful response"));
+    Response response = new Response().description("A successful response");
+    if (methodConfig.hasResourceInResponse()) {
+      TypeToken<?> returnType =
+          ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), apiConfig);
+      Schema schema = repo.getOrAdd(returnType, apiConfig);
+      response.setSchema(new RefProperty(schema.name()));
+    }
+    operation.response(200, response);
     writeAudiences(swagger, methodConfig, writeInternal, operation);
     if (methodConfig.isApiKeyRequired()) {
       operation.addSecurity(API_KEY, ImmutableList.<String>of());
@@ -271,6 +325,33 @@ public class SwaggerGenerator {
     if (writeInternal) {
       operation.setVendorExtension("x-security", xSecurity.build());
     }
+  }
+
+  private Model convertToSwaggerSchema(Schema schema) {
+    ModelImpl docSchema = new ModelImpl();
+    Map<String, Property> fields = Maps.newLinkedHashMap();
+    if (!schema.fields().isEmpty()) {
+      for (Field f : schema.fields().values()) {
+        fields.put(f.name(), convertToSwaggerProperty(f));
+      }
+      docSchema.setProperties(fields);
+    }
+    if (!schema.enumValues().isEmpty()) {
+      docSchema._enum(schema.enumValues());
+    }
+    return docSchema;
+  }
+
+  private Property convertToSwaggerProperty(Field f) {
+    Property p = FIELD_TYPE_TO_PROPERTY_MAP.get(f.type());
+    if (p != null) {
+      return p;
+    } else if (f.type() == FieldType.OBJECT || f.type() == FieldType.ENUM) {
+      return new RefProperty(f.schemaReference().get().name());
+    } else if (f.type() == FieldType.ARRAY) {
+      return new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
+    }
+    throw new IllegalArgumentException("could not convert field " + f);
   }
 
   private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig) {
