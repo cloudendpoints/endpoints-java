@@ -91,6 +91,7 @@
           ],
           "parameters": {
             "id": {
+              "description": "id desc",
               "location": "path",
               "required": true,
               "type": "string"
@@ -117,6 +118,7 @@
           ],
           "parameters": {
             "id": {
+              "description": "id desc",
               "location": "path",
               "required": true,
               "type": "string"
@@ -139,6 +141,7 @@
           ],
           "parameters": {
             "id": {
+              "description": "id desc",
               "location": "path",
               "required": true,
               "type": "string"
@@ -181,6 +184,7 @@
           ],
           "parameters": {
             "id": {
+              "description": "id desc",
               "location": "path",
               "required": true,
               "type": "string"
