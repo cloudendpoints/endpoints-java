@@ -329,6 +329,9 @@ public class DiscoveryGenerator {
     } else {
       schema.setLocation("query");
     }
+    if (parameterConfig.getDescription() != null) {
+      schema.setDescription(parameterConfig.getDescription());
+    }
     return schema;
   }
 
