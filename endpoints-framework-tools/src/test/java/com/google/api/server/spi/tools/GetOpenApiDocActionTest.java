@@ -35,10 +35,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Tests for {@link GetSwaggerDocAction}.
+ * Tests for {@link GetOpenApiDocAction}.
  */
 @RunWith(JUnit4.class)
-public class GetSwaggerDocActionTest extends EndpointsToolTest {
+public class GetOpenApiDocActionTest extends EndpointsToolTest {
 
   private URL[] classPath;
   private String outputFilePath;
@@ -48,17 +48,17 @@ public class GetSwaggerDocActionTest extends EndpointsToolTest {
 
   @Override
   protected void addTestAction(Map<String, EndpointsToolAction> actions) {
-    actions.put(GetSwaggerDocAction.NAME, new GetSwaggerDocAction() {
+    actions.put(GetOpenApiDocAction.NAME, new GetOpenApiDocAction() {
 
       @Override
-      public String genSwaggerDoc(
+      public String genOpenApiDoc(
           URL[] classPath, String outputFilePath, String hostname, String basePath,
           List<String> serviceClassNames, boolean outputToDisk) {
-        GetSwaggerDocActionTest.this.classPath = classPath;
-        GetSwaggerDocActionTest.this.outputFilePath = outputFilePath;
-        GetSwaggerDocActionTest.this.basePath = basePath;
-        GetSwaggerDocActionTest.this.serviceClassNames = serviceClassNames;
-        GetSwaggerDocActionTest.this.outputToDisk = outputToDisk;
+        GetOpenApiDocActionTest.this.classPath = classPath;
+        GetOpenApiDocActionTest.this.outputFilePath = outputFilePath;
+        GetOpenApiDocActionTest.this.basePath = basePath;
+        GetOpenApiDocActionTest.this.serviceClassNames = serviceClassNames;
+        GetOpenApiDocActionTest.this.outputToDisk = outputToDisk;
         return null;
       }
 
@@ -81,9 +81,9 @@ public class GetSwaggerDocActionTest extends EndpointsToolTest {
   }
 
   @Test
-  public void testGetSwaggerDoc() throws Exception {
+  public void testGetOpenApiDoc() throws Exception {
     tool.execute(
-        new String[]{GetSwaggerDocAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT),
+        new String[]{GetOpenApiDocAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT),
             "classPath", option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir", "MyService",
             "MyService2"});
     assertFalse(usagePrinted);

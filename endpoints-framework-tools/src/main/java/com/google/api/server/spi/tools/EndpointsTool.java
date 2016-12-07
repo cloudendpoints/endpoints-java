@@ -48,12 +48,14 @@ public class EndpointsTool {
   private final Map<String, EndpointsToolAction> actions;
 
   public EndpointsTool() {
-    actions = new LinkedHashMap<String, EndpointsToolAction>();
+    actions = new LinkedHashMap<>();
     actions.put(GetDiscoveryDocAction.NAME, new GetDiscoveryDocAction());
     actions.put(GetClientLibAction.NAME, new GetClientLibAction());
     actions.put(GenApiConfigAction.NAME, new GenApiConfigAction());
     actions.put(GenClientLibAction.NAME, new GenClientLibAction());
-    actions.put(GetSwaggerDocAction.NAME, new GetSwaggerDocAction());
+    actions.put(GetOpenApiDocAction.NAME, new GetOpenApiDocAction());
+    actions.put(GetOpenApiDocAction.LEGACY_NAME,
+        new GetOpenApiDocAction(GetOpenApiDocAction.LEGACY_NAME, false));
     actions.put(HelpAction.NAME, new HelpAction());
   }
 
