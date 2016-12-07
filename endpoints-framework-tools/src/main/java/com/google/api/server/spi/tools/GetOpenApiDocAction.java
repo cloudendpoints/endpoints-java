@@ -41,30 +41,35 @@ import io.swagger.models.Swagger;
 import io.swagger.util.Json;
 
 /**
- * Command to generate a Swagger document from annotated service classes.
+ * Command to generate an OpenAPI document from annotated service classes.
  */
-public class GetSwaggerDocAction extends EndpointsToolAction {
-  public static final String NAME = "get-swagger-doc";
+public class GetOpenApiDocAction extends EndpointsToolAction {
+  public static final String NAME = "get-openapi-doc";
+  public static final String LEGACY_NAME = "get-swagger-doc";
 
   private Option classPathOption = makeClassPathOption();
-  private Option outputOption = makeSwaggerOutputOption();
+  private Option outputOption = makeOpenApiOutputOption();
   private Option warOption = makeWarOption();
   private Option hostnameOption = makeHostnameOption();
   private Option basePathOption = makeBasePathOption();
 
-  public GetSwaggerDocAction() {
-    super(NAME);
+  public GetOpenApiDocAction() {
+    this(NAME, true);
+  }
+
+  protected GetOpenApiDocAction(String alias, boolean displayHelp) {
+    super(alias);
     setOptions(
         Arrays.asList(classPathOption, outputOption, warOption, hostnameOption, basePathOption));
-    setShortDescription("Generates a Swagger document");
-    setExampleString("<Endpoints tool> get-swagger-doc "
-        + "com.google.devrel.samples.ttt.spi.BoardV1 com.google.devrel.samples.ttt.spi.ScoresV1");
-    setHelpDisplayNeeded(true);
+    setShortDescription("Generates an OpenAPI document");
+    setExampleString("<Endpoints tool> " + getNames()[0]
+        + " com.google.devrel.samples.ttt.spi.BoardV1 com.google.devrel.samples.ttt.spi.ScoresV1");
+    setHelpDisplayNeeded(displayHelp);
   }
 
   @Override
   public String getUsageString() {
-    return NAME + " <options> <service class>...";
+    return getNames()[0] + " <options> <service class>...";
   }
 
   @Override
@@ -74,24 +79,24 @@ public class GetSwaggerDocAction extends EndpointsToolAction {
     if (serviceClassNames.isEmpty()) {
       return false;
     }
-    genSwaggerDoc(computeClassPath(warPath, getClassPath(classPathOption)),
-        getSwaggerOutputPath(outputOption), getHostname(hostnameOption, warPath),
+    genOpenApiDoc(computeClassPath(warPath, getClassPath(classPathOption)),
+        getOpenApiOutputPath(outputOption), getHostname(hostnameOption, warPath),
         getBasePath(basePathOption), serviceClassNames, true);
     return true;
   }
 
   /**
-   * Generates Swagger document for an array of service classes.
+   * Generates an OpenAPI document for an array of service classes.
    *
    * @param classPath Class path to load service classes and their dependencies
-   * @param outputFilePath File to store the Swagger document in
-   * @param hostname The hostname to use for the Swagger document
-   * @param basePath The base path to use for the Swagger document, e.g. /_ah/api
+   * @param outputFilePath File to store the OpenAPI document in
+   * @param hostname The hostname to use for the OpenAPI document
+   * @param basePath The base path to use for the OpenAPI document, e.g. /_ah/api
    * @param serviceClassNames Array of service class names of the API
-   * @param outputToDisk Iff {@code true}, outputs a swagger.json to disk.
-   * @return a single Swagger document representing all service classes.
+   * @param outputToDisk Iff {@code true}, outputs a openapi.json to disk.
+   * @return a single OpenAPI document representing all service classes.
    */
-  public String genSwaggerDoc(
+  public String genOpenApiDoc(
       URL[] classPath, String outputFilePath, String hostname, String basePath,
       List<String> serviceClassNames, boolean outputToDisk)
       throws ClassNotFoundException, IOException, ApiConfigException {
@@ -120,7 +125,7 @@ public class GetSwaggerDocAction extends EndpointsToolAction {
         .writeValueAsString(swagger);
     if (outputToDisk) {
       Files.write(swaggerStr, new File(outputFilePath), UTF_8);
-      System.out.println("Swagger document written to " + outputFilePath);
+      System.out.println("OpenAPI document written to " + outputFilePath);
     }
 
     return swaggerStr;

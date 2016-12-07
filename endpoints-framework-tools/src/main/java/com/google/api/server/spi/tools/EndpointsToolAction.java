@@ -110,7 +110,7 @@ public abstract class EndpointsToolAction extends Action {
   static final String DEFAULT_WAR_OUTPUT_PATH_SUFFIX = "WEB-INF";
 
   @VisibleForTesting
-  static final String DEFAULT_SWAGGER_OUTPUT_PATH = "./swagger.json";
+  static final String DEFAULT_OPENAPI_OUTPUT_PATH = "./openapi.json";
 
   @VisibleForTesting
   static final String DEFAULT_CLASS_PATH = "";
@@ -198,8 +198,8 @@ public abstract class EndpointsToolAction extends Action {
     return warPath + File.separator + DEFAULT_WAR_OUTPUT_PATH_SUFFIX;
   }
 
-  protected String getSwaggerOutputPath(Option outputOption) {
-    return getOptionOrDefault(outputOption, DEFAULT_SWAGGER_OUTPUT_PATH);
+  protected String getOpenApiOutputPath(Option outputOption) {
+    return getOptionOrDefault(outputOption, DEFAULT_OPENAPI_OUTPUT_PATH);
   }
 
   protected String getClassPath(Option classPathOption) {
@@ -264,12 +264,12 @@ public abstract class EndpointsToolAction extends Action {
             + "is invoked from.");
   }
 
-  protected Option makeSwaggerOutputOption() {
+  protected Option makeOpenApiOutputOption() {
     return EndpointsOption.makeVisibleNonFlagOption(
         OPTION_OUTPUT_DIR_SHORT,
         OPTION_OUTPUT_DIR_LONG,
         "OUTPUT_FILE",
-        "Sets the file where output will be written to. Default: " + DEFAULT_SWAGGER_OUTPUT_PATH);
+        "Sets the file where output will be written to. Default: " + DEFAULT_OPENAPI_OUTPUT_PATH);
   }
 
   protected Option makeClassPathOption() {
@@ -319,7 +319,7 @@ public abstract class EndpointsToolAction extends Action {
         OPTION_HOSTNAME_SHORT,
         OPTION_HOSTNAME_LONG,
         "HOSTNAME",
-        "Sets the hostname for the generated Swagger document. Default is the app's default "
+        "Sets the hostname for the generated OpenAPI document. Default is the app's default "
             + "hostname.");
   }
 
@@ -328,7 +328,7 @@ public abstract class EndpointsToolAction extends Action {
         OPTION_BASE_PATH_SHORT,
         OPTION_BASE_PATH_LONG,
         "BASE_PATH",
-        "Sets the base path for the generated Swagger document. Default is " + DEFAULT_BASE_PATH
+        "Sets the base path for the generated OpenAPI document. Default is " + DEFAULT_BASE_PATH
             + ".");
   }
 
