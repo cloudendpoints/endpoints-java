@@ -116,6 +116,15 @@ public class DiscoveryGeneratorTest {
   }
 
   @Test
+  public void testWriteDiscovery_newHostname() throws Exception {
+    RestDescription doc = getDiscovery(
+        FooEndpoint.class,
+        new DiscoveryContext().setApiRoot("http://notlocalhost/api").setHostname("localhost:8080"));
+    RestDescription expected = readExpectedAsDiscovery("foo_endpoint_localhost.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
   public void testWriteDiscovery_directory() throws Exception {
     DiscoveryGenerator.Result result =
         generator.writeDiscovery(
