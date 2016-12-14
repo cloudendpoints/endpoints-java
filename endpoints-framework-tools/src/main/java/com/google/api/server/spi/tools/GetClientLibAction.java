@@ -81,14 +81,10 @@ public class GetClientLibAction extends EndpointsToolAction {
   public Object getClientLib(URL[] classPath, String language, String outputDirPath,
       String warPath, List<String> serviceClassNames, String buildSystem, boolean debug)
           throws ClassNotFoundException, IOException, ApiConfigException {
-    Iterable<String> apiConfigs = new GenApiConfigAction().genApiConfig(classPath, outputDirPath,
-        warPath, serviceClassNames, debug);
     Map<String, String> discoveryDocs = new GetDiscoveryDocAction().getDiscoveryDoc(
         classPath, outputDirPath, warPath, serviceClassNames, debug);
     for (Map.Entry<String, String> entry : discoveryDocs.entrySet()) {
-      String restDiscoveryDocPath = entry.getKey();
-      new GenClientLibAction().genClientLib(language, outputDirPath, restDiscoveryDocPath,
-          buildSystem);
+      new GenClientLibAction().genClientLib(language, outputDirPath, entry.getValue(), buildSystem);
     }
     return null;
   }
