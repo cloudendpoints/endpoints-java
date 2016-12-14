@@ -284,7 +284,7 @@ public class DiscoveryGenerator {
   }
 
   private Map<String, JsonSchema> convertMethodParameters(ApiMethodConfig methodConfig) {
-    Map<String, JsonSchema> parameters = Maps.newTreeMap();
+    Map<String, JsonSchema> parameters = Maps.newLinkedHashMap();
     for (ApiParameterConfig parameterConfig : methodConfig.getParameterConfigs()) {
       if (parameterConfig.getClassification() == Classification.API_PARAMETER) {
         parameters.put(

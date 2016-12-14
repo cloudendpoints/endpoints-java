@@ -28,6 +28,7 @@ import com.google.api.server.spi.discovery.DiscoveryGenerator.DiscoveryContext;
 import com.google.api.server.spi.testing.ArrayEndpoint;
 import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
+import com.google.api.server.spi.testing.MultipleParameterEndpoint;
 import com.google.api.server.spi.testing.NamespaceEndpoint;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
@@ -104,6 +105,13 @@ public class DiscoveryGeneratorTest {
   public void testWriteDiscovery_namespace() throws Exception {
     RestDescription doc = getDiscovery(NamespaceEndpoint.class, new DiscoveryContext());
     RestDescription expected = readExpectedAsDiscovery("namespace_endpoint.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_parameterOrder() throws Exception {
+    RestDescription doc = getDiscovery(MultipleParameterEndpoint.class, new DiscoveryContext());
+    RestDescription expected = readExpectedAsDiscovery("multiple_parameter_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
