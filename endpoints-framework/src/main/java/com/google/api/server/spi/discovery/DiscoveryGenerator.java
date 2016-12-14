@@ -23,6 +23,7 @@ import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospect
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiKey;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
+import com.google.api.server.spi.config.model.ApiNamespaceConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig.Classification;
 import com.google.api.server.spi.config.model.FieldType;
@@ -137,6 +138,18 @@ public class DiscoveryGenerator {
       // precedence here if there happens to be divergence.
       if (config.getDescription() != null) {
         doc.setDescription(config.getDescription());
+      }
+      if (config.getNamespaceConfig() != null) {
+        ApiNamespaceConfig namespaceConfig = config.getNamespaceConfig();
+        if (!Strings.isEmptyOrWhitespace(namespaceConfig.getOwnerName())) {
+          doc.setOwnerName(namespaceConfig.getOwnerName());
+        }
+        if (!Strings.isEmptyOrWhitespace(namespaceConfig.getOwnerDomain())) {
+          doc.setOwnerDomain(namespaceConfig.getOwnerDomain());
+        }
+        if (!Strings.isEmptyOrWhitespace(namespaceConfig.getPackagePath())) {
+          doc.setPackagePath(namespaceConfig.getPackagePath());
+        }
       }
       for (ApiMethodConfig methodConfig : config.getApiClassConfig().getMethods().values()) {
         if (!methodConfig.isIgnored()) {
