@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.discovery;
 
+import com.google.api.client.util.Preconditions;
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.Strings;
@@ -126,10 +127,10 @@ public class DiscoveryGenerator {
     String basePath = context.basePath + "/" + servicePath;
     RestDescription doc = REST_SKELETON.clone()
         .setBasePath(basePath)
-        .setBaseUrl(context.apiRoot + "/" + servicePath)
+        .setBaseUrl(context.getApiRoot() + "/" + servicePath)
         .setId(apiKey.getName() + ":" + apiKey.getVersion())
         .setName(apiKey.getName())
-        .setRootUrl(context.apiRoot + "/")
+        .setRootUrl(context.getApiRoot() + "/")
         .setServicePath(servicePath)
         .setVersion(apiKey.getVersion());
 
@@ -370,7 +371,7 @@ public class DiscoveryGenerator {
       items.add(new Items()
           .setDescription(doc.getDescription())
           .setDiscoveryLink("." + relativePath)
-          .setDiscoveryRestUrl(context.apiRoot + "/discovery/v1" + relativePath)
+          .setDiscoveryRestUrl(context.getApiRoot() + "/discovery/v1" + relativePath)
           .setIcons(new Icons()
               .setX16("http://www.google.com/images/icons/product/search-16.gif")
               .setX32("http://www.google.com/images/icons/product/search-32.gif"))
@@ -402,10 +403,13 @@ public class DiscoveryGenerator {
   }
 
   public static class DiscoveryContext {
-    private Scheme scheme = Scheme.HTTPS;
+    private String scheme = "https";
     private String hostname = "myapi.appspot.com";
     private String basePath = "/_ah/api";
-    private String apiRoot = "https://myapi.appspot.com/_ah/api";
+
+    public String getApiRoot() {
+      return scheme + "://" + hostname + basePath;
+    }
 
     public DiscoveryContext setApiRoot(String apiRoot) {
       try {
@@ -417,7 +421,6 @@ public class DiscoveryGenerator {
         }
         basePath = Strings.stripTrailingSlash(url.getPath());
         setScheme(url.getProtocol());
-        this.apiRoot = Strings.stripTrailingSlash(apiRoot);
         return this;
       } catch (MalformedURLException e) {
         throw new IllegalArgumentException(e);
@@ -425,7 +428,9 @@ public class DiscoveryGenerator {
     }
 
     public DiscoveryContext setScheme(String scheme) {
-      this.scheme = "http".equals(scheme) ? Scheme.HTTP : Scheme.HTTPS;
+      Preconditions.checkArgument("http".equals(scheme) || "https".equals(scheme),
+          "scheme must be http or https");
+      this.scheme = scheme;
       return this;
     }
 
