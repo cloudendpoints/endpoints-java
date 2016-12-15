@@ -258,6 +258,7 @@ public class SwaggerGenerator {
           TypeToken<?> requestType = parameterConfig.getSchemaBaseType();
           Schema schema = repo.getOrAdd(requestType, apiConfig);
           BodyParameter bodyParameter = new BodyParameter();
+          bodyParameter.setName("body");
           bodyParameter.setSchema(new RefModel(schema.name()));
           operation.addParameter(bodyParameter);
           break;
