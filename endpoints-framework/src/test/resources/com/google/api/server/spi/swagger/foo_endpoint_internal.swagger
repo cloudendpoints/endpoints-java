@@ -157,6 +157,7 @@
             "type": "string"
           },
           {
+            "name": "body",
             "in": "body",
             "required": false,
             "schema": {
@@ -209,6 +210,7 @@
             "type": "string"
           },
           {
+            "name": "body",
             "in": "body",
             "required": false,
             "schema": {
