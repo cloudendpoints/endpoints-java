@@ -93,6 +93,22 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
   public Map<String, String> getDiscoveryDoc(URL[] classPath, String outputDirPath,
       String warPath, List<String> serviceClassNames, boolean debug)
           throws ClassNotFoundException, IOException, ApiConfigException {
+    return getDiscoveryDoc(classPath, outputDirPath, warPath, serviceClassNames, debug, true);
+  }
+
+  /**
+   * Generates a Java client library for an API.  Combines the steps of generating API
+   * configuration, generating Discovery doc and generating client library into one.
+   * @param classPath Class path to load service classes and their dependencies
+   * @param outputDirPath Directory to write output files into
+   * @param warPath Directory or file containing a WAR layout
+   * @param serviceClassNames Array of service class names of the API
+   * @param debug Whether or not to output intermediate output files
+   * @param outputToDisk Whether or not to output discovery docs to disk
+   */
+  public Map<String, String> getDiscoveryDoc(URL[] classPath, String outputDirPath,
+      String warPath, List<String> serviceClassNames, boolean debug, boolean outputToDisk)
+      throws ClassNotFoundException, IOException, ApiConfigException {
     File outputDir = new File(outputDirPath);
     if (!outputDir.isDirectory()) {
       throw new IllegalArgumentException(outputDirPath + " is not a directory");
@@ -120,9 +136,11 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
       String discoveryDocFilePath =
           outputDir + "/" + key.getName() + "-" + key.getVersion() + "-rest.discovery";
       String docString = writer.writeValueAsString(entry.getValue());
-      Files.write(docString, new File(discoveryDocFilePath), UTF_8);
+      if (outputToDisk) {
+        Files.write(docString, new File(discoveryDocFilePath), UTF_8);
+        System.out.println("API Discovery Document written to " + discoveryDocFilePath);
+      }
       builder.put(discoveryDocFilePath, docString);
-      System.out.println("API Discovery Document written to " + discoveryDocFilePath);
     }
     return builder.build();
   }
