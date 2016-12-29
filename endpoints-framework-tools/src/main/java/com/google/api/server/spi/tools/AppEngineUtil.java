@@ -45,6 +45,11 @@ public class AppEngineUtil {
   private static final String APP_YAML_PATH = "WEB-INF/app.yaml";
 
   /**
+   * Path in a staged WAR layout to app.yaml
+   */
+  private static final String STAGED_APP_YAML_PATH = "app.yaml";
+
+  /**
    * Given the directory of an App Engine application, returns its application id by checking
    * WEB-INF/app.yaml first and then WEB-INF/appengine-web.xml.
    */
@@ -117,7 +122,11 @@ public class AppEngineUtil {
 
   private static String getAppProperty(String appDir, AppPropertyReader reader) {
     // try app.yaml first because it may be newer
-    File appYamlFile = new File(new File(appDir), APP_YAML_PATH);
+    File appDirFile = new File(appDir);
+    File appYamlFile = new File(appDirFile, APP_YAML_PATH);
+    if (!appYamlFile.exists()) {
+      appYamlFile = new File(appDirFile, STAGED_APP_YAML_PATH);
+    }
     try {
       return AppYaml.parse(new FileReader(appYamlFile)).getApplication();
     } catch (FileNotFoundException e) {
