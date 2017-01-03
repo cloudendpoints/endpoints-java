@@ -30,6 +30,7 @@ import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.MultipleParameterEndpoint;
 import com.google.api.server.spi.testing.NamespaceEndpoint;
+import com.google.api.server.spi.testing.PrimitiveEndpoint;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
 import com.google.common.collect.ImmutableList;
@@ -121,6 +122,13 @@ public class DiscoveryGeneratorTest {
         FooEndpoint.class,
         new DiscoveryContext().setApiRoot("http://notlocalhost/api").setHostname("localhost:8080"));
     RestDescription expected = readExpectedAsDiscovery("foo_endpoint_localhost.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_PrimitiveEndpoint() throws Exception {
+    RestDescription doc = getDiscovery(PrimitiveEndpoint.class, context);
+    RestDescription expected = readExpectedAsDiscovery("primitive_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
