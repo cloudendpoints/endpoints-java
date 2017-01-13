@@ -122,7 +122,7 @@ public class EndpointsServlet extends HttpServlet {
     try {
       SystemService.Builder builder = SystemService.builder()
           .withDefaults(classLoader)
-          .setStandardConfigLoader(classLoader, false)
+          .setStandardConfigLoader(classLoader)
           .setIllegalArgumentIsBackendError(initParameters.isIllegalArgumentBackendError())
           .setBackendServiceEnabled(false)
           .setDiscoveryServiceEnabled(true);

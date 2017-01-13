@@ -17,10 +17,8 @@ package com.google.api.server.spi;
 
 import com.google.api.server.spi.config.ApiConfigException;
 import com.google.api.server.spi.config.ApiConfigLoader;
-import com.google.api.server.spi.config.ApiConfigSource;
 import com.google.api.server.spi.config.ApiConfigWriter;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
-import com.google.api.server.spi.config.datastore.ApiConfigDatastoreReader;
 import com.google.api.server.spi.config.jsonwriter.JsonConfigWriter;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiKey;
@@ -511,7 +509,7 @@ public class SystemService {
     private Map<Class<?>, Object> services = Maps.newLinkedHashMap();
 
     public Builder withDefaults(ClassLoader classLoader) throws ClassNotFoundException {
-      setStandardConfigLoader(classLoader, true);
+      setStandardConfigLoader(classLoader);
       setConfigValidator(new ApiConfigValidator());
       setAppName(new BackendProperties().getApplicationId());
       setConfigWriter(new JsonConfigWriter(classLoader, configValidator));
@@ -522,20 +520,14 @@ public class SystemService {
       return this;
     }
 
-    public Builder setStandardConfigLoader(ClassLoader classLoader, boolean enableDatastoreReader)
+    public Builder setStandardConfigLoader(ClassLoader classLoader)
         throws ClassNotFoundException {
       TypeLoader typeLoader = new TypeLoader(classLoader);
       ApiConfigAnnotationReader annotationReader =
           new ApiConfigAnnotationReader(typeLoader.getAnnotationTypes());
 
-      if (EnvUtil.isRunningOnAppEngine() && enableDatastoreReader) {
-        ApiConfigSource datastoreReader = new ApiConfigDatastoreReader();
-        this.configLoader = new ApiConfigLoader(new ApiConfig.Factory(), typeLoader,
-            annotationReader, datastoreReader);
-      } else {
-        this.configLoader = new ApiConfigLoader(new ApiConfig.Factory(), typeLoader,
-            annotationReader);
-      }
+      this.configLoader =
+          new ApiConfigLoader(new ApiConfig.Factory(), typeLoader, annotationReader);
       return this;
     }
 
