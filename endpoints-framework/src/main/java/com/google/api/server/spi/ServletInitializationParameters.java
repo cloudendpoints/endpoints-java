@@ -26,7 +26,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 /**
- * Initialization parameters supported by the {@link SystemServiceServlet}.
+ * Initialization parameters supported by the {@link EndpointsServlet}.
  */
 public class ServletInitializationParameters {
   private static final String INIT_PARAM_NAME_SERVICES = "services";

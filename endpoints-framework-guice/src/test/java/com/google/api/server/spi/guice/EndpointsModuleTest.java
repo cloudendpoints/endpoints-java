@@ -118,7 +118,7 @@ public class EndpointsModuleTest {
 
   @Test
   public void testConfigureEndpoints_legacyServletWithServices() {
-    testServletClassWithServices(true, GuiceSystemServiceServlet.class);
+    testServletClassWithServices(true, GuiceEndpointsServlet.class);
   }
 
   @Test
@@ -133,7 +133,7 @@ public class EndpointsModuleTest {
 
   @Test
   public void testConfigureEndpoints_legacyServletWithInitParams() {
-    testServletClassWithInitParams(true, GuiceSystemServiceServlet.class);
+    testServletClassWithInitParams(true, GuiceEndpointsServlet.class);
   }
 
   @Test

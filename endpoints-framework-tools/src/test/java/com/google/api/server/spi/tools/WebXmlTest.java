@@ -1,7 +1,6 @@
 package com.google.api.server.spi.tools;
 
 import com.google.api.server.spi.EndpointsServlet;
-import com.google.api.server.spi.SystemServiceServlet;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -158,7 +157,8 @@ public class WebXmlTest {
   public void testServiceClasses_undefinedBehaviorMultipleSystemServiceServlets()
       throws IOException, SAXException, ParserConfigurationException, XPathExpressionException {
     WebXml webxml = new WebXmlBuilder()
-        .servlet("SomeJunkServlet", SystemServiceServlet.class.getName(), "com.test.JunkEndpoint")
+        .servlet("SomeJunkServlet", "com.google.api.server.spi.SystemServiceServlet",
+            "com.test.JunkEndpoint")
         .endpointsServlet("com.test.EndpointOne")
         .servletMapping("SomeJunkServlet", WebXmlBuilder.SPI_URL)
         .endpointsServletMapping()
@@ -210,7 +210,8 @@ public class WebXmlTest {
     static final String SPI_URL = "/_ah/spi";
     static final String API_URL = "/_ah/api";
     static final String SYSTEM_SERVICE_SERVLET = "SystemServiceServlet";
-    static final String SYSTEM_SERVICE_SERVLET_CLASS = SystemServiceServlet.class.getName();
+    static final String SYSTEM_SERVICE_SERVLET_CLASS =
+        "com.google.api.server.spi.SystemServiceServlet";
     static final String ENDPOINTS_SERVLET = "EndpointsServlet";
     static final String ENDPOINTS_SERVLET_CLASS = EndpointsServlet.class.getName();
 

@@ -27,7 +27,7 @@ import javax.inject.Provider;
 
 /**
  * A class which introduces heterogenous bindings for service providers.
- * Called from {@link SystemServiceModule} and injected into {@link GuiceSystemServiceServlet}.
+ * Called from {@link EndpointsModule} and injected into {@link GuiceEndpointsServlet}.
  */
 public class ServiceMap {
 
