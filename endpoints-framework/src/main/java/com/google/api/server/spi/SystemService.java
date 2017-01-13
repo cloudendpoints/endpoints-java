@@ -143,10 +143,9 @@ public class SystemService {
    * @param services The service classes to be registered
    */
   public SystemService(ApiConfigLoader configLoader, ApiConfigValidator validator, String appName,
-      ApiConfigWriter configWriter, Object[] services, boolean isIllegalArgumentBackendError,
-      boolean enableBackendService) throws ApiConfigException {
-    this(configLoader, validator, appName, configWriter, isIllegalArgumentBackendError,
-        enableBackendService);
+      ApiConfigWriter configWriter, Object[] services, boolean isIllegalArgumentBackendError)
+      throws ApiConfigException {
+    this(configLoader, validator, appName, configWriter, isIllegalArgumentBackendError);
     for (Object service : services) {
       registerService(service);
     }
@@ -159,8 +158,8 @@ public class SystemService {
    * @param appName The application's id
    */
   public SystemService(ApiConfigLoader configLoader, ApiConfigValidator validator, String appName,
-      ApiConfigWriter configWriter, boolean isIllegalArgumentBackendError,
-      boolean enableBackendService) throws ApiConfigException {
+      ApiConfigWriter configWriter, boolean isIllegalArgumentBackendError)
+      throws ApiConfigException {
     this.servicesByName = new HashMap<String, List<Object>>();
     this.endpoints = new ConcurrentHashMap<Object, EndpointNode>();
     this.serviceApiVersions = new HashMap<String, String>();
@@ -171,9 +170,6 @@ public class SystemService {
     this.serviceContext = ServiceContext.create(appName, ServiceContext.DEFAULT_API_NAME);
     this.configWriter = configWriter;
     this.isIllegalArgumentBackendError = isIllegalArgumentBackendError;
-    if (enableBackendService) {
-      registerInternalService(new BackendService(this));
-    }
   }
 
   /**
@@ -420,13 +416,6 @@ public class SystemService {
       if (cause instanceof ServiceException) {
         resultWriter.writeError((ServiceException) cause);
       } else if (cause instanceof IllegalArgumentException) {
-        // If the backend call is to BackendService, this is an initialization error and needs to
-        // be logged at a higher level than info. Otherwise, it could be thrown by the API. It is
-        // transformed into a bad request response, so we don't need to log it at a high level.
-        if (isIllegalArgumentBackendError
-            || BackendService.class.equals(method.getDeclaringClass())) {
-          level = Level.SEVERE;
-        }
         resultWriter.writeError(
             isIllegalArgumentBackendError
                 ? new InternalServerErrorException(cause) : new BadRequestException(cause));
@@ -504,7 +493,6 @@ public class SystemService {
     private String appName;
     private ApiConfigWriter configWriter;
     private boolean isIllegalArgumentBackendError;
-    private boolean enableBackendService;
     private boolean enableDiscoveryService;
     private Map<Class<?>, Object> services = Maps.newLinkedHashMap();
 
@@ -515,7 +503,6 @@ public class SystemService {
       setConfigWriter(new JsonConfigWriter(classLoader, configValidator));
       typeLoader = new TypeLoader(classLoader);
       isIllegalArgumentBackendError = false;
-      enableBackendService = true;
       enableDiscoveryService = false;
       return this;
     }
@@ -551,11 +538,6 @@ public class SystemService {
       return this;
     }
 
-    public Builder setBackendServiceEnabled(boolean enableBackendService) {
-      this.enableBackendService = enableBackendService;
-      return this;
-    }
-
     public Builder setDiscoveryServiceEnabled(boolean enableDiscoveryService) {
       this.enableDiscoveryService = enableDiscoveryService;
       return this;
@@ -571,7 +553,7 @@ public class SystemService {
       Preconditions.checkNotNull(configValidator, "configValidator");
       Preconditions.checkNotNull(configWriter, "configWriter");
       SystemService systemService = new SystemService(configLoader, configValidator, appName,
-          configWriter, isIllegalArgumentBackendError, enableBackendService);
+          configWriter, isIllegalArgumentBackendError);
       for (Entry<Class<?>, Object> entry : services.entrySet()) {
         systemService.registerService(entry.getKey(), entry.getValue());
       }

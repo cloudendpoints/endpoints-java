@@ -193,7 +193,7 @@ public abstract class BaseSystemServiceTest {
 
     return new SystemService(
         new ApiConfigLoader(), new ApiConfigValidator(), "app", new JsonConfigWriter(), services,
-        isIllegalArgumentBackendError, enableBackendService);
+        isIllegalArgumentBackendError);
   }
 
   protected abstract TestEndpoint getTestService();
@@ -218,7 +218,7 @@ public abstract class BaseSystemServiceTest {
 
     SystemService systemService = new SystemService(
         configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false /* isIllegalArgumentBackendError */, false /* enableBackendService */);
+        false /* isIllegalArgumentBackendError */);
 
     // Force the config loader to return a different config from that used during registration.
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), TestEndpoint.class);
@@ -246,7 +246,7 @@ public abstract class BaseSystemServiceTest {
 
     SystemService systemService = new SystemService(
         configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false /* isIllegalArgumentBackendError */, false /* enableBackendService */);
+        false /* isIllegalArgumentBackendError */);
 
     assertEquals(methodConfig,
         systemService.resolveAndUpdateServiceConfig("TestEndpoint", "getResultNoParams"));
@@ -272,7 +272,7 @@ public abstract class BaseSystemServiceTest {
 
     SystemService systemService = new SystemService(
         configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false /* isIllegalArgumentBackendError */, false /* enableBackendService */);
+        false /* isIllegalArgumentBackendError */);
 
     assertEquals(methodConfig,
         systemService.resolveAndUpdateServiceConfig("TestEndpoint", "getResultNoParams"));
@@ -289,7 +289,7 @@ public abstract class BaseSystemServiceTest {
 
     SystemService systemService = new SystemService(
         configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false  /* isIllegalArgumentBackendError */, false /* enableBackendService */);
+        false  /* isIllegalArgumentBackendError */);
 
     Mockito.doThrow(new ApiConfigException("bleh")).when(configLoader).reloadConfiguration(
         Mockito.<ServiceContext>any(), Mockito.eq(TestEndpoint.class), Mockito.<ApiConfig>any());
@@ -307,7 +307,7 @@ public abstract class BaseSystemServiceTest {
 
     SystemService systemService = new SystemService(
         configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false /* isIllegalArgumentBackendError */, false /* enableBackendService */);
+        false /* isIllegalArgumentBackendError */);
 
     // Force the config loader to return a different config from that used during registration.
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), TestEndpoint.class);
@@ -357,8 +357,7 @@ public abstract class BaseSystemServiceTest {
 
     SystemService systemService =
         new SystemService(configLoader, configValidator, "app", configWriter,
-            new Object[] { service, getTestService2() }, false /* isIllegalArgumentBackendError */,
-            false /* enableBackendService */);
+            new Object[] { service, getTestService2() }, false /* isIllegalArgumentBackendError */);
 
     Map<ApiKey, String> configs = systemService.getApiConfigs();
 

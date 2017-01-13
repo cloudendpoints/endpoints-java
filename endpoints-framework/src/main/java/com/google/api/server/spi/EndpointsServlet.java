@@ -39,8 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * A handler for proxy-less API serving. Unlike {@link SystemServiceServlet}, which speaks the
- * JSON-based Lily protocol, this servlet understands and replies in both JSON-REST and JSON-RPC.
+ * A handler for proxy-less API serving. This servlet understands and replies in JSON-REST.
  */
 public class EndpointsServlet extends HttpServlet {
   private static final String EXPLORER_PATH = "explorer";
@@ -124,7 +123,6 @@ public class EndpointsServlet extends HttpServlet {
           .withDefaults(classLoader)
           .setStandardConfigLoader(classLoader)
           .setIllegalArgumentIsBackendError(initParameters.isIllegalArgumentBackendError())
-          .setBackendServiceEnabled(false)
           .setDiscoveryServiceEnabled(true);
       for (Class<?> serviceClass : initParameters.getServiceClasses()) {
         builder.addService(serviceClass, createService(serviceClass));
