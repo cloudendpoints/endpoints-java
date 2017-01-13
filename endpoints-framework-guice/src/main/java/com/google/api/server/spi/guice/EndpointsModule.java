@@ -18,11 +18,14 @@ package com.google.api.server.spi.guice;
 import com.google.api.server.spi.ServletInitializationParameters;
 import com.google.inject.servlet.ServletModule;
 
+import java.util.logging.Logger;
+
 /**
  * A base Guice module which provides helpers for configuring Endpoints. Consumers should extend
  * this class and call one of the helpers in {@link #configureServlets()}.
  */
 public class EndpointsModule extends ServletModule {
+  private static final Logger logger = Logger.getLogger(EndpointsModule.class.getName());
   /**
    * Configure Endpoints given a list of service classes using {@link GuiceEndpointsServlet}.
    *
@@ -39,12 +42,14 @@ public class EndpointsModule extends ServletModule {
   /**
    * Configure Endpoints given a list of service classes.
    *
+   * @deprecated the legacy servlet is no longer available.
    * @param urlPattern the URL pattern to configure the servlet on. For the legacy servlet, use
    * "/_ah/spi/*". For the new servlet, use "/_ah/api/*" if backwards compatibility is desired, or
    * any other pattern if compatibility is not an issue.
    * @param serviceClasses the list of backend classes to be included
    * @param useLegacyServlet whether or not to use the old style servlet
    */
+  @Deprecated
   protected void configureEndpoints(
       String urlPattern, Iterable<? extends Class<?>> serviceClasses, boolean useLegacyServlet) {
     ServletInitializationParameters initParameters = ServletInitializationParameters.builder()
@@ -81,9 +86,8 @@ public class EndpointsModule extends ServletModule {
     bind(ServiceMap.class)
         .toInstance(ServiceMap.create(binder(), initParameters.getServiceClasses()));
     if (useLegacyServlet) {
-      super.serve(urlPattern).with(GuiceSystemServiceServlet.class, initParameters.asMap());
-    } else {
-      super.serve(urlPattern).with(GuiceEndpointsServlet.class, initParameters.asMap());
+      logger.severe("the legacy servlet is no longer available.");
     }
+    super.serve(urlPattern).with(GuiceEndpointsServlet.class, initParameters.asMap());
   }
 }

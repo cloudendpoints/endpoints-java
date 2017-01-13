@@ -1,7 +1,6 @@
 package com.google.api.server.spi.tools;
 
 import com.google.api.server.spi.EndpointsServlet;
-import com.google.api.server.spi.SystemServiceServlet;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
@@ -41,7 +40,7 @@ public class WebXml {
   /**
    * Find endpoint service classes defined in the web.xml.
    *
-   * Looks for a servlet with servlet-class = {@link SystemServiceServlet} or
+   * Looks for a servlet with servlet-class = SystemServiceServlet or
    * {@link EndpointsServlet}.
    * Does NOT handle the case of multiple mappings to the same servlet-class,
    * it will only return the result to first one that defines the "services" init-param
@@ -52,7 +51,7 @@ public class WebXml {
   public List<String> endpointsServiceClasses() {
     XPath xpath = XPathFactory.newInstance().newXPath();
     String findService = "/web-app/servlet" + "["
-        + "servlet-class = '" + SystemServiceServlet.class.getName() + "'"
+        + "servlet-class = 'com.google.api.server.spi.SystemServiceServlet'"
         + " or "
         + "servlet-class = '" + EndpointsServlet.class.getName() + "'"
         + "]/init-param[param-name = 'services']/param-value/text()";

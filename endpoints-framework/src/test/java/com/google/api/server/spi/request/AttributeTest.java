@@ -20,8 +20,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import com.google.api.server.spi.EndpointsServlet;
 import com.google.api.server.spi.ServletInitializationParameters;
-import com.google.api.server.spi.SystemServiceServlet;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.common.collect.ImmutableList;
 
@@ -113,7 +113,7 @@ public class AttributeTest {
 
   /**
    * Sets up some expectations for {@link #servletConfig} when it is passed to
-   * {@link SystemServiceServlet#init(ServletConfig)}.
+   * {@link EndpointsServlet#init(ServletConfig)}.
    *
    * @throws ServletException
    */
