@@ -11,7 +11,7 @@
   "basePath": "/api/foo/v1/",
   "baseUrl": "http://localhost:8080/api/foo/v1/",
   "batchPath": "batch",
-  "description": "This is an API",
+  "description": "Just Foo Things",
   "discoveryVersion": "v1",
   "icons": {
     "x16": "http://www.google.com/images/icons/product/search-16.gif",
@@ -237,5 +237,6 @@
     }
   },
   "servicePath": "foo/v1/",
+  "title": "The Foo API",
   "version": "v1"
 }

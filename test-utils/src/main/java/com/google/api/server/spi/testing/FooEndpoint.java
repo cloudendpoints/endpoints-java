@@ -22,7 +22,12 @@ import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.CollectionResponse;
 
-@Api(name = "foo", version = "v1", audiences = {"audience"})
+@Api(
+    name = "foo",
+    version = "v1",
+    audiences = {"audience"},
+    title = "The Foo API",
+    description = "Just Foo Things")
 public class FooEndpoint {
   @ApiMethod(name = "foo.create", description = "create desc", path = "foos/{id}",
       httpMethod = HttpMethod.PUT)
