@@ -140,6 +140,9 @@ public class DiscoveryGenerator {
       if (config.getDescription() != null) {
         doc.setDescription(config.getDescription());
       }
+      if (config.getTitle() != null) {
+        doc.setTitle(config.getTitle());
+      }
       if (config.getNamespaceConfig() != null) {
         ApiNamespaceConfig namespaceConfig = config.getNamespaceConfig();
         if (!Strings.isEmptyOrWhitespace(namespaceConfig.getOwnerName())) {
