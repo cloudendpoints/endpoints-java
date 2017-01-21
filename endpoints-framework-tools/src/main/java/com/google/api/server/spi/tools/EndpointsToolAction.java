@@ -223,7 +223,14 @@ public abstract class EndpointsToolAction extends Action {
   }
 
   protected String getHostname(Option hostnameOption, String warPath) {
-    return getOptionOrDefault(hostnameOption, AppEngineUtil.getApplicationDefaultHostname(warPath));
+    // Rather than using the getOptionOrDefault path here, which eagerly evaluates the default
+    // app hostname, do it manually for the lazy evaluation. In the Flex case, the app id is likely
+    // not in the app.yaml and is passed in manually (the quickstart does this already). Therefore,
+    // we don't want to evaluate it because it may throw an exception.
+    if (hostnameOption.getValue() != null) {
+      return hostnameOption.getValue();
+    }
+    return AppEngineUtil.getApplicationDefaultHostname(warPath);
   }
 
   protected String getBasePath(Option basePathOption) {
