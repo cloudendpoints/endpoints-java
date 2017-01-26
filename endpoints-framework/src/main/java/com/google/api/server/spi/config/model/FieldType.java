@@ -2,7 +2,6 @@ package com.google.api.server.spi.config.model;
 
 import com.google.api.server.spi.types.DateAndTime;
 import com.google.api.server.spi.types.SimpleDate;
-import com.google.appengine.api.datastore.Blob;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 
@@ -50,31 +49,40 @@ public enum FieldType {
     return collectionName;
   }
 
-  private static final ImmutableMap<Type, FieldType> TYPE_MAP =
-      ImmutableMap.<Type, FieldType>builder()
-          .put(String.class, STRING)
-          .put(Short.class, INT16)
-          .put(Short.TYPE, INT16)
-          .put(Byte.class, INT8)
-          .put(Byte.TYPE, INT8)
-          .put(Character.class, STRING)
-          .put(Character.TYPE, STRING)
-          .put(Integer.class, INT32)
-          .put(Integer.TYPE, INT32)
-          .put(Long.class, INT64)
-          .put(Long.TYPE, INT64)
-          .put(Float.class, FLOAT)
-          .put(Float.TYPE, FLOAT)
-          .put(Double.class, DOUBLE)
-          .put(Double.TYPE, DOUBLE)
-          .put(Boolean.class, BOOLEAN)
-          .put(Boolean.TYPE, BOOLEAN)
-          .put(Date.class, DATE_TIME)
-          .put(DateAndTime.class, DATE_TIME)
-          .put(SimpleDate.class, DATE)
-          .put(byte[].class, BYTE_STRING)
-          .put(Blob.class, BYTE_STRING)
-          .build();
+  private static final ImmutableMap<Type, FieldType> TYPE_MAP;
+
+  static {
+    ImmutableMap.Builder<Type, FieldType> builder = ImmutableMap.<Type, FieldType>builder()
+        .put(String.class, STRING)
+        .put(Short.class, INT16)
+        .put(Short.TYPE, INT16)
+        .put(Byte.class, INT8)
+        .put(Byte.TYPE, INT8)
+        .put(Character.class, STRING)
+        .put(Character.TYPE, STRING)
+        .put(Integer.class, INT32)
+        .put(Integer.TYPE, INT32)
+        .put(Long.class, INT64)
+        .put(Long.TYPE, INT64)
+        .put(Float.class, FLOAT)
+        .put(Float.TYPE, FLOAT)
+        .put(Double.class, DOUBLE)
+        .put(Double.TYPE, DOUBLE)
+        .put(Boolean.class, BOOLEAN)
+        .put(Boolean.TYPE, BOOLEAN)
+        .put(Date.class, DATE_TIME)
+        .put(DateAndTime.class, DATE_TIME)
+        .put(SimpleDate.class, DATE)
+        .put(byte[].class, BYTE_STRING);
+    try {
+      builder.put(
+          FieldType.class.getClassLoader().loadClass("com.google.appengine.api.datastore.Blob"),
+          BYTE_STRING);
+    } catch (ClassNotFoundException e) {
+      // Do nothing; if we're on Flex, this class won't exist.
+    }
+    TYPE_MAP = builder.build();
+  }
 
   public static FieldType fromType(TypeToken<?> type) {
     FieldType ft = TYPE_MAP.get(type.getRawType());
