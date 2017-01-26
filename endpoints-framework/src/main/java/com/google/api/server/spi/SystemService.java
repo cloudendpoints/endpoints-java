@@ -36,7 +36,6 @@ import com.google.api.server.spi.response.BadRequestException;
 import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.ResultWriter;
 import com.google.api.server.spi.response.UnauthorizedException;
-import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -69,6 +68,8 @@ import javax.annotation.Nullable;
  */
 public class SystemService {
   private static final Logger logger = Logger.getLogger(SystemService.class.getName());
+  private static final String OAUTH_EXCEPTION_CLASS =
+      "com.google.appengine.api.oauth.OAuthRequestException";
 
   public static final String MIME_JSON = "application/json; charset=UTF-8";
 
@@ -419,7 +420,7 @@ public class SystemService {
         resultWriter.writeError(
             isIllegalArgumentBackendError
                 ? new InternalServerErrorException(cause) : new BadRequestException(cause));
-      } else if (cause instanceof OAuthRequestException) {
+      } else if (isOAuthRequestException(cause.getClass())) {
         resultWriter.writeError(new UnauthorizedException(cause));
       } else if (cause.getCause() != null && cause.getCause() instanceof ServiceException) {
         cause = cause.getCause();
@@ -449,6 +450,16 @@ public class SystemService {
 
   public ImmutableList<EndpointNode> getEndpoints() {
     return ImmutableList.copyOf(endpoints.values());
+  }
+
+  private static boolean isOAuthRequestException(Class<?> clazz) {
+    while (Object.class != clazz) {
+      if (OAUTH_EXCEPTION_CLASS.equals(clazz.getName())) {
+        return true;
+      }
+      clazz = clazz.getSuperclass();
+    }
+    return false;
   }
 
   @SuppressWarnings("unchecked")
