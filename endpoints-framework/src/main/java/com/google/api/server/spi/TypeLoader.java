@@ -123,7 +123,11 @@ public final class TypeLoader {
     schemaTypes.put(classLoader.loadClass("com.google.api.server.spi.types.DateAndTime"), "string");
     schemaTypes.put(classLoader.loadClass("com.google.api.server.spi.types.SimpleDate"), "string");
     schemaTypes.put(byte[].class, "string");
-    schemaTypes.put(classLoader.loadClass("com.google.appengine.api.datastore.Blob"), "string");
+    try {
+      schemaTypes.put(classLoader.loadClass("com.google.appengine.api.datastore.Blob"), "string");
+    } catch (ClassNotFoundException e) {
+      // Do nothing; if we're on Flex, this class won't exist.
+    }
     return Collections.unmodifiableMap(schemaTypes);
   }
 
@@ -140,7 +144,11 @@ public final class TypeLoader {
     schemaFormats.put(
         classLoader.loadClass("com.google.api.server.spi.types.SimpleDate"), "date");
     schemaFormats.put(byte[].class, "byte");
-    schemaFormats.put(classLoader.loadClass("com.google.appengine.api.datastore.Blob"), "byte");
+    try {
+      schemaFormats.put(classLoader.loadClass("com.google.appengine.api.datastore.Blob"), "byte");
+    } catch (ClassNotFoundException e) {
+      // Do nothing; if we're on Flex, this class won't exist.
+    }
     return Collections.unmodifiableMap(schemaFormats);
   }
 
@@ -188,7 +196,11 @@ public final class TypeLoader {
   private Set<Class<?>> createInjectedClassTypes(ClassLoader classLoader)
       throws ClassNotFoundException {
     Set<Class<?>> injectedClassTypes = new HashSet<Class<?>>();
-    injectedClassTypes.add(classLoader.loadClass("com.google.appengine.api.users.User"));
+    try {
+      injectedClassTypes.add(classLoader.loadClass("com.google.appengine.api.users.User"));
+    } catch (ClassNotFoundException e) {
+      // Do nothing; if we're on Flex, this class won't exist.
+    }
     injectedClassTypes.add(classLoader.loadClass("javax.servlet.http.HttpServletRequest"));
     injectedClassTypes.add(classLoader.loadClass("javax.servlet.ServletContext"));
     injectedClassTypes.add(classLoader.loadClass("com.google.api.server.spi.auth.common.User"));
