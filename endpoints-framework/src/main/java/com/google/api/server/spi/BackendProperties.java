@@ -15,7 +15,6 @@
  */
 package com.google.api.server.spi;
 
-import com.google.appengine.api.utils.SystemProperty;
 import com.google.common.annotations.VisibleForTesting;
 
 import java.util.logging.Level;
@@ -30,10 +29,12 @@ import javax.annotation.Nullable;
 public class BackendProperties {
   private static final Logger logger = Logger.getLogger(BackendProperties.class.getName());
 
-  public static final String PROJECT_NUMBER_PROPERTY = "GOOGLE_PROJECT_NUMBER";
-  public static final long PROJECT_NUMBER_UNKNOWN = 0L;
+  static final String APP_ID_PROPERTY = "com.google.appengine.application.id";
+  static final String PROJECT_NUMBER_PROPERTY = "GOOGLE_PROJECT_NUMBER";
+  static final String GCLOUD_PROJECT_PROPERTY = "GCLOUD_PROJECT";
+  static final long PROJECT_NUMBER_UNKNOWN = 0L;
 
-  public static final String PROJECT_ID_PROPERTY = "GOOGLE_PROJECT_ID";
+  static final String PROJECT_ID_PROPERTY = "GOOGLE_PROJECT_ID";
 
   // Inject an override to change env values read for tests.
   @VisibleForTesting
@@ -96,7 +97,11 @@ public class BackendProperties {
   @Nullable
   public String getApplicationId() {
     if (isOnAppEngine()) {
-      return SystemProperty.applicationId.get();
+      String appId = System.getProperty(APP_ID_PROPERTY);
+      if (appId == null) {
+        appId = envReader.getenv(GCLOUD_PROJECT_PROPERTY);
+      }
+      return appId;
     } else {
       return null;
     }

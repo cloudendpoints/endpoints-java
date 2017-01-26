@@ -18,8 +18,6 @@ package com.google.api.server.spi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import com.google.appengine.api.utils.SystemProperty;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +44,7 @@ public class BackendPropertiesTest {
     this.appEngineProperties = new BackendProperties(true, envReader);
     this.properties = new BackendProperties(false, envReader);
 
-    SystemProperty.applicationId.set(APPLICATION_ID);
+    System.setProperty(BackendProperties.APP_ID_PROPERTY, APPLICATION_ID);
 
     Mockito.when(envReader.getenv(BackendProperties.PROJECT_NUMBER_PROPERTY))
         .thenReturn(PROJECT_NUMBER_STR);
@@ -97,7 +95,10 @@ public class BackendPropertiesTest {
   }
 
   @Test
-  public void testGetApplicationId_tornado() {
+  public void testGetApplicationId_flex() {
+    System.clearProperty(BackendProperties.APP_ID_PROPERTY);
+    Mockito.when(envReader.getenv(BackendProperties.GCLOUD_PROJECT_PROPERTY))
+        .thenReturn(APPLICATION_ID);
     assertNull(properties.getApplicationId());
   }
 }
