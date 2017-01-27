@@ -15,11 +15,6 @@
  */
 package com.google.api.server.spi;
 
-import com.google.appengine.api.modules.ModulesService;
-import com.google.appengine.api.modules.ModulesServiceFactory;
-import com.google.apphosting.api.ApiProxy;
-import com.google.apphosting.api.ApiProxy.Environment;
-
 /**
  * Utililty for runtime environment related operations, such as checking whether current Endpoints
  * backend is running on App Engine.
@@ -60,23 +55,5 @@ public class EnvUtil {
   public static boolean isRunningOnAppEngineProd() {
     String property = System.getProperty(ENV_APPENGINE_RUNTIME);
     return property != null && property.equals(ENV_APPENGINE_PROD);
-  }
-
-  /**
-   * Returns hostname of an running Endpoints API. It can be 1) "localhost:PORT" if running on
-   * development server, or 2) "app_id.appspot.com" if running on external app engine prod, or
-   * 3) "app_id.googleplex.com" if running as Google 1st party Endpoints API, or 4) {@code null} if
-   * not running on App Engine (e.g. Tornado Endpoints API).
-   */
-  public static String getAppHostName() {
-    if (!isRunningOnAppEngine()) {
-      return null;
-    }
-    Environment env = ApiProxy.getCurrentEnvironment();
-    if (env != null) {  // if env is null, ModulesService calls will NPE
-      ModulesService modules = ModulesServiceFactory.getModulesService();
-      return modules.getVersionHostname(modules.getCurrentModule(), modules.getCurrentVersion());
-    }
-    return null;
   }
 }

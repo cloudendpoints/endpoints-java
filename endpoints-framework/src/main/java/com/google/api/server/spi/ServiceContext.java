@@ -15,8 +15,6 @@
  */
 package com.google.api.server.spi;
 
-import com.google.common.base.Strings;
-
 /**
  * Provides context for a service class when its API configuration is being generated.
  */
@@ -61,18 +59,13 @@ public class ServiceContext {
       String appName = applicationId.substring(colon + 1);
       this.defaultApiName = apiName == null ? appName : apiName;
       if (applicationId.substring(0, colon).equals("google.com")) {
-        this.appHostName =
-            Strings.isNullOrEmpty(EnvUtil.getAppHostName()) ? appName + ".googleplex.com"
-                : EnvUtil.getAppHostName();
+        this.appHostName = appName + ".googleplex.com";
       } else {
         throw new IllegalArgumentException("Invalid application id '" + applicationId + "'");
       }
     } else {
-      String appName = applicationId;
-      this.defaultApiName = apiName == null ? appName : apiName;
-      this.appHostName =
-          Strings.isNullOrEmpty(EnvUtil.getAppHostName()) ? applicationId + ".appspot.com"
-              : EnvUtil.getAppHostName();
+      this.defaultApiName = apiName == null ? applicationId : apiName;
+      this.appHostName = applicationId + ".appspot.com";
     }
   }
 
