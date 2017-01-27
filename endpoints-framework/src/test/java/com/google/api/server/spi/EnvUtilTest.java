@@ -15,7 +15,6 @@
  */
 package com.google.api.server.spi;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -45,11 +44,5 @@ public class EnvUtilTest {
     assertFalse(EnvUtil.isRunningOnAppEngineProd());
     System.clearProperty(EnvUtil.ENV_APPENGINE_RUNTIME);
     assertFalse(EnvUtil.isRunningOnAppEngineProd());
-  }
-
-  @Test
-  public void testGetAppHostName() {
-    System.clearProperty(EnvUtil.ENV_APPENGINE_RUNTIME);
-    assertEquals(null, EnvUtil.getAppHostName());
   }
 }
