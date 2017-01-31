@@ -131,10 +131,18 @@ public class ServletRequestParamReader extends AbstractParamReader {
     for (int i = 0; i < paramClasses.length; i++) {
       TypeToken<?> type = paramTypes[i];
       Class<?> clazz = paramClasses[i];
-      if (clazz == User.class) {
+      if (User.class.isAssignableFrom(clazz)) {
         // User type parameter requires no Named annotation (ignored if present)
-        params[i] = getUser();
-        logger.log(Level.FINE, "deserialize: User injected into param[{0}]", i);
+        User user = getUser();
+        if (clazz.isAssignableFrom(user.getClass())) {
+          params[i] = user;
+          logger.log(Level.FINE, "deserialize: User injected into param[{0}]", i);
+        } else {
+          logger.log(
+              Level.WARNING,
+              "deserialize: User object of type {0} is not assignable to {1}. User will be null.",
+              new Object[] {user.getClass().getName(), clazz.getName()});
+        }
       } else if (APPENGINE_USER_CLASS_NAME.equals(clazz.getName())) {
         // User type parameter requires no Named annotation (ignored if present)
         params[i] = getAppEngineUser();
