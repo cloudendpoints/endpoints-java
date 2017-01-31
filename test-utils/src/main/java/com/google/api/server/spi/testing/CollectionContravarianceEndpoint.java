@@ -26,7 +26,7 @@ import javax.inject.Named;
 
 class BaseCollectionContravarianceEndpoint {
   @ApiMethod(name = "api.foos.base", path = "base", httpMethod = HttpMethod.GET)
-  public String foo(List<String> id) {
+  public Foo foo(List<String> id) {
     return null;
   }
 }
@@ -37,7 +37,7 @@ class BaseCollectionContravarianceEndpoint {
 @Api
 public class CollectionContravarianceEndpoint extends BaseCollectionContravarianceEndpoint {
   @ApiMethod(name = "api.foos.fn", path = "fn", httpMethod = HttpMethod.GET)
-  public String foo(@Named("id") Collection<String> id) {
+  public Foo foo(@Named("id") Collection<String> id) {
     return null;
   }
 

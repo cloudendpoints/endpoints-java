@@ -32,11 +32,10 @@ import com.google.api.server.spi.config.model.ApiKey;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiNamespaceConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
+import com.google.api.server.spi.config.model.SchemaRepository;
 import com.google.api.server.spi.config.model.Types;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.config.validation.ApiConfigValidator;
-import com.google.api.server.spi.config.validation.InvalidReturnTypeException;
-import com.google.api.server.spi.config.validation.PropertyParameterNameConflictException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -80,13 +79,13 @@ public class JsonConfigWriter implements ApiConfigWriter {
   private final ResourceSchemaProvider resourceSchemaProvider = new JacksonResourceSchemaProvider();
 
   public JsonConfigWriter() throws ClassNotFoundException {
-    this(JsonConfigWriter.class.getClassLoader(), new ApiConfigValidator());
+    this.typeLoader = new TypeLoader(JsonConfigWriter.class.getClassLoader());
+    this.validator = new ApiConfigValidator(typeLoader, new SchemaRepository(typeLoader));
   }
 
-  public JsonConfigWriter(ClassLoader classLoader, ApiConfigValidator validator)
+  public JsonConfigWriter(TypeLoader typeLoader, ApiConfigValidator validator)
       throws ClassNotFoundException {
-    this.typeLoader = new TypeLoader(classLoader);
-
+    this.typeLoader = typeLoader;
     this.validator = validator;
   }
 
@@ -463,12 +462,6 @@ public class JsonConfigWriter implements ApiConfigWriter {
         addTypeToNode(descriptorSchemasNode, returnType, null, returnTypeNode,
             config.getApiClassConfig().getApiConfig(), null);
 
-    // TODO: Move to ApiConfigValidator once return type parsing is pulled out of the
-    // writer.
-    if (typeLoader.isSchemaType(returnType) || Types.isEnumType(returnType)) {
-      throw new InvalidReturnTypeException(config, returnType);
-    }
-
     if (Types.isArrayType(returnType)) {
       ObjectNode propertiesNode = objectMapper.createObjectNode();
       propertiesNode.set("items", returnTypeNode);
@@ -578,32 +571,12 @@ public class JsonConfigWriter implements ApiConfigWriter {
     ResourceSchema schema = resourceSchemaProvider.getResourceSchema(beanType, apiConfig);
     for (Entry<String, ResourcePropertySchema> entry : schema.getProperties().entrySet()) {
       String propertyName = entry.getKey();
-      validatePropertyName(propertyName, parameterConfigs);
       ObjectNode propertyNode = objectMapper.createObjectNode();
       TypeToken<?> propertyType = entry.getValue().getType();
       if (propertyType != null) {
         addTypeToNode(schemasNode, propertyType, beanType, propertyNode,
             apiConfig, parameterConfigs);
         node.set(propertyName, propertyNode);
-      }
-    }
-  }
-
-  // TODO: When resource parsing is refactored out of the config writer, move this to the
-  // validator.
-  private static void validatePropertyName(String propertyName,
-      List<ApiParameterConfig> parameterConfigs) throws ApiConfigException {
-    // Special case to allow id as it is a common scenario for REST for the id parameter to be the
-    // same id as the id property.  Thus conflict is unlikely.
-    if (propertyName.equals("id")) {
-      return;
-    }
-
-    if (parameterConfigs != null) {
-      for (ApiParameterConfig parameter : parameterConfigs) {
-        if (propertyName.equals(parameter.getName())) {
-          throw new PropertyParameterNameConflictException(parameter);
-        }
       }
     }
   }

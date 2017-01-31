@@ -26,7 +26,7 @@ import javax.inject.Named;
 
 class BaseCollectionCovarianceEndpoint {
   @ApiMethod(name = "api.foos.base", path = "base", httpMethod = HttpMethod.GET)
-  public String foo(Collection<Integer> id) {
+  public Foo foo(Collection<Integer> id) {
     return null;
   }
 }
@@ -37,7 +37,7 @@ class BaseCollectionCovarianceEndpoint {
 @Api
 public class CollectionCovarianceEndpoint extends BaseCollectionCovarianceEndpoint {
   @ApiMethod(name = "api.foos.fn", path = "fn", httpMethod = HttpMethod.GET)
-  public String foo(@Named("id") List<Integer> id) {
+  public Foo foo(@Named("id") List<Integer> id) {
     return null;
   }
 

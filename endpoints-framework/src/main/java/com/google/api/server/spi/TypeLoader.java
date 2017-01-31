@@ -87,6 +87,7 @@ public final class TypeLoader {
     parameterTypes.put(Float.TYPE, "float");
     parameterTypes.put(classLoader.loadClass("java.lang.Double"), "double");
     parameterTypes.put(Double.TYPE, "double");
+    parameterTypes.put(byte[].class, "string");
     /*
      * TODO: Adding support for JSR 310 http://jcp.org/en/jsr/detail?id=310
      * LocalDate --> date, LocalDateTime --> datetime
@@ -96,6 +97,12 @@ public final class TypeLoader {
         classLoader.loadClass("com.google.api.server.spi.types.DateAndTime"), "datetime");
     parameterTypes.put(
         classLoader.loadClass("com.google.api.server.spi.types.SimpleDate"), "date");
+    try {
+      parameterTypes.put(
+          classLoader.loadClass("com.google.appengine.api.datastore.Blob"), "string");
+    } catch (ClassNotFoundException e) {
+      // Do nothing; if we're on Flex, this class won't exist.
+    }
     return Collections.unmodifiableMap(parameterTypes);
   }
 

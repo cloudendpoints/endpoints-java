@@ -30,7 +30,7 @@ public class TestEndpointSuperclass<T> {
 
   public void overrideMethod1() {}
 
-  public boolean overrideMethod2(boolean bleh) {
-    return false;
+  public Foo overrideMethod2(boolean bleh) {
+    return null;
   }
 }

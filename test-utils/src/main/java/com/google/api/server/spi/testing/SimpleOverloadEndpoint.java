@@ -23,7 +23,7 @@ import javax.inject.Named;
 
 class BaseSimpleOverloadEndpoint {
   @ApiMethod(name = "api.foos.base", path = "base", httpMethod = HttpMethod.GET)
-  public String foo(@Named("id") String id) {
+  public Foo foo(@Named("id") String id) {
     return null;
   }
 }
@@ -34,7 +34,7 @@ class BaseSimpleOverloadEndpoint {
 @Api
 public class SimpleOverloadEndpoint extends BaseSimpleOverloadEndpoint {
   @ApiMethod(name = "api.foos.fn", path = "fn", httpMethod = HttpMethod.GET)
-  public String foo(@Named("id") Integer id) {
+  public Foo foo(@Named("id") Integer id) {
     return null;
   }
 }

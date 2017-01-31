@@ -23,7 +23,7 @@ import javax.inject.Named;
 
 class BaseSimpleCovarianceEndpoint {
   @ApiMethod(name = "api.foos.base", path = "base", httpMethod = HttpMethod.GET)
-  public String foo(Object id) {
+  public Foo foo(Object id) {
     return null;
   }
 }
@@ -34,7 +34,7 @@ class BaseSimpleCovarianceEndpoint {
 @Api
 public class SimpleCovarianceEndpoint extends BaseSimpleCovarianceEndpoint {
   @ApiMethod(name = "api.foos.fn", path = "fn", httpMethod = HttpMethod.GET)
-  public String foo(@Named("id") String id) {
+  public Foo foo(@Named("id") String id) {
     return null;
   }
 }

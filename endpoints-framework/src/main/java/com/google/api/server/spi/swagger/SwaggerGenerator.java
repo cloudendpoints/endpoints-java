@@ -152,15 +152,18 @@ public class SwaggerGenerator {
   public Swagger writeSwagger(Iterable<ApiConfig> configs, boolean writeInternal,
       SwaggerContext context) throws ApiConfigException {
     try {
-      return writeSwagger(configs, writeInternal, context,
-          new SchemaRepository(new TypeLoader(SwaggerGenerator.class.getClassLoader())));
+      TypeLoader typeLoader = new TypeLoader(SwaggerGenerator.class.getClassLoader());
+      SchemaRepository repo = new SchemaRepository(typeLoader);
+      ApiConfigValidator validator = new ApiConfigValidator(typeLoader, repo);
+      return writeSwagger(configs, writeInternal, context, repo, validator);
     } catch (ClassNotFoundException e) {
       throw new IllegalStateException(e);
     }
   }
 
   public Swagger writeSwagger(Iterable<ApiConfig> configs, boolean writeInternal,
-      SwaggerContext context, SchemaRepository repo) throws ApiConfigException {
+      SwaggerContext context, SchemaRepository repo, ApiConfigValidator validator)
+      throws ApiConfigException {
     ImmutableListMultimap<ApiKey, ? extends ApiConfig> configsByKey = FluentIterable.from(configs)
         .index(CONFIG_TO_ROOTLESS_KEY);
     Swagger swagger = new Swagger()
@@ -173,17 +176,18 @@ public class SwaggerGenerator {
             .title(context.hostname)
             .version(context.docVersion));
     for (ApiKey apiKey : configsByKey.keySet()) {
-      writeApi(apiKey, configsByKey.get(apiKey), swagger, context, writeInternal, repo);
+      writeApi(apiKey, configsByKey.get(apiKey), swagger, context, writeInternal, repo, validator);
     }
     return swagger;
   }
 
   private void writeApi(ApiKey apiKey, ImmutableList<? extends ApiConfig> apiConfigs,
-      Swagger swagger, SwaggerContext context, boolean writeInternal, SchemaRepository repo)
+      Swagger swagger, SwaggerContext context, boolean writeInternal, SchemaRepository repo,
+      ApiConfigValidator validator)
       throws ApiConfigException {
-    ApiConfigValidator validator = new ApiConfigValidator();
+    // TODO: This may result in duplicate validations in the future if made available online
+    validator.validate(apiConfigs);
     for (ApiConfig apiConfig : apiConfigs) {
-      validator.validate(apiConfig);
       for (IssuerConfig issuerConfig : apiConfig.getIssuers().asMap().values()) {
         addNonConflictingSecurityDefinition(swagger, issuerConfig);
       }
