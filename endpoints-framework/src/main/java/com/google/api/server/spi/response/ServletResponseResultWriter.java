@@ -55,7 +55,14 @@ public class ServletResponseResultWriter implements ResultWriter {
     modules.add(getWriteDateAsStringModule());
     modules.add(getWriteDateAndTimeAsStringModule());
     modules.add(getWriteSimpleDateAsStringModule());
-    modules.add(getWriteBlobAsBase64Module());
+    try {
+      // Attempt to load the Blob class, which may not exist outside of App Engine Standard.
+      ServletResponseResultWriter.class.getClassLoader()
+          .loadClass("com.google.appengine.api.datastore.Blob");
+      modules.add(getWriteBlobAsBase64Module());
+    } catch (ClassNotFoundException e) {
+      // Ignore this error, since we can function without the Blob deserializer.
+    }
     WRITER_MODULES = Collections.unmodifiableSet(modules);
   }
 
