@@ -67,8 +67,8 @@ import javax.servlet.http.HttpServletRequest;
 public class ServletRequestParamReader extends AbstractParamReader {
 
   private static final Logger logger = Logger.getLogger(ServletRequestParamReader.class.getName());
-
   private static final Set<SimpleModule> READER_MODULES;
+  private static final String APPENGINE_USER_CLASS_NAME = "com.google.appengine.api.users.User";
 
   static {
     Set<SimpleModule> modules = new LinkedHashSet<>();
@@ -87,10 +87,17 @@ public class ServletRequestParamReader extends AbstractParamReader {
     dateAndTimeModule.addDeserializer(DateAndTime.class, new DateAndTimeDeserializer());
     modules.add(dateAndTimeModule);
 
-    SimpleModule blobModule =
-        new SimpleModule("blobModule", new Version(1, 0, 0, null, null, null));
-    blobModule.addDeserializer(Blob.class, new BlobDeserializer());
-    modules.add(blobModule);
+    try {
+      // Attempt to load the Blob class, which may not exist outside of App Engine Standard.
+      ServletRequestParamReader.class.getClassLoader()
+          .loadClass("com.google.appengine.api.datastore.Blob");
+      SimpleModule blobModule =
+          new SimpleModule("blobModule", new Version(1, 0, 0, null, null, null));
+      blobModule.addDeserializer(Blob.class, new BlobDeserializer());
+      modules.add(blobModule);
+    } catch (ClassNotFoundException e) {
+      // Ignore this error, since we can function without the Blob deserializer.
+    }
 
     READER_MODULES = Collections.unmodifiableSet(modules);
   }
