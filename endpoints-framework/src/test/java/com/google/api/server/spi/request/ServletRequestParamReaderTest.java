@@ -621,6 +621,37 @@ public class ServletRequestParamReaderTest {
     assertEquals("foo3", parameterNames.get(2));
   }
 
+  static class TestUser extends User {
+    public TestUser(String email) {
+      super(email);
+    }
+  }
+
+  @Test
+  public void testReadUser() throws Exception {
+    class TestUserEndpoint {
+      @SuppressWarnings("unused")
+      public void user(TestUser user) {}
+    }
+    final TestUser user = new TestUser("test");
+    Method method = TestUserEndpoint.class.getDeclaredMethod("user", TestUser.class);
+    ParamReader reader = new ServletRequestParamReader(
+        EndpointMethod.create(method.getDeclaringClass(), method), request, context, null) {
+      @Override
+      User getUser() {
+        return user;
+      }
+
+      @Override
+      com.google.appengine.api.users.User getAppEngineUser() {
+        return APP_ENGINE_USER;
+      }
+    };
+    Object[] params = readParameters("{}", reader);
+    assertEquals(1, params.length);
+    assertEquals(user, params[0]);
+  }
+
   @Test
   public void testReadUserIp() throws Exception {
     class TestUserIp {
@@ -734,11 +765,25 @@ public class ServletRequestParamReaderTest {
   }
 
   private Object[] readParameters(String input, Method method) throws Exception {
-    return readParameters(input, EndpointMethod.create(
-        method.getDeclaringClass(), method));
+    return readParameters(input, EndpointMethod.create(method.getDeclaringClass(), method));
   }
 
   private Object[] readParameters(final String input, EndpointMethod method) throws Exception {
+    ParamReader reader = new ServletRequestParamReader(method, request, context, null) {
+      @Override
+      User getUser() {
+        return USER;
+      }
+      @Override
+      com.google.appengine.api.users.User getAppEngineUser() {
+        return APP_ENGINE_USER;
+      }
+    };
+    return readParameters(input, reader);
+  }
+
+  private Object[] readParameters(final String input, ParamReader reader)
+      throws Exception {
     ServletInputStream servletInputStream = new ServletInputStream() {
 
       private final InputStream inputStream =
@@ -750,17 +795,6 @@ public class ServletRequestParamReaderTest {
       }
     };
     when(request.getInputStream()).thenReturn(servletInputStream);
-
-    ParamReader reader = new ServletRequestParamReader(method, request, context, null) {
-      @Override
-      User getUser() {
-        return USER;
-      }
-      @Override
-      com.google.appengine.api.users.User getAppEngineUser() {
-        return APP_ENGINE_USER;
-      }
-    };
     return reader.read();
   }
 
