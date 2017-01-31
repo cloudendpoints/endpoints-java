@@ -18,9 +18,11 @@ package com.google.api.server.spi.tools;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.api.server.spi.ServiceContext;
+import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.ApiConfigException;
 import com.google.api.server.spi.config.jsonwriter.JsonConfigWriter;
 import com.google.api.server.spi.config.model.ApiConfig;
+import com.google.api.server.spi.config.model.SchemaRepository;
 import com.google.api.server.spi.config.validation.ApiConfigValidator;
 import com.google.appengine.tools.util.Option;
 import com.google.common.io.Files;
@@ -86,8 +88,10 @@ public class GenApiConfigAction extends EndpointsToolAction {
 
     ClassLoader classLoader = new URLClassLoader(classPath, getClass().getClassLoader());
     ApiConfig.Factory configFactory = new ApiConfig.Factory();
-    ApiConfigValidator validator = new ApiConfigValidator();
-    JsonConfigWriter jsonConfigWriter = new JsonConfigWriter(classLoader, validator);
+    TypeLoader typeLoader = new TypeLoader(classLoader);
+    SchemaRepository schemaRepository = new SchemaRepository(typeLoader);
+    ApiConfigValidator validator = new ApiConfigValidator(typeLoader, schemaRepository);
+    JsonConfigWriter jsonConfigWriter = new JsonConfigWriter(typeLoader, validator);
     ApiConfigGenerator generator =
         new AnnotationApiConfigGenerator(jsonConfigWriter, classLoader, configFactory);
     Map<String, String> apiConfigs = generator.generateConfig(

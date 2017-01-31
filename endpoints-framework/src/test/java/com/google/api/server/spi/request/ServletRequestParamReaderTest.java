@@ -97,6 +97,8 @@ public class ServletRequestParamReaderTest {
         .put(TestEndpoint.NAME_LONG_OBJECT, String.valueOf(VALUE_LONG))
         .put(TestEndpoint.NAME_FLOAT_OBJECT, String.valueOf(VALUE_FLOAT))
         .put(TestEndpoint.NAME_DOUBLE_OBJECT, String.valueOf(VALUE_DOUBLE))
+        .put("stringValue", "321")
+        .put("integerValue", "321")
         .put("more", "999").build());
 
     assertEquals(VALUE_STRING, params[0]);
@@ -110,8 +112,8 @@ public class ServletRequestParamReaderTest {
     assertEquals(VALUE_LONG, params[8]);
     assertEquals(VALUE_FLOAT, params[9]);
     assertEquals(VALUE_DOUBLE, params[10]);
-    assertEquals(VALUE_STRING, ((Request) params[11]).getString());
-    assertEquals(VALUE_INTEGER, (int) ((Request) params[11]).getInteger());
+    assertEquals("321", ((Request) params[11]).getStringValue());
+    assertEquals(321, (int) ((Request) params[11]).getIntegerValue());
     assertEquals(USER, params[12]);
     assertEquals(APP_ENGINE_USER, params[13]);
     assertEquals(request, params[14]);
@@ -138,6 +140,7 @@ public class ServletRequestParamReaderTest {
         .put(TestEndpoint.NAME_INTEGER_OBJECT, String.valueOf(VALUE_INTEGER))
         .put(TestEndpoint.NAME_LONG_OBJECT, String.valueOf(VALUE_LONG))
         .put(TestEndpoint.NAME_FLOAT_OBJECT, String.valueOf(VALUE_FLOAT))
+        .put("stringValue", "321")
         .put("more", "999").build());
 
     assertEquals(VALUE_STRING, params[0]);
@@ -151,8 +154,8 @@ public class ServletRequestParamReaderTest {
     assertEquals(VALUE_LONG, params[8]);
     assertEquals(VALUE_FLOAT, params[9]);
     assertNull(params[10]);
-    assertEquals(VALUE_STRING, ((Request) params[11]).getString());
-    assertEquals(-1, (int) ((Request) params[11]).getInteger());
+    assertEquals("321", ((Request) params[11]).getStringValue());
+    assertEquals(-1, (int) ((Request) params[11]).getIntegerValue());
     assertEquals(USER, params[12]);
     assertEquals(APP_ENGINE_USER, params[13]);
     assertEquals(request, params[14]);
@@ -222,20 +225,20 @@ public class ServletRequestParamReaderTest {
   public void testReadByteArrayParameter() throws Exception {
     Method method =
         TestEndpoint.class.getDeclaredMethod("doSomething", byte[].class);
-    Object[] params = readParameters("\"AQIDBA==\"", method);
+    Object[] params = readParameters("{\"bytes\":\"AQIDBA==\"}", method);
 
     assertEquals(1, params.length);
-    assertTrue(Arrays.equals(new byte[]{1, 2, 3, 4}, (byte[]) params[0]));
+    assertThat((byte[]) params[0]).isEqualTo(new byte[]{1, 2, 3, 4});
   }
 
   @Test
   public void testReadBlobParameter() throws Exception {
     Method method =
         TestEndpoint.class.getDeclaredMethod("doBlob", Blob.class);
-    Object[] params = readParameters("\"AQIDBA==\"", method);
+    Object[] params = readParameters("{\"blob\":\"AQIDBA==\"}", method);
 
     assertEquals(1, params.length);
-    assertTrue(Arrays.equals(new byte[]{1, 2, 3, 4}, ((Blob) params[0]).getBytes()));
+    assertThat(((Blob) params[0]).getBytes()).isEqualTo(new byte[]{1, 2, 3, 4});
   }
 
   @Test
@@ -537,7 +540,8 @@ public class ServletRequestParamReaderTest {
     }
     String requestString = "{\"str\":\"hello\",\"" + TestEndpoint.NAME_STRING + "\":\""
         + VALUE_STRING + "\",\"" + TestEndpoint.NAME_INTEGER + "\":" + VALUE_INTEGER
-        + ",\"integer_array\":[1,2,3]," + "\"integer_collection\":[4,5,6]}";
+        + ",\"integer_array\":[1,2,3]," + "\"integer_collection\":[4,5,6], \"stringValue\":"
+        + "\"321\", \"integerValue\":321}";
 
     Method method = TestMultipleResources.class.getDeclaredMethod("foo",
         String.class, Integer[].class, Collection.class, Request.class);
@@ -559,8 +563,8 @@ public class ServletRequestParamReaderTest {
     assertEquals(5, (int) iterator.next());
     assertEquals(6, (int) iterator.next());
     Request request = (Request) params[3];
-    assertEquals(VALUE_STRING, request.getString());
-    assertEquals(VALUE_INTEGER, (int) request.getInteger());
+    assertEquals("321", request.getStringValue());
+    assertEquals(321, (int) request.getIntegerValue());
   }
 
   @Test

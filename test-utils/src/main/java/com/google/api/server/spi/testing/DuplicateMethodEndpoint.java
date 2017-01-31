@@ -28,12 +28,12 @@ import javax.inject.Named;
 @Api
 public class DuplicateMethodEndpoint {
   @ApiMethod(name = "api.foos.fn1", path = "fn1", httpMethod = HttpMethod.GET)
-  public String foo(@Named("id") String id) {
+  public Foo foo(@Named("id") String id) {
     return null;
   }
 
   @ApiMethod(name = "api.foos.fn2", path = "fn2", httpMethod = HttpMethod.GET)
-  public String foo(@Named("id") Integer id) {
+  public Foo foo(@Named("id") Integer id) {
     return null;
   }
 }

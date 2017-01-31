@@ -42,7 +42,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
@@ -51,7 +50,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +101,6 @@ public class SystemService {
   private final Multimap<String, ApiConfig> initialConfigsByApi;
 
   private final ApiConfigLoader configLoader;
-  private final ApiConfigValidator validator;
   private final ServiceContext serviceContext;
   private final ApiConfigWriter configWriter;
   private final boolean isIllegalArgumentBackendError;
@@ -143,10 +140,10 @@ public class SystemService {
    * @param appName The application's id
    * @param services The service classes to be registered
    */
-  public SystemService(ApiConfigLoader configLoader, ApiConfigValidator validator, String appName,
-      ApiConfigWriter configWriter, Object[] services, boolean isIllegalArgumentBackendError)
+  public SystemService(ApiConfigLoader configLoader, String appName, ApiConfigWriter configWriter,
+      Object[] services, boolean isIllegalArgumentBackendError)
       throws ApiConfigException {
-    this(configLoader, validator, appName, configWriter, isIllegalArgumentBackendError);
+    this(configLoader, appName, configWriter, isIllegalArgumentBackendError);
     for (Object service : services) {
       registerService(service);
     }
@@ -158,8 +155,8 @@ public class SystemService {
    * @param configLoader The loader used to read annotation from service classes
    * @param appName The application's id
    */
-  public SystemService(ApiConfigLoader configLoader, ApiConfigValidator validator, String appName,
-      ApiConfigWriter configWriter, boolean isIllegalArgumentBackendError)
+  public SystemService(ApiConfigLoader configLoader, String appName, ApiConfigWriter configWriter,
+      boolean isIllegalArgumentBackendError)
       throws ApiConfigException {
     this.servicesByName = new HashMap<String, List<Object>>();
     this.endpoints = new ConcurrentHashMap<Object, EndpointNode>();
@@ -167,7 +164,6 @@ public class SystemService {
     this.serializationConfigs = new HashMap<String, ApiSerializationConfig>();
     this.initialConfigsByApi = ArrayListMultimap.create();
     this.configLoader = configLoader;
-    this.validator = validator;
     this.serviceContext = ServiceContext.create(appName, ServiceContext.DEFAULT_API_NAME);
     this.configWriter = configWriter;
     this.isIllegalArgumentBackendError = isIllegalArgumentBackendError;
@@ -187,7 +183,7 @@ public class SystemService {
     Preconditions.checkArgument(serviceClass.isInstance(service),
         "service is not an instance of " + serviceClass.getName());
     ApiConfig apiConfig = configLoader.loadConfiguration(serviceContext, serviceClass);
-    return registerLoadedService(serviceClass, service, apiConfig, true);
+    return registerLoadedService(serviceClass, service, apiConfig);
   }
 
   public int registerService(Object service) throws ApiConfigException {
@@ -195,14 +191,7 @@ public class SystemService {
     return registerService(serviceClass, service);
   }
 
-  private int registerInternalService(Object service) throws ApiConfigException {
-    Class<?> serviceClass = getServiceClass(service);
-    ApiConfig apiConfig = configLoader.loadInternalConfiguration(serviceContext, serviceClass);
-    return registerLoadedService(serviceClass, service, apiConfig, false);
-  }
-
-  private int registerLoadedService(Class<?> serviceClass, Object service, ApiConfig apiConfig,
-      boolean doValidation)
+  private int registerLoadedService(Class<?> serviceClass, Object service, ApiConfig apiConfig)
       throws ApiConfigException {
     String fullName = serviceClass.getName();
     if (!servicesByName.containsKey(fullName)) {
@@ -211,10 +200,6 @@ public class SystemService {
       // a serialization config. This is currently required because the API information is not kept
       // outside of this method, but it would be nice to find a better way to clean this up.
       String api = apiConfig.getName() + "-" + apiConfig.getVersion();
-      if (doValidation) {
-        validator.validate(Iterables.concat(initialConfigsByApi.get(api),
-            Collections.singleton(apiConfig)));
-      }
       initialConfigsByApi.put(api, apiConfig);
 
       ApiSerializationConfig serializationConfig = serializationConfigs.get(api);
@@ -284,36 +269,6 @@ public class SystemService {
   public EndpointMethod resolveService(String serviceName, String methodName)
       throws ServiceException {
     return getEndpointNode(serviceName).methods.get(methodName);
-  }
-
-  /**
-   * Resolves a service name and a method name to the {@link ApiMethodConfig} for the method
-   * instance.
-   */
-  public ApiMethodConfig resolveAndUpdateServiceConfig(String serviceName, String methodName)
-      throws ServiceException {
-    EndpointNode node = getEndpointNode(serviceName);
-
-    if (configLoader.isStaticConfig(node.config)) {
-      return getMethodConfigFromNode(node, methodName);
-    }
-
-    ApiConfig newConfig;
-    try {
-      newConfig =
-          configLoader.reloadConfiguration(serviceContext, getServiceClass(node.endpoint),
-              node.config);
-      validator.validate(newConfig);
-    } catch (ApiConfigException e) {
-      logger.log(Level.WARNING, "Could not load new endpoint config, defaulting to old.", e);
-      return getMethodConfigFromNode(node, methodName);
-    }
-
-    if (!newConfig.equals(node.config)) {
-      updateEndpointConfig(node.endpoint, newConfig, node);
-    }
-
-    return getMethodConfigFromNode(getEndpointNode(serviceName), methodName);
   }
 
   private ApiMethodConfig getMethodConfigFromNode(EndpointNode node, String methodName) {
@@ -452,6 +407,12 @@ public class SystemService {
     return ImmutableList.copyOf(endpoints.values());
   }
 
+  private void validateRegisteredServices(ApiConfigValidator validator) throws ApiConfigException {
+    for (String api : initialConfigsByApi.keySet()) {
+      validator.validate(initialConfigsByApi.get(api));
+    }
+  }
+
   private static boolean isOAuthRequestException(Class<?> clazz) {
     while (Object.class != clazz) {
       if (OAUTH_EXCEPTION_CLASS.equals(clazz.getName())) {
@@ -506,15 +467,17 @@ public class SystemService {
     private boolean isIllegalArgumentBackendError;
     private boolean enableDiscoveryService;
     private Map<Class<?>, Object> services = Maps.newLinkedHashMap();
+    private SchemaRepository schemaRepository;
 
     public Builder withDefaults(ClassLoader classLoader) throws ClassNotFoundException {
       setStandardConfigLoader(classLoader);
-      setConfigValidator(new ApiConfigValidator());
       setAppName(new BackendProperties().getApplicationId());
-      setConfigWriter(new JsonConfigWriter(classLoader, configValidator));
       typeLoader = new TypeLoader(classLoader);
       isIllegalArgumentBackendError = false;
       enableDiscoveryService = false;
+      setConfigWriter(new JsonConfigWriter(typeLoader, configValidator));
+      schemaRepository = new SchemaRepository(typeLoader);
+      setConfigValidator(new ApiConfigValidator(typeLoader, schemaRepository));
       return this;
     }
 
@@ -563,8 +526,8 @@ public class SystemService {
       Preconditions.checkNotNull(configLoader, "configLoader");
       Preconditions.checkNotNull(configValidator, "configValidator");
       Preconditions.checkNotNull(configWriter, "configWriter");
-      SystemService systemService = new SystemService(configLoader, configValidator, appName,
-          configWriter, isIllegalArgumentBackendError);
+      SystemService systemService = new SystemService(configLoader, appName, configWriter,
+          isIllegalArgumentBackendError);
       for (Entry<Class<?>, Object> entry : services.entrySet()) {
         systemService.registerService(entry.getKey(), entry.getValue());
       }
@@ -575,8 +538,9 @@ public class SystemService {
         discoveryService.initialize(
             new CachingDiscoveryProvider(new LocalDiscoveryProvider(
                 getApiConfigs(systemService), new DiscoveryGenerator(typeLoader),
-                new SchemaRepository(typeLoader))));
+                schemaRepository)));
       }
+      systemService.validateRegisteredServices(configValidator);
       return systemService;
     }
 

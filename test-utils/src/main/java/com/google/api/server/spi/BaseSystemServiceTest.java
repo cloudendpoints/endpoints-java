@@ -22,14 +22,11 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.times;
 
 import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiConfigException;
 import com.google.api.server.spi.config.ApiConfigLoader;
 import com.google.api.server.spi.config.ApiConfigWriter;
 import com.google.api.server.spi.config.jsonwriter.JsonConfigWriter;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiKey;
-import com.google.api.server.spi.config.model.ApiMethodConfig;
-import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.config.validation.ApiConfigValidator;
 import com.google.api.server.spi.request.FakeParamReader;
 import com.google.api.server.spi.response.ErrorResultWriter;
@@ -139,7 +136,9 @@ public abstract class BaseSystemServiceTest {
 
   @Test
   public void testOverrideMethod() throws Exception {
-    assertEquals(String.class, getTestServiceMethod("overrideMethod").getReturnType());
+    assertEquals(
+        com.google.api.server.spi.testing.Foo.class,
+        getTestServiceMethod("overrideMethod").getReturnType());
   }
 
   @Test
@@ -192,7 +191,7 @@ public abstract class BaseSystemServiceTest {
       boolean enableBackendService) throws Exception {
 
     return new SystemService(
-        new ApiConfigLoader(), new ApiConfigValidator(), "app", new JsonConfigWriter(), services,
+        new ApiConfigLoader(), "app", new JsonConfigWriter(), services,
         isIllegalArgumentBackendError);
   }
 
@@ -209,125 +208,6 @@ public abstract class BaseSystemServiceTest {
 
   private static class InnerClasses {
     @Api private static class TestEndpoint {}
-  }
-
-  @Test
-  public void testResolveAndUpdateServiceConfig() throws Exception {
-    ApiConfigLoader configLoader = Mockito.spy(new ApiConfigLoader());
-    ApiConfigValidator validator = Mockito.mock(ApiConfigValidator.class);
-
-    SystemService systemService = new SystemService(
-        configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false /* isIllegalArgumentBackendError */);
-
-    // Force the config loader to return a different config from that used during registration.
-    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), TestEndpoint.class);
-    ApiMethodConfig methodConfig = config.getApiClassConfig().getMethods().get(
-        methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")));
-    methodConfig.setScopeExpression(AuthScopeExpressions.interpret("foo"));
-    Mockito.doReturn(config).when(configLoader).reloadConfiguration(
-        Mockito.<ServiceContext>any(), Mockito.eq(TestEndpoint.class), Mockito.<ApiConfig>any());
-    Mockito.doReturn(false).when(configLoader).isStaticConfig(Mockito.<ApiConfig>any());
-
-    assertEquals(methodConfig,
-        systemService.resolveAndUpdateServiceConfig("TestEndpoint", "getResultNoParams"));
-  }
-
-  @Test
-  public void testResolveAndUpdateServiceConfig_noChange() throws Exception {
-    ApiConfigLoader configLoader = Mockito.spy(new ApiConfigLoader());
-    ApiConfigValidator validator = Mockito.mock(ApiConfigValidator.class);
-
-    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), TestEndpoint.class);
-    ApiMethodConfig methodConfig = config.getApiClassConfig().getMethods().get(
-        methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")));
-
-    Mockito.doReturn(false).when(configLoader).isStaticConfig(Mockito.<ApiConfig>any());
-
-    SystemService systemService = new SystemService(
-        configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false /* isIllegalArgumentBackendError */);
-
-    assertEquals(methodConfig,
-        systemService.resolveAndUpdateServiceConfig("TestEndpoint", "getResultNoParams"));
-  }
-
-  @Test
-  public void testResolveAndUpdateServiceConfig_staticConfig() throws Exception {
-    ApiConfigLoader configLoader = Mockito.spy(new ApiConfigLoader());
-    ApiConfigValidator validator = Mockito.mock(ApiConfigValidator.class);
-
-    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), TestEndpoint.class);
-    ApiMethodConfig methodConfig = config.getApiClassConfig().getMethods().get(
-        methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")));
-
-    ApiConfig alteredConfig =
-        configLoader.loadConfiguration(ServiceContext.create(), TestEndpoint.class);
-    ApiMethodConfig alteredMethodConfig = alteredConfig.getApiClassConfig().getMethods().get(
-        methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")));
-    alteredMethodConfig.setScopeExpression(AuthScopeExpressions.interpret("foo"));
-    Mockito.doReturn(alteredConfig).when(configLoader).reloadConfiguration(
-        Mockito.<ServiceContext>any(), Mockito.eq(TestEndpoint.class), Mockito.<ApiConfig>any());
-    Mockito.doReturn(true).when(configLoader).isStaticConfig(Mockito.<ApiConfig>any());
-
-    SystemService systemService = new SystemService(
-        configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false /* isIllegalArgumentBackendError */);
-
-    assertEquals(methodConfig,
-        systemService.resolveAndUpdateServiceConfig("TestEndpoint", "getResultNoParams"));
-  }
-
-  @Test
-  public void testResolveAndUpdateServiceConfig_badConfig() throws Exception {
-    ApiConfigLoader configLoader = Mockito.spy(new ApiConfigLoader());
-    ApiConfigValidator validator = Mockito.mock(ApiConfigValidator.class);
-
-    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), TestEndpoint.class);
-    ApiMethodConfig methodConfig = config.getApiClassConfig().getMethods().get(
-        methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")));
-
-    SystemService systemService = new SystemService(
-        configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false  /* isIllegalArgumentBackendError */);
-
-    Mockito.doThrow(new ApiConfigException("bleh")).when(configLoader).reloadConfiguration(
-        Mockito.<ServiceContext>any(), Mockito.eq(TestEndpoint.class), Mockito.<ApiConfig>any());
-    Mockito.doReturn(false).when(configLoader).isStaticConfig(Mockito.<ApiConfig>any());
-
-    // Should use previously registered config when new config fails to load.
-    assertEquals(methodConfig,
-        systemService.resolveAndUpdateServiceConfig("TestEndpoint", "getResultNoParams"));
-  }
-
-  @Test
-  public void testResolveAndUpdateServiceConfig_badConfigAfterGood() throws Exception {
-    ApiConfigLoader configLoader = Mockito.spy(new ApiConfigLoader());
-    ApiConfigValidator validator = Mockito.mock(ApiConfigValidator.class);
-
-    SystemService systemService = new SystemService(
-        configLoader, validator, "app", new JsonConfigWriter(), new Object[] { service },
-        false /* isIllegalArgumentBackendError */);
-
-    // Force the config loader to return a different config from that used during registration.
-    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), TestEndpoint.class);
-    ApiMethodConfig methodConfig =
-        config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
-            TestEndpoint.class.getMethod("getResultNoParams")));
-    methodConfig.setScopeExpression(AuthScopeExpressions.interpret("foo"));
-    Mockito.doReturn(config).when(configLoader).reloadConfiguration(
-        Mockito.<ServiceContext>any(), Mockito.eq(TestEndpoint.class), Mockito.<ApiConfig>any());
-    Mockito.doReturn(false).when(configLoader).isStaticConfig(Mockito.<ApiConfig>any());
-
-    assertEquals(methodConfig,
-        systemService.resolveAndUpdateServiceConfig("TestEndpoint", "getResultNoParams"));
-
-    Mockito.doThrow(new ApiConfigException("bleh")).when(configLoader).reloadConfiguration(
-        Mockito.<ServiceContext>any(), Mockito.eq(TestEndpoint.class), Mockito.<ApiConfig>any());
-
-    // Should use previously used config when new config fails to load.
-    assertEquals(methodConfig,
-        systemService.resolveAndUpdateServiceConfig("TestEndpoint", "getResultNoParams"));
   }
 
   @Test
@@ -356,7 +236,7 @@ public abstract class BaseSystemServiceTest {
         .when(configWriter).writeConfig(setOf(config1, config2));
 
     SystemService systemService =
-        new SystemService(configLoader, configValidator, "app", configWriter,
+        new SystemService(configLoader, "app", configWriter,
             new Object[] { service, getTestService2() }, false /* isIllegalArgumentBackendError */);
 
     Map<ApiKey, String> configs = systemService.getApiConfigs();

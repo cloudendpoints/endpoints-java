@@ -345,7 +345,7 @@ public class JsonConfigWriterTest {
     ApiConfigValidator validator = Mockito.mock(ApiConfigValidator.class);
     TypeLoader typeLoader = new TypeLoader();
     JsonConfigWriter writer =
-        new JsonConfigWriter(JsonConfigWriter.class.getClassLoader(), validator);
+        new JsonConfigWriter(new TypeLoader(JsonConfigWriter.class.getClassLoader()), validator);
     ApiConfig oneToday = new ApiConfig.Factory().create(serviceContext, typeLoader, OneToday.class);
     ApiConfig oneTodayAdmin =
         new ApiConfig.Factory().create(serviceContext, typeLoader, OneTodayAdmin.class);
@@ -378,7 +378,7 @@ public class JsonConfigWriterTest {
     ApiConfigValidator validator = Mockito.mock(ApiConfigValidator.class);
     TypeLoader typeLoader = new TypeLoader();
     JsonConfigWriter writer =
-        new JsonConfigWriter(JsonConfigWriter.class.getClassLoader(), validator);
+        new JsonConfigWriter(new TypeLoader(JsonConfigWriter.class.getClassLoader()), validator);
     ApiConfig oneToday = new ApiConfig.Factory().create(serviceContext, typeLoader, OneToday.class);
     ApiConfig oneToday2 =
         new ApiConfig.Factory().create(serviceContext, typeLoader, OneToday2.class);

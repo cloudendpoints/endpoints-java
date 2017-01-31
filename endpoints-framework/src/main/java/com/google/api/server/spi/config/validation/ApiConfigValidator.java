@@ -16,6 +16,7 @@
 package com.google.api.server.spi.config.validation;
 
 import com.google.api.client.util.Strings;
+import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.ApiConfigInconsistency;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.model.ApiClassConfig;
@@ -26,6 +27,9 @@ import com.google.api.server.spi.config.model.ApiIssuerConfigs.IssuerConfig;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiNamespaceConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
+import com.google.api.server.spi.config.model.ApiParameterConfig.Classification;
+import com.google.api.server.spi.config.model.Schema;
+import com.google.api.server.spi.config.model.SchemaRepository;
 import com.google.api.server.spi.config.model.Serializers;
 import com.google.api.server.spi.config.model.Types;
 import com.google.common.collect.Iterables;
@@ -55,6 +59,14 @@ public class ApiConfigValidator {
 
   private static final Pattern API_METHOD_NAME_PATTERN = Pattern.compile(
       "^\\w+(\\.\\w+)*$");
+
+  private final TypeLoader typeLoader;
+  private final SchemaRepository schemaRepository;
+
+  public ApiConfigValidator(TypeLoader typeLoader, SchemaRepository schemaRepository) {
+    this.typeLoader = typeLoader;
+    this.schemaRepository = schemaRepository;
+  }
 
   /**
    * Validates all configurations for a single API.  Makes sure the API-level configuration matches
@@ -170,6 +182,7 @@ public class ApiConfigValidator {
         validateRestSignatureUnique(methodConfig, restfulSignatures);
         validateBackendMethodNameUnique(methodConfig, javaMethodNames);
         validateMethod(methodConfig);
+        validateResourceAndFieldNames(methodConfig);
       }
     }
   }
@@ -198,6 +211,23 @@ public class ApiConfigValidator {
     }
   }
 
+  private void validateResourceAndFieldNames(ApiMethodConfig methodConfig)
+      throws PropertyParameterNameConflictException {
+    for (ApiParameterConfig parameterConfig : methodConfig.getParameterConfigs()) {
+      if (parameterConfig.getClassification() == Classification.RESOURCE) {
+        Schema schema = schemaRepository.getOrAdd(
+            parameterConfig.getSchemaBaseType(), methodConfig.getApiConfig());
+        Set<String> fieldNames = schema.fields().keySet();
+        for (ApiParameterConfig parameter : methodConfig.getParameterConfigs()) {
+          if (parameter.getClassification() == Classification.API_PARAMETER &&
+              !"id".equals(parameter.getName()) && fieldNames.contains(parameter.getName())) {
+            throw new PropertyParameterNameConflictException(parameter);
+          }
+        }
+      }
+    }
+  }
+
   private void validateMethod(ApiMethodConfig config) throws ApiMethodConfigInvalidException,
       ApiParameterConfigInvalidException {
     if (!API_METHOD_NAME_PATTERN.matcher(config.getName()).matches()) {
@@ -212,6 +242,11 @@ public class ApiConfigValidator {
       validateParameter(parameter, parameterNames, config.getPathParameters());
     }
     validateThirdPartyAuth(config);
+
+    TypeToken<?> returnType = config.getReturnType();
+    if (typeLoader.isSchemaType(returnType) || Types.isEnumType(returnType)) {
+      throw new InvalidReturnTypeException(config, returnType);
+    }
   }
 
   private void validateThirdPartyAuth(ApiMethodConfig config)

@@ -21,7 +21,7 @@ import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 
 class BaseSimpleContravarianceEndpoint {
   @ApiMethod(name = "api.foos.base", path = "base", httpMethod = HttpMethod.GET)
-  public String foo(Number id) {
+  public Foo foo(Number id) {
     return null;
   }
 }
@@ -32,7 +32,7 @@ class BaseSimpleContravarianceEndpoint {
 @Api
 public class SimpleContravarianceEndpoint extends BaseSimpleContravarianceEndpoint {
   @ApiMethod(name = "api.foos.fn", path = "fn", httpMethod = HttpMethod.GET)
-  public String foo(Object id) {
+  public Foo foo(Object id) {
     return null;
   }
 }

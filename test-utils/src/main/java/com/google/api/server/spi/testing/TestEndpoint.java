@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletRequest;
  * Endpoint class for testing.
  */
 @Api
-public class TestEndpoint extends TestEndpointSuperclass<String> {
+public class TestEndpoint extends TestEndpointSuperclass<Foo> {
 
   public static final String NAME_DATE = "date";
   public static final String NAME_DATE_AND_TIME = "dateandtime";
@@ -52,18 +52,26 @@ public class TestEndpoint extends TestEndpointSuperclass<String> {
   public static final String NAME_FLOAT_OBJECT = "Float";
   public static final String NAME_DOUBLE_OBJECT = "Double";
   public static final String NAME_ENUM = "enum";
-  public static final String RESULT = "result";
+  public static final Foo RESULT = new Foo();
   public static final String ERROR_MESSAGE = "error message";
 
   public static class Request {
     private String string;
-    private final Integer integer = -1;
+    private Integer integer = -1;
 
-    public String getString() {
+    public void setStringValue(String string) {
+      this.string = string;
+    }
+
+    public void setIntegerValue(int integer) {
+      this.integer = integer;
+    }
+
+    public String getStringValue() {
       return string;
     }
 
-    public Integer getInteger() {
+    public Integer getIntegerValue() {
       return integer;
     }
   }
@@ -72,7 +80,7 @@ public class TestEndpoint extends TestEndpointSuperclass<String> {
     TEST1, TEST2
   }
 
-  public String succeed(@Named(NAME_STRING) String s, @Named(NAME_BOOLEAN) boolean b1,
+  public Foo succeed(@Named(NAME_STRING) String s, @Named(NAME_BOOLEAN) boolean b1,
       @Named(NAME_INTEGER) int i1, @Named(NAME_LONG) long l1, @Named(NAME_FLOAT) float f1,
       @Named(NAME_DOUBLE) double d1, @Named(NAME_BOOLEAN_OBJECT) Boolean b2,
       @Named(NAME_INTEGER_OBJECT) Integer i2, @Named(NAME_LONG_OBJECT) Long l2,
@@ -82,46 +90,46 @@ public class TestEndpoint extends TestEndpointSuperclass<String> {
     return RESULT;
   }
 
-  public String getDate(@Named(NAME_DATE) Date date) {
+  public Foo getDate(@Named(NAME_DATE) Date date) {
     return RESULT;
   }
 
   @ApiMethod(path = "dateandtime")
-  public String getDateAndTime(@Named(NAME_DATE_AND_TIME) DateAndTime dateTime) {
+  public Foo getDateAndTime(@Named(NAME_DATE_AND_TIME) DateAndTime dateTime) {
     return RESULT;
   }
 
   @ApiMethod(path = "simpledate")
-  public String getSimpleDate(@Named(NAME_DATE_AND_TIME) SimpleDate simpleDate) {
+  public Foo getSimpleDate(@Named(NAME_DATE_AND_TIME) SimpleDate simpleDate) {
     return RESULT;
   }
 
   @ApiMethod(path = "noresults")
-  public String getResultNoParams() {
+  public Foo getResultNoParams() {
     return RESULT;
   }
 
-  public String fail(@Named(NAME_STRING) String p0, @Named(NAME_INTEGER) int p1, Request request,
+  public Foo fail(@Named(NAME_STRING) String p0, @Named(NAME_INTEGER) int p1, Request request,
       User p2, HttpServletRequest httpRequest) throws BadRequestException {
     throw new BadRequestException(ERROR_MESSAGE);
   }
 
-  public String failOAuth(@Named(NAME_STRING) String p0, @Named(NAME_INTEGER) int p1,
+  public Foo failOAuth(@Named(NAME_STRING) String p0, @Named(NAME_INTEGER) int p1,
       Request request, User p2, HttpServletRequest httpRequest) throws OAuthRequestException {
     throw new OAuthRequestException(ERROR_MESSAGE);
   }
 
-  public String failWrapped() throws Exception {
+  public Foo failWrapped() throws Exception {
     throw new Exception(null, new ServiceException(401, ERROR_MESSAGE));
   }
 
-  public String failIllegalArgumentException() {
+  public Foo failIllegalArgumentException() {
     throw new IllegalArgumentException();
   }
 
-  public void doSomething(byte[] in) {}
+  public void doSomething(@Named("bytes") byte[] in) {}
 
-  public void doBlob(Blob b) {}
+  public void doBlob(@Named("blob") Blob b) {}
 
   public void doParameterizedOverloadTest(Map<String, String> m) {}
 
@@ -130,7 +138,7 @@ public class TestEndpoint extends TestEndpointSuperclass<String> {
   public void doEnum(@Named(NAME_ENUM) TestEnum e) {}
 
   @Override
-  public String overrideMethod(@Named(NAME_STRING) String s) {
+  public Foo overrideMethod(Foo s) {
     return null;
   }
 
@@ -138,8 +146,8 @@ public class TestEndpoint extends TestEndpointSuperclass<String> {
   public void overrideMethod1() {}
 
   @Override
-  public boolean overrideMethod2(@Named(NAME_BOOLEAN) boolean bleh) {
-    return true;
+  public Foo overrideMethod2(@Named(NAME_BOOLEAN) boolean bleh) {
+    return null;
   }
 
   public static Map<String, Object> staticMethod() {

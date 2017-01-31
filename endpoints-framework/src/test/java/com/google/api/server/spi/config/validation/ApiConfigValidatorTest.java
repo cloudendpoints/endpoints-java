@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.ServiceContext;
+import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -36,6 +37,7 @@ import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.model.ApiConfig;
+import com.google.api.server.spi.config.model.SchemaRepository;
 import com.google.api.server.spi.testing.DefaultValueSerializer;
 import com.google.api.server.spi.testing.DuplicateMethodEndpoint;
 import com.google.api.server.spi.testing.PassAuthenticator;
@@ -51,7 +53,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -71,7 +72,9 @@ public class ApiConfigValidatorTest {
 
   @Before
   public void setUp() throws Exception {
-    validator = new ApiConfigValidator();
+    TypeLoader typeLoader = new TypeLoader(ApiConfigValidator.class.getClassLoader());
+    SchemaRepository schemaRepository = new SchemaRepository(typeLoader);
+    validator = new ApiConfigValidator(typeLoader, schemaRepository);
     configFactory = new ApiConfig.Factory();
     configLoader = new ApiConfigLoader();
     config = configLoader.loadConfiguration(ServiceContext.create(), TestEndpoint.class);
@@ -168,11 +171,13 @@ public class ApiConfigValidatorTest {
     when(method1.getMethod()).thenReturn(DuplicateMethodEndpoint.class.getMethod(
         "foo", String.class));
     doReturn(TestEndpoint.class).when(method1).getEndpointClass();
+    when(method1.getReturnType()).thenReturn((TypeToken) TypeToken.of(Void.class));
 
     EndpointMethod method2 = mock(EndpointMethod.class);
     when(method2.getMethod()).thenReturn(DuplicateMethodEndpoint.class.getMethod(
         "foo", Integer.class));
     doReturn(TestEndpoint.class).when(method2).getEndpointClass();
+    when(method2.getReturnType()).thenReturn((TypeToken) TypeToken.of(Void.class));
 
     config.getApiClassConfig().getMethods().getOrCreate(method1).setPath("fn1");
     config.getApiClassConfig().getMethods().getOrCreate(method2).setPath("fn2");
