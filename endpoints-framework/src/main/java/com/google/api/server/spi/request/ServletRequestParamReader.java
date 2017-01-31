@@ -135,7 +135,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
         // User type parameter requires no Named annotation (ignored if present)
         params[i] = getUser();
         logger.log(Level.FINE, "deserialize: User injected into param[{0}]", i);
-      } else if (clazz == com.google.appengine.api.users.User.class) {
+      } else if (APPENGINE_USER_CLASS_NAME.equals(clazz.getName())) {
         // User type parameter requires no Named annotation (ignored if present)
         params[i] = getAppEngineUser();
         logger.log(Level.FINE, "deserialize: App Engine User injected into param[{0}]", i);
