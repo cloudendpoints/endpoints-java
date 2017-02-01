@@ -74,7 +74,7 @@ public class ApiAnnotationConfigTest {
     assertEquals(null, config.getDescription());
     assertEquals("https://appHostName.com/_ah/spi", config.getBackendRoot());
     assertEquals(false, config.getIsAbstract());
-    assertEquals(false, config.getIsDefaultVersion());
+    assertEquals(true, config.getIsDefaultVersion());
     assertEquals(true, config.getIsDiscoverable());
     assertEquals(false, config.getUseDatastore());
   }

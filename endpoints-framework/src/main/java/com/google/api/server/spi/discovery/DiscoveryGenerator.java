@@ -48,8 +48,11 @@ import com.google.api.services.discovery.model.RestResource;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
@@ -108,13 +111,22 @@ public class DiscoveryGenerator {
           }
         });
     ImmutableMap.Builder<ApiKey, RestDescription> builder = ImmutableMap.builder();
+    // "Default" API versions were determined automagically in legacy endpoints.
+    // This version only allows to remove an API from default ones by adding
+    // defaultVersion = AnnotationBoolean.FALSE to @Api
+    ImmutableSet.Builder<ApiKey> preferred = ImmutableSet.builder();
     for (ApiKey apiKey : configsByKey.keySet()) {
-      builder.put(apiKey, writeApi(apiKey, configsByKey.get(apiKey), context, schemaRepository));
+      ImmutableList<ApiConfig> apiConfigs = configsByKey.get(apiKey);
+      builder.put(apiKey, writeApi(apiKey, apiConfigs, context, schemaRepository));
+      // last config takes precedence (same as writeApi)
+      if (Iterables.getLast(apiConfigs).getIsDefaultVersion()) {
+        preferred.add(apiKey);
+      }
     }
     ImmutableMap<ApiKey, RestDescription> discoveryDocs = builder.build();
     return Result.builder()
         .setDiscoveryDocs(discoveryDocs)
-        .setDirectory(generateDirectory(discoveryDocs, context))
+        .setDirectory(generateDirectory(discoveryDocs, preferred.build(), context))
         .build();
   }
 
@@ -363,7 +375,7 @@ public class DiscoveryGenerator {
   }
 
   private DirectoryList generateDirectory(Map<ApiKey, RestDescription> discoveryDocs,
-      DiscoveryContext context) {
+      ImmutableSet<ApiKey> preferred, DiscoveryContext context) {
     DirectoryList directory = new DirectoryList()
         .setDiscoveryVersion("v1")
         .setKind("discovery#directoryList");
@@ -381,7 +393,7 @@ public class DiscoveryGenerator {
           .setId(doc.getName() + ":" + doc.getVersion())
           .setKind("discovery#directoryItem")
           .setName(doc.getName())
-          .setPreferred(true)
+          .setPreferred(preferred.contains(entry.getKey()))
           .setTitle(doc.getTitle())
           .setVersion(doc.getVersion()));
     }
