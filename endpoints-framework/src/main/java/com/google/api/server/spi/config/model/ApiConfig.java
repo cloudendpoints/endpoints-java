@@ -263,7 +263,7 @@ public class ApiConfig {
     backendRoot =
         serviceContext.getTransferProtocol() + "://" + serviceContext.getAppHostName() + "/_ah/spi";
     isAbstract = false;
-    defaultVersion = false;
+    defaultVersion = true;
     discoverable = true;
     useDatastore = false;
     resource = null;

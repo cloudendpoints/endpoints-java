@@ -131,7 +131,7 @@ public class AnnotationApiConfigGeneratorTest {
     JsonNode root = objectMapper.readValue(apiConfigSource, JsonNode.class);
 
     verifyApi(root, "thirdParty.api", "https://myapp.appspot.com/_ah/api",
-        "myapi", "v1", "", "https://myapp.appspot.com/_ah/spi", false, false);
+        "myapi", "v1", "", "https://myapp.appspot.com/_ah/spi", false, true);
 
     JsonNode methodGetFoo = root.path("methods").path("myapi.endpoint0.getFoo");
     verifyMethod(methodGetFoo, "foo/{id}", HttpMethod.GET, Endpoint0.class.getName() + ".getFoo",
