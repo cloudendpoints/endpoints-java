@@ -142,6 +142,7 @@ public class ApiMethodConfig {
   private String name;
   private String description;
   private String path;
+  private String canonicalPath;
   private String httpMethod;
 
   // If null, get a default from apiConfig.
@@ -173,6 +174,7 @@ public class ApiMethodConfig {
     this.apiClassConfig = apiClassConfig;
     this.name = original.name;
     this.path = original.path;
+    this.canonicalPath = original.canonicalPath;
     this.description = original.description;
     this.httpMethod = original.httpMethod;
     this.scopeExpression = original.scopeExpression;
@@ -213,8 +215,8 @@ public class ApiMethodConfig {
 
     name = null;
     httpMethod = Preconditions.checkNotNull(restMethod.getHttpMethod(), "httpMethod");
-    path = Preconditions.checkNotNull(
-        resourceTypeName == null ? method.getName() : resourceTypeName.toLowerCase(), "path");
+    setPath(Preconditions.checkNotNull(
+        resourceTypeName == null ? method.getName() : resourceTypeName.toLowerCase(), "path"));
     authLevel = AuthLevel.UNSPECIFIED;
     scopeExpression = null;
     audiences = null;
@@ -371,10 +373,19 @@ public class ApiMethodConfig {
 
   public void setPath(String path) {
     this.path = path;
+    if (path.startsWith("/")) {
+      canonicalPath = path.substring(1);
+    } else {
+      canonicalPath = getApiConfig().getName() + "/" + getApiConfig().getVersion() + "/" + path;
+    }
   }
 
   public String getPath() {
     return path;
+  }
+
+  public String getCanonicalPath() {
+    return canonicalPath;
   }
 
   public void setHttpMethod(String httpMethod) {

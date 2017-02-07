@@ -25,6 +25,8 @@ import com.google.api.server.spi.config.ApiConfigLoader;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.discovery.DiscoveryGenerator.DiscoveryContext;
+import com.google.api.server.spi.testing.AbsoluteCommonPathEndpoint;
+import com.google.api.server.spi.testing.AbsolutePathEndpoint;
 import com.google.api.server.spi.testing.ArrayEndpoint;
 import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
@@ -129,6 +131,20 @@ public class DiscoveryGeneratorTest {
   public void testWriteDiscovery_PrimitiveEndpoint() throws Exception {
     RestDescription doc = getDiscovery(PrimitiveEndpoint.class, context);
     RestDescription expected = readExpectedAsDiscovery("primitive_endpoint.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_AbsolutePathEndpoint() throws Exception {
+    RestDescription doc = getDiscovery(AbsolutePathEndpoint.class, context);
+    RestDescription expected = readExpectedAsDiscovery("absolute_path_endpoint.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_AbsoluteCommonPathEndpoint() throws Exception {
+    RestDescription doc = getDiscovery(AbsoluteCommonPathEndpoint.class, context);
+    RestDescription expected = readExpectedAsDiscovery("absolute_common_path_endpoint.json");
     compareDiscovery(expected, doc);
   }
 

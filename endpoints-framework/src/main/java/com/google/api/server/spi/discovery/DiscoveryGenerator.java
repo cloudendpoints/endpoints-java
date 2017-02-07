@@ -134,8 +134,7 @@ public class DiscoveryGenerator {
       DiscoveryContext context, SchemaRepository repo) {
     // The first step is to scan all methods and try to extract a base path, aka a common prefix
     // for all methods. This prefix must end in a slash and can't contain any path parameters.
-    String sharedApiPath = computeApiBasePath(apiConfigs);
-    String servicePath = apiKey.getName() + "/" + apiKey.getVersion() + "/" + sharedApiPath;
+    String servicePath = computeApiServicePath(apiConfigs);
     String basePath = context.basePath + "/" + servicePath;
     RestDescription doc = REST_SKELETON.clone()
         .setBasePath(basePath)
@@ -169,7 +168,7 @@ public class DiscoveryGenerator {
       }
       for (ApiMethodConfig methodConfig : config.getApiClassConfig().getMethods().values()) {
         if (!methodConfig.isIgnored()) {
-          writeApiMethod(config, sharedApiPath, doc, methodConfig, repo);
+          writeApiMethod(config, servicePath, doc, methodConfig, repo);
         }
       }
     }
@@ -185,7 +184,7 @@ public class DiscoveryGenerator {
     return doc;
   }
 
-  private void writeApiMethod(ApiConfig config, String sharedApiPath, RestDescription doc,
+  private void writeApiMethod(ApiConfig config, String servicePath, RestDescription doc,
       ApiMethodConfig methodConfig, SchemaRepository repo) {
     List<String> parts = DOT_SPLITTER.splitToList(methodConfig.getFullMethodName());
     Map<String, RestMethod> methods = getMethodMapFromDoc(doc, parts);
@@ -194,7 +193,7 @@ public class DiscoveryGenerator {
         .setDescription(methodConfig.getDescription())
         .setHttpMethod(methodConfig.getHttpMethod())
         .setId(methodConfig.getFullMethodName())
-        .setPath(methodConfig.getPath().substring(sharedApiPath.length()))
+        .setPath(methodConfig.getCanonicalPath().substring(servicePath.length()))
         .setScopes(AuthScopeExpressions.encodeMutable(methodConfig.getScopeExpression()));
     if (!methodConfig.getPathParameters().isEmpty()) {
       method.setParameterOrder(Lists.newArrayList(parameters.keySet()));
@@ -364,11 +363,11 @@ public class DiscoveryGenerator {
     return schema;
   }
 
-  private String computeApiBasePath(Iterable<ApiConfig> apiConfigs) {
+  private String computeApiServicePath(Iterable<ApiConfig> apiConfigs) {
     CommonPathPrefixBuilder builder = new CommonPathPrefixBuilder();
     for (ApiConfig apiConfig : apiConfigs) {
       for (ApiMethodConfig methodConfig : apiConfig.getApiClassConfig().getMethods().values()) {
-        builder.addPath(methodConfig.getPath());
+        builder.addPath(methodConfig.getCanonicalPath());
       }
     }
     return builder.getCommonPrefix();

@@ -44,8 +44,8 @@ import java.util.List;
 public class ApiMethodConfigTest {
   private ApiMethodConfig methodConfig;
 
-  @Mock
-  ApiClassConfig apiClassConfig;
+  @Mock ApiConfig apiConfig;
+  @Mock ApiClassConfig apiClassConfig;
   @Mock EndpointMethod method;
 
   private static final AuthScopeExpression defaultScopeExpression =
@@ -60,12 +60,15 @@ public class ApiMethodConfigTest {
 
   @Before
   public void setUp() throws Exception {
+    Mockito.when(apiConfig.getName()).thenReturn("testapi");
+    Mockito.when(apiConfig.getVersion()).thenReturn("v1");
     Mockito.when(apiClassConfig.getResource()).thenReturn("resource");
     Mockito.when(apiClassConfig.getAuthLevel()).thenReturn(AuthLevel.NONE);
     Mockito.when(apiClassConfig.getScopeExpression()).thenReturn(defaultScopeExpression);
     Mockito.when(apiClassConfig.getAudiences()).thenReturn(defaultAudiences);
     Mockito.when(apiClassConfig.getClientIds()).thenReturn(defaultClientIds);
     Mockito.when(apiClassConfig.getApiClassJavaSimpleName()).thenReturn("className");
+    Mockito.when(apiClassConfig.getApiConfig()).thenReturn(apiConfig);
 
     Mockito.when(method.getMethod()).thenReturn(TestEndpoint.class.getMethod("getResultNoParams"));
     Mockito.doReturn(TestEndpoint.class).when(method).getEndpointClass();
