@@ -222,7 +222,7 @@ public class SwaggerGenerator {
   private void writeApiMethod(ApiMethodConfig methodConfig, EndpointMethod endpointMethod,
       ApiConfig apiConfig, Swagger swagger, SwaggerContext context, boolean writeInternal,
       SchemaRepository repo) throws ApiConfigException {
-    Path path = getOrCreatePath(swagger, apiConfig, methodConfig);
+    Path path = getOrCreatePath(swagger, methodConfig);
     Operation operation = new Operation();
     operation.setOperationId(getOperationId(apiConfig, methodConfig));
     operation.setDescription(methodConfig.getDescription());
@@ -386,9 +386,8 @@ public class SwaggerGenerator {
     throw new IllegalArgumentException("invalid property type");
   }
 
-  private Path getOrCreatePath(Swagger swagger, ApiConfig apiConfig, ApiMethodConfig methodConfig) {
-    String pathStr =
-        "/" + apiConfig.getName() + "/" + apiConfig.getVersion() + "/" + methodConfig.getPath();
+  private Path getOrCreatePath(Swagger swagger, ApiMethodConfig methodConfig) {
+    String pathStr = "/" + methodConfig.getCanonicalPath();
     Path path = swagger.getPath(pathStr);
     if (path == null) {
       path = new Path();

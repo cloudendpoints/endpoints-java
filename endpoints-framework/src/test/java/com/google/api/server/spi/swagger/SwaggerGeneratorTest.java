@@ -30,6 +30,8 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.swagger.SwaggerGenerator.SwaggerContext;
+import com.google.api.server.spi.testing.AbsoluteCommonPathEndpoint;
+import com.google.api.server.spi.testing.AbsolutePathEndpoint;
 import com.google.api.server.spi.testing.ArrayEndpoint;
 import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
@@ -135,6 +137,20 @@ public class SwaggerGeneratorTest {
         configLoader.loadConfiguration(ServiceContext.create(), ApiKeysEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
     Swagger expected = readExpectedAsSwagger("api_keys.swagger");
+    compareSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_AbsolutePathEndpoint() throws Exception {
+    Swagger swagger = getSwagger(AbsolutePathEndpoint.class, new SwaggerContext(), true);
+    Swagger expected = readExpectedAsSwagger("absolute_path_endpoint.swagger");
+    compareSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_AbsoluteCommonPathEndpoint() throws Exception {
+    Swagger swagger = getSwagger(AbsoluteCommonPathEndpoint.class, new SwaggerContext(), true);
+    Swagger expected = readExpectedAsSwagger("absolute_common_path_endpoint.swagger");
     compareSwagger(expected, swagger);
   }
 
