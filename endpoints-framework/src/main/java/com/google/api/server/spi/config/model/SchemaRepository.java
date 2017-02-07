@@ -116,7 +116,7 @@ public class SchemaRepository {
       // If the schema is a placeholder, it's currently being constructed and will be added when
       // the type construction is complete.
       if (schema != PLACEHOLDER_SCHEMA) {
-        schemaByApiKeys.put(key, schema);
+        addSchemaToApi(key, schema);
       }
       return schema;
     }
@@ -166,6 +166,18 @@ public class SchemaRepository {
       typesForConfig.put(type, schema);
       schemaByApiKeys.put(key, schema);
       return schema;
+    }
+  }
+
+  private void addSchemaToApi(ApiKey key, Schema schema) {
+    schemaByApiKeys.put(key, schema);
+    for (Field f : schema.fields().values()) {
+      while (f.type() == FieldType.ARRAY) {
+        f = f.arrayItemSchema();
+      }
+      if (f.type() == FieldType.OBJECT || f.type() == FieldType.ENUM) {
+        addSchemaToApi(key, f.schemaReference().get());
+      }
     }
   }
 

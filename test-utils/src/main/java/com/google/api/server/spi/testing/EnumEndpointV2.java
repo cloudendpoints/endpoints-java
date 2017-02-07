@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google Inc. All Rights Reserved.
+ * Copyright 2017 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
 
-@Api(name = "enum", version = "v1")
-public class EnumEndpoint {
+@Api(name = "enum", version = "v2")
+public class EnumEndpointV2 {
   @ApiMethod(name = "create", path = "{value}")
   public EnumValue create(@Named("value") TestEnum value) {
     return null;
