@@ -72,14 +72,14 @@
       "type": "oauth2",
       "authorizationUrl": "",
       "flow": "implicit",
-      "x-issuer": "https://test.auth0.com/authorize",
-      "x-jwks_uri": "https://test.auth0.com/.wellknown/jwks.json"
+      "x-google-issuer": "https://test.auth0.com/authorize",
+      "x-google-jwks_uri": "https://test.auth0.com/.wellknown/jwks.json"
     },
     "nojwks": {
       "type": "oauth2",
       "authorizationUrl": "",
       "flow": "implicit",
-      "x-issuer": "https://nojwks.com"
+      "x-google-issuer": "https://nojwks.com"
     }
   }
 }
