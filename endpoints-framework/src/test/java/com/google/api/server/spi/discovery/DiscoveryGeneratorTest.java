@@ -24,11 +24,13 @@ import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.ApiConfigLoader;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiConfig;
+import com.google.api.server.spi.config.model.SchemaRepository;
 import com.google.api.server.spi.discovery.DiscoveryGenerator.DiscoveryContext;
 import com.google.api.server.spi.testing.AbsoluteCommonPathEndpoint;
 import com.google.api.server.spi.testing.AbsolutePathEndpoint;
 import com.google.api.server.spi.testing.ArrayEndpoint;
 import com.google.api.server.spi.testing.EnumEndpoint;
+import com.google.api.server.spi.testing.EnumEndpointV2;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.MultipleParameterEndpoint;
 import com.google.api.server.spi.testing.NamespaceEndpoint;
@@ -57,6 +59,7 @@ public class DiscoveryGeneratorTest {
   private final ObjectMapper mapper = Json.mapper();
   private DiscoveryGenerator generator;
   private ApiConfigLoader configLoader;
+  private SchemaRepository schemaRepository;
 
   @Before
   public void setUp() throws Exception {
@@ -66,18 +69,19 @@ public class DiscoveryGeneratorTest {
     this.configLoader = new ApiConfigLoader(new ApiConfig.Factory(), typeLoader,
         annotationReader);
     this.generator = new DiscoveryGenerator(typeLoader);
+    this.schemaRepository = new SchemaRepository(typeLoader);
   }
 
   @Test
   public void testWriteDiscovery_FooEndpoint() throws Exception {
-    RestDescription doc = getDiscovery(FooEndpoint.class, context);
+    RestDescription doc = getDiscovery(context, FooEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("foo_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
   @Test
   public void testWriteDiscovery_FooEndpointDefaultContext() throws Exception {
-    RestDescription doc = getDiscovery(FooEndpoint.class, new DiscoveryContext());
+    RestDescription doc = getDiscovery(new DiscoveryContext(), FooEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("foo_endpoint_default_context.json");
     compareDiscovery(expected, doc);
   }
@@ -85,35 +89,35 @@ public class DiscoveryGeneratorTest {
   @Test
   public void testWriteDiscovery_FooEndpointLocalhost() throws Exception {
     RestDescription doc = getDiscovery(
-        FooEndpoint.class, new DiscoveryContext().setApiRoot("http://localhost:8080/api"));
+        new DiscoveryContext().setApiRoot("http://localhost:8080/api"), FooEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("foo_endpoint_localhost.json");
     compareDiscovery(expected, doc);
   }
 
   @Test
   public void testWriteDiscovery_EnumEndpoint() throws Exception {
-    RestDescription doc = getDiscovery(EnumEndpoint.class, new DiscoveryContext());
+    RestDescription doc = getDiscovery(new DiscoveryContext(), EnumEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("enum_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
   @Test
   public void testWriteDiscovery_ArrayEndpoint() throws Exception {
-    RestDescription doc = getDiscovery(ArrayEndpoint.class, new DiscoveryContext());
+    RestDescription doc = getDiscovery(new DiscoveryContext(), ArrayEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("array_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
   @Test
   public void testWriteDiscovery_namespace() throws Exception {
-    RestDescription doc = getDiscovery(NamespaceEndpoint.class, new DiscoveryContext());
+    RestDescription doc = getDiscovery(new DiscoveryContext(), NamespaceEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("namespace_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
   @Test
   public void testWriteDiscovery_parameterOrder() throws Exception {
-    RestDescription doc = getDiscovery(MultipleParameterEndpoint.class, new DiscoveryContext());
+    RestDescription doc = getDiscovery(new DiscoveryContext(), MultipleParameterEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("multiple_parameter_endpoint.json");
     compareDiscovery(expected, doc);
   }
@@ -121,30 +125,42 @@ public class DiscoveryGeneratorTest {
   @Test
   public void testWriteDiscovery_newHostname() throws Exception {
     RestDescription doc = getDiscovery(
-        FooEndpoint.class,
-        new DiscoveryContext().setApiRoot("http://notlocalhost/api").setHostname("localhost:8080"));
+        new DiscoveryContext().setApiRoot("http://notlocalhost/api").setHostname("localhost:8080"),
+        FooEndpoint.class
+    );
     RestDescription expected = readExpectedAsDiscovery("foo_endpoint_localhost.json");
     compareDiscovery(expected, doc);
   }
 
   @Test
   public void testWriteDiscovery_PrimitiveEndpoint() throws Exception {
-    RestDescription doc = getDiscovery(PrimitiveEndpoint.class, context);
+    RestDescription doc = getDiscovery(context, PrimitiveEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("primitive_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
   @Test
   public void testWriteDiscovery_AbsolutePathEndpoint() throws Exception {
-    RestDescription doc = getDiscovery(AbsolutePathEndpoint.class, context);
+    RestDescription doc = getDiscovery(context, AbsolutePathEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("absolute_path_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
   @Test
   public void testWriteDiscovery_AbsoluteCommonPathEndpoint() throws Exception {
-    RestDescription doc = getDiscovery(AbsoluteCommonPathEndpoint.class, context);
+    RestDescription doc = getDiscovery(context, AbsoluteCommonPathEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("absolute_common_path_endpoint.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_multipleApisWithSharedSchema() throws Exception {
+    // Read in an API that uses a resource with fields that have their own schema, then read in
+    // another API that uses the same resource. The discovery for the second API should contain
+    // both schema, rather than just the first one.
+    getDiscovery(new DiscoveryContext(), EnumEndpointV2.class);
+    RestDescription doc = getDiscovery(new DiscoveryContext(), EnumEndpoint.class);
+    RestDescription expected = readExpectedAsDiscovery("enum_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
@@ -166,12 +182,14 @@ public class DiscoveryGeneratorTest {
     result.directory().clone();
   }
 
-  private RestDescription getDiscovery(Class<?> serviceClass, DiscoveryContext context)
+  private RestDescription getDiscovery(DiscoveryContext context, Class<?> serviceClass)
       throws Exception {
+    ImmutableList.Builder<ApiConfig> builder = ImmutableList.builder();
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), serviceClass);
     // If the clone call fails, the generated discovery is invalid.
     return Iterables.getFirst(
-        generator.writeDiscovery(ImmutableList.of(config), context).discoveryDocs().values(),
+        generator.writeDiscovery(
+            ImmutableList.of(config), context, schemaRepository).discoveryDocs().values(),
         null).clone();
   }
 

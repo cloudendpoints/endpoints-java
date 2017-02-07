@@ -14,6 +14,8 @@ import com.google.api.server.spi.config.model.ApiParameterConfig.Classification;
 import com.google.api.server.spi.config.model.Schema.Field;
 import com.google.api.server.spi.config.model.Schema.SchemaReference;
 import com.google.api.server.spi.response.CollectionResponse;
+import com.google.api.server.spi.testing.EnumEndpoint;
+import com.google.api.server.spi.testing.EnumValue;
 import com.google.api.server.spi.testing.TestEnum;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
@@ -118,6 +120,32 @@ public class SchemaRepositoryTest {
     assertThat(repo.get(type, config)).isNull();
     repo.getOrAdd(type, config);
     checkParameterizedSchema(repo.get(type, config), Integer.class);
+  }
+
+  @Test
+  public void getOrAdd_multipleApis() throws Exception {
+    // Adding the same resource to multiple APIs should add field resources as well.
+    ApiConfig config2 = configLoader.loadConfiguration(ServiceContext.create(), EnumEndpoint.class);
+    repo.getOrAdd(new TypeToken<EnumValue>() {}, config);
+    repo.getOrAdd(new TypeToken<EnumValue>() {}, config2);
+    assertThat(repo.getAllSchemaForApi(config2.getApiKey().withoutRoot())).containsExactly(
+        Schema.builder()
+            .setName("TestEnum")
+            .setType("string")
+            .addEnumValue("VALUE1")
+            .addEnumValue("VALUE2")
+            .addEnumDescription("")
+            .addEnumDescription("")
+            .build(),
+        Schema.builder()
+            .setName("EnumValue")
+            .setType("object")
+            .addField("value", Field.builder()
+                .setName("value")
+                .setSchemaReference(SchemaReference.create(repo, config2, new TypeToken<TestEnum>() {}))
+                .setType(FieldType.ENUM)
+                .build())
+            .build());
   }
 
   @Api(transformers = {ParameterizedShortTransformer.class})
