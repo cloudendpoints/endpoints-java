@@ -453,9 +453,9 @@ public class SwaggerGenerator {
 
   private static SecuritySchemeDefinition toScheme(IssuerConfig issuerConfig) {
     OAuth2Definition tokenDef = new OAuth2Definition().implicit("");
-    tokenDef.setVendorExtension("x-issuer", issuerConfig.getIssuer());
+    tokenDef.setVendorExtension("x-google-issuer", issuerConfig.getIssuer());
     if (!com.google.common.base.Strings.isNullOrEmpty(issuerConfig.getJwksUri())) {
-      tokenDef.setVendorExtension("x-jwks_uri", issuerConfig.getJwksUri());
+      tokenDef.setVendorExtension("x-google-jwks_uri", issuerConfig.getJwksUri());
     }
     return tokenDef;
   }
