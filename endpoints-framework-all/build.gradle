@@ -1,0 +1,40 @@
+plugins {
+  id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+
+configurations {
+  include
+  compile.extendsFrom include
+}
+
+jar {
+  from {
+    configurations.include.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}
+
+def repackagedDir = 'endpoints.repackaged'
+
+shadowJar {
+  relocate 'org.apache', "${repackagedDir}.org.apache"
+  relocate 'org.yaml', "${repackagedDir}.org.yaml"
+  relocate 'org.joda', "${repackagedDir}.org.joda"
+  relocate 'com.fasterxml', "${repackagedDir}.com.fasterxml"
+  relocate 'io.swagger', "${repackagedDir}.io.swagger"
+  relocate 'com.google.common', "${repackagedDir}.com.google.common"
+  relocate 'com.google.api.client', "${repackagedDir}.com.google.api.client"
+  relocate 'org.slf4j', "${repackagedDir}.org.slf4j"
+
+  dependencies {
+    exclude(dependency('com.google.appengine:appengine-api-1.0-sdk:.*'))
+    exclude(dependency('javax.servlet:servlet-api:.*'))
+  }
+}
+
+dependencies {
+  include project(':endpoints-framework')
+  compile group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
+  compile group: 'javax.servlet', name: 'servlet-api', version: servletVersion
+}
+
+configureMaven(project, 'Endpoints Framework', 'A framework for building RESTful web APIs.')
