@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google Inc. All Rights Reserved.
+ * Copyright 2017 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,15 @@
  */
 package com.google.api.server.spi.guice;
 
-import com.google.api.server.spi.EndpointsServlet;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 /**
- * A subclass of {@link EndpointsServlet} which facilitates Guice injection.
+ * Rather than shading all of Guava into an endpoints-framework-guice-all artifact, we include the
+ * necessary functionality in this small helper class to remove the dependency.
  */
-@Singleton
-public class GuiceEndpointsServlet extends EndpointsServlet {
-  private final ServiceMap services;
-
-  @Inject
-  public GuiceEndpointsServlet(ServiceMap services) {
-    this.services = Preconditions.checkNotNull(services, "services");
-  }
-
-  @Override
-  protected <T> T createService(Class<T> serviceClass) {
-    return services.get(serviceClass);
+final class Preconditions {
+  static <T> T checkNotNull(T ref, String errorMessage) {
+    if (ref == null) {
+      throw new NullPointerException(errorMessage);
+    }
+    return ref;
   }
 }

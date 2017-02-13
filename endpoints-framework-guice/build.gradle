@@ -20,7 +20,7 @@ configureMaven(
     'Extension to configure the Endpoints Framework via Guice.')
 
 dependencies {
-  compile project(':endpoints-framework')
+  compileOnly project(':endpoints-framework')
   compile group: 'com.google.inject', name: 'guice', version: guiceVersion
   compile group: 'com.google.inject.extensions', name: 'guice-servlet', version: guiceVersion
 
