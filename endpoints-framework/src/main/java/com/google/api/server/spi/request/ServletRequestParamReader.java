@@ -134,7 +134,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
       if (User.class.isAssignableFrom(clazz)) {
         // User type parameter requires no Named annotation (ignored if present)
         User user = getUser();
-        if (clazz.isAssignableFrom(user.getClass())) {
+        if (user == null || clazz.isAssignableFrom(user.getClass())) {
           params[i] = user;
           logger.log(Level.FINE, "deserialize: User injected into param[{0}]", i);
         } else {
