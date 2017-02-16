@@ -16,6 +16,7 @@ jar {
 def repackagedDir = 'endpoints.repackaged'
 
 shadowJar {
+  classifier = null
   relocate 'org.apache', "${repackagedDir}.org.apache"
   relocate 'org.yaml', "${repackagedDir}.org.yaml"
   relocate 'org.joda', "${repackagedDir}.org.joda"
@@ -29,6 +30,10 @@ shadowJar {
     exclude(dependency('com.google.appengine:appengine-api-1.0-sdk:.*'))
     exclude(dependency('javax.servlet:servlet-api:.*'))
   }
+}
+
+artifacts {
+  archives shadowJar
 }
 
 dependencies {
