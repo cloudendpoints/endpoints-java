@@ -16,6 +16,7 @@
 package com.google.api.server.spi.request;
 
 import com.google.api.server.spi.EnvUtil;
+import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.auth.EndpointsAuthenticator;
 import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.Authenticator;
@@ -92,7 +93,7 @@ public class Auth {
   /**
    * Authenticate the request and retrieve a {@code User}. Should only run once per request.
    */
-  User authenticate() {
+  User authenticate() throws ServiceException {
     Iterable<Authenticator> authenticators = getAuthenticatorInstances();
     User user = null;
     if (authenticators != null) {
@@ -110,7 +111,7 @@ public class Auth {
    * Authenticate the request and retrieve an {@code com.google.appengine.api.users.User}. Should
    * only run once per request.
    */
-  com.google.appengine.api.users.User authenticateAppEngineUser() {
+  com.google.appengine.api.users.User authenticateAppEngineUser() throws ServiceException {
     if (!EnvUtil.isRunningOnAppEngine()) {
       return null;
     }

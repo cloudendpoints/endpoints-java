@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.config;
 
+import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.auth.common.User;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,5 +36,5 @@ public interface Authenticator {
    *
    * @return The authenticated user or null if there is no auth or auth has failed.
    */
-  User authenticate(HttpServletRequest request);
+  User authenticate(HttpServletRequest request) throws ServiceException;
 }

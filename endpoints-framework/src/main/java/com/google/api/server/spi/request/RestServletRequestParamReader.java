@@ -17,6 +17,7 @@ package com.google.api.server.spi.request;
 
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.IoUtil;
+import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
@@ -69,7 +70,7 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
   }
 
   @Override
-  public Object[] read() throws BadRequestException {
+  public Object[] read() throws ServiceException {
     // Assumes input stream to be encoded in UTF-8
     // TODO: Take charset from content-type as encoding
     try {

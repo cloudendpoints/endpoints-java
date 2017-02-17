@@ -18,6 +18,7 @@ package com.google.api.server.spi.request;
 import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.IoUtil;
+import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.annotationreader.AnnotationUtil;
@@ -122,7 +123,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
   }
 
   protected Object[] deserializeParams(JsonNode node) throws IOException, IllegalAccessException,
-      InvocationTargetException, NoSuchMethodException {
+      InvocationTargetException, NoSuchMethodException, ServiceException {
     EndpointMethod method = getMethod();
     Class<?>[] paramClasses = method.getParameterClasses();
     TypeToken<?>[] paramTypes = method.getParameterTypes();
@@ -187,12 +188,12 @@ public class ServletRequestParamReader extends AbstractParamReader {
   }
 
   @VisibleForTesting
-  User getUser() {
+  User getUser() throws ServiceException {
     return Auth.from(servletRequest).authenticate();
   }
 
   @VisibleForTesting
-  com.google.appengine.api.users.User getAppEngineUser() {
+  com.google.appengine.api.users.User getAppEngineUser() throws ServiceException {
     return Auth.from(servletRequest).authenticateAppEngineUser();
   }
 
@@ -297,7 +298,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
   }
 
   @Override
-  public Object[] read() throws BadRequestException {
+  public Object[] read() throws ServiceException {
     // Assumes input stream to be encoded in UTF-8
     // TODO: Take charset from content-type as encoding
     try {

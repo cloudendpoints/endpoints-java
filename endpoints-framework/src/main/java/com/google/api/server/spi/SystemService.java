@@ -345,30 +345,17 @@ public class SystemService {
   public void invokeServiceMethod(Object service, Method method, ParamReader paramReader,
       ResultWriter resultWriter) throws IOException {
 
-    Object[] params;
     try {
-      params = paramReader.read();
+      Object[] params = paramReader.read();
       logger.log(Level.FINE, "params={0} (String)", Arrays.toString(params));
-    } catch (BadRequestException e) {
-      resultWriter.writeError(e);
-      return;
-    }
-
-    Object response;
-    try {
-      response = method.invoke(service, params);
-    } catch (IllegalArgumentException e) {
+      Object response = method.invoke(service, params);
+      resultWriter.write(response);
+    } catch (IllegalArgumentException | IllegalAccessException e) {
       logger.log(Level.SEVERE, "exception occurred while calling backend method", e);
       resultWriter.writeError(new BadRequestException(e));
-      return;
-    } catch (IllegalAccessException e) {
-      logger.log(Level.SEVERE, "exception occurred while calling backend method", e);
-      resultWriter.writeError(new BadRequestException(e));
-      return;
     } catch (InvocationTargetException e) {
       Throwable cause = e.getCause();
       Level level = Level.INFO;
-
       if (cause instanceof ServiceException) {
         resultWriter.writeError((ServiceException) cause);
       } else if (cause instanceof IllegalArgumentException) {
@@ -378,18 +365,19 @@ public class SystemService {
       } else if (isOAuthRequestException(cause.getClass())) {
         resultWriter.writeError(new UnauthorizedException(cause));
       } else if (cause.getCause() != null && cause.getCause() instanceof ServiceException) {
-        cause = cause.getCause();
-        resultWriter.writeError((ServiceException) cause);
+        ServiceException serviceException = (ServiceException) cause.getCause();
+        level = getLoggingLevel(serviceException);
+        resultWriter.writeError(serviceException);
       } else {
         level = Level.SEVERE;
         resultWriter.writeError(new InternalServerErrorException(cause));
       }
-      logger.log(level, "exception occurred while calling backend method",
-          cause);
-      return;
+      logger.log(level, "exception occurred while calling backend method", cause);
+    } catch (ServiceException e) {
+      Level level = getLoggingLevel(e);
+      logger.log(level, "exception occurred while calling backend method", e);
+      resultWriter.writeError(e);
     }
-
-    resultWriter.write(response);
   }
 
   /**
@@ -411,6 +399,10 @@ public class SystemService {
     for (String api : initialConfigsByApi.keySet()) {
       validator.validate(initialConfigsByApi.get(api));
     }
+  }
+
+  private static Level getLoggingLevel(ServiceException e) {
+    return e.getStatusCode() >= 500 ? Level.SEVERE : Level.INFO;
   }
 
   private static boolean isOAuthRequestException(Class<?> clazz) {
