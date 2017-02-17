@@ -15,7 +15,7 @@
  */
 package com.google.api.server.spi.request;
 
-import com.google.api.server.spi.response.BadRequestException;
+import com.google.api.server.spi.ServiceException;
 
 /**
  * Reads a request and returns an array of parameter values.
@@ -24,8 +24,8 @@ public interface ParamReader {
 
   /**
    * Reads parameters in JSON into an Object array to be used to invoke an Endpoint method.
-   * @throws BadRequestException when reading of input stream failed, input JSON is invalid,
-   * or cannot be mapped into parameter objects.
+   * @throws ServiceException when reading of input stream failed, input JSON is invalid,
+   * or cannot be mapped into parameter objects, or user authentication fails.
    */
-  Object[] read() throws BadRequestException;
+  Object[] read() throws ServiceException;
 }
