@@ -18,7 +18,7 @@ public enum FieldType {
   INT32("integer", "int32", "Integer"),
   INT64("string", "int64", "Long"),
   FLOAT("number", "float", "Float"),
-  DOUBLE("number", null, "Double"),
+  DOUBLE("number", "double", "Double"),
   DATE("string", "date", "Date"),
   DATE_TIME("string", "date-time", "DateTime"),
   BOOLEAN("boolean", null, "Boolean"),
