@@ -31,9 +31,27 @@ import javax.servlet.http.HttpServletResponse;
 public class ExplorerHandlerTest {
   @Test
   public void testHandle() throws Exception {
+    testHandle("http", 8080, "http://apis-explorer.appspot.com/apis-explorer/"
+        + "?base=http://localhost:8080/_ah/api&root=http://localhost:8080/_ah/api");
+  }
+
+  @Test
+  public void testHandle_explicitHttpPort() throws Exception {
+    testHandle("http", 80, "http://apis-explorer.appspot.com/apis-explorer/"
+        + "?base=http://localhost/_ah/api&root=http://localhost/_ah/api");
+  }
+
+  @Test
+  public void testHandle_explicitHttpsPort() throws Exception {
+    testHandle("https", 443, "http://apis-explorer.appspot.com/apis-explorer/"
+        + "?base=https://localhost/_ah/api&root=https://localhost/_ah/api");
+  }
+
+  private void testHandle(String scheme, int port, String expectedLocation) throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setScheme(scheme);
     request.setServerName("localhost");
-    request.setServerPort(8080);
+    request.setServerPort(port);
     request.setRequestURI("/_ah/api/explorer/");
     MockHttpServletResponse response = new MockHttpServletResponse();
     ExplorerHandler handler = new ExplorerHandler();
@@ -41,8 +59,6 @@ public class ExplorerHandlerTest {
     handler.handle(context);
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
-    assertThat(response.getHeader("Location")).isEqualTo(
-        "http://apis-explorer.appspot.com/apis-explorer/?base=http://localhost:8080/_ah/api"
-            + "&root=http://localhost:8080/_ah/api");
+    assertThat(response.getHeader("Location")).isEqualTo(expectedLocation);
   }
 }
