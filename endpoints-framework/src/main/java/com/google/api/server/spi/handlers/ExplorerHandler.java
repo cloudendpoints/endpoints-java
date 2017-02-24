@@ -35,7 +35,7 @@ public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
   }
 
   private String getExplorerUrl(HttpServletRequest req, String path) {
-    String url = Strings.stripTrailingSlash(req.getRequestURL().toString());
+    String url = stripRedundantPorts(Strings.stripTrailingSlash(req.getRequestURL().toString()));
     // This will convert http://localhost:8080/_ah/api/explorer to
     // http://apis-explorer.appspot.com/apis-explorer/?base=http://localhost:8080/_ah/api&
     //   root=http://localhost:8080/_ah/api
@@ -44,5 +44,16 @@ public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
     // by default.
     String apiRoot = url.substring(0, url.length() - path.length() - 1);
     return EXPLORER_URL + "?base=" + apiRoot + "&root=" + apiRoot;
+  }
+
+  private static String stripRedundantPorts(String url) {
+    if (url == null) {
+      return null;
+    } else if (url.startsWith("http:") && url.contains(":80/")) {
+      return url.replace(":80/", "/");
+    } else if (url.startsWith("https:") && url.contains(":443/")) {
+      return url.replace(":443/", "/");
+    }
+    return url;
   }
 }
