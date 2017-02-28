@@ -25,13 +25,18 @@ import com.google.api.server.spi.config.ApiConfigLoader;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiKey;
+import com.google.api.server.spi.config.model.SchemaRepository;
+import com.google.api.server.spi.config.validation.ApiConfigValidator;
 import com.google.api.server.spi.discovery.DiscoveryGenerator;
 import com.google.api.server.spi.discovery.DiscoveryGenerator.DiscoveryContext;
 import com.google.api.server.spi.response.EndpointsPrettyPrinter;
 import com.google.api.services.discovery.model.RestDescription;
 import com.google.appengine.tools.util.Option;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimaps;
 import com.google.common.io.Files;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -117,8 +122,20 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
     ClassLoader classLoader = new URLClassLoader(classPath, getClass().getClassLoader());
     ApiConfig.Factory configFactory = new ApiConfig.Factory();
     TypeLoader typeLoader = new TypeLoader(classLoader);
+    SchemaRepository schemaRepository = new SchemaRepository(typeLoader);
+    ApiConfigValidator validator = new ApiConfigValidator(typeLoader, schemaRepository);
     DiscoveryGenerator discoveryGenerator = new DiscoveryGenerator(typeLoader);
     List<ApiConfig> apiConfigs = Lists.newArrayListWithCapacity(serviceClassNames.size());
+    ImmutableListMultimap<ApiKey, ApiConfig> configsByKey = Multimaps.index(apiConfigs,
+        new Function<ApiConfig, ApiKey>() {
+          @Override
+          public ApiKey apply(ApiConfig input) {
+            return input.getApiKey();
+          }
+        });
+    for (ApiKey key : configsByKey.keys()) {
+      validator.validate(configsByKey.get(key));
+    }
     ApiConfigLoader configLoader = new ApiConfigLoader(
         configFactory, typeLoader, new ApiConfigAnnotationReader(typeLoader.getAnnotationTypes()));
     ServiceContext serviceContext = ServiceContext.create(
@@ -127,7 +144,8 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
       apiConfigs.add(configLoader.loadConfiguration(serviceContext, serviceClass));
     }
     DiscoveryGenerator.Result result = discoveryGenerator.writeDiscovery(
-        apiConfigs, new DiscoveryContext().setHostname(serviceContext.getAppHostName()));
+        apiConfigs, new DiscoveryContext().setHostname(serviceContext.getAppHostName()),
+        schemaRepository);
     ObjectWriter writer =
         ObjectMapperUtil.createStandardObjectMapper().writer(new EndpointsPrettyPrinter());
     ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
