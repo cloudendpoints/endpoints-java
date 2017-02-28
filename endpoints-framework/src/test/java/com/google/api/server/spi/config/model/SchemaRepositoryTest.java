@@ -115,6 +115,25 @@ public class SchemaRepositoryTest {
   }
 
   @Test
+  public void getOrAdd_recursiveSchema() throws Exception {
+    TypeToken<SelfReferencingObject> type = TypeToken.of(SelfReferencingObject.class);
+    // This test checks the case where a schema is added multiple times. The second time it's added
+    // to an API, it recurses through the schema. If the schema is self-referencing, we must not
+    // stack overflow.
+    repo.getOrAdd(type, config);
+    assertThat(repo.getOrAdd(type, config))
+        .isEqualTo(Schema.builder()
+            .setName("SelfReferencingObject")
+            .setType("object")
+            .addField("foo", Field.builder()
+                .setName("foo")
+                .setType(FieldType.OBJECT)
+                .setSchemaReference(SchemaReference.create(repo, config, type))
+                .build())
+            .build());
+  }
+
+  @Test
   public void get() {
     TypeToken<Parameterized<Integer>> type = new TypeToken<Parameterized<Integer>>() {};
     assertThat(repo.get(type, config)).isNull();
@@ -200,6 +219,12 @@ public class SchemaRepositoryTest {
 
     @Override
     public Parameterized<Short> transformFrom(Parameterized<String> in) {
+      return null;
+    }
+  }
+
+  private static class SelfReferencingObject {
+    public SelfReferencingObject getFoo() {
       return null;
     }
   }
