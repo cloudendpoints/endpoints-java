@@ -170,6 +170,9 @@ public class SchemaRepository {
   }
 
   private void addSchemaToApi(ApiKey key, Schema schema) {
+    if (schemaByApiKeys.containsEntry(key, schema)) {
+      return;
+    }
     schemaByApiKeys.put(key, schema);
     for (Field f : schema.fields().values()) {
       while (f.type() == FieldType.ARRAY) {
