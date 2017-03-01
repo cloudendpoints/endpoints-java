@@ -18,6 +18,7 @@ package com.google.api.server.spi;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 
+import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -76,6 +77,7 @@ public class ObjectMapperUtil {
         .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
         .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .setBase64Variant(Base64Variants.MODIFIED_FOR_URL)
         .setSerializerFactory(
             BeanSerializerFactory.instance.withSerializerModifier(new DeepEmptyCheckingModifier()));
     AnnotationIntrospector pair = AnnotationIntrospector.pair(
