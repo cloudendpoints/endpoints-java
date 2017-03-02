@@ -38,6 +38,9 @@ public class ApiProxyHandler implements DispatcherHandler<EndpointsContext> {
           : defaultProxyHtml.replace(DEFAULT_API_PATH, apiPath);
     }
     context.getResponse().setContentType("text/html");
+    // This is a nonstandard value, but it seems sometimes X-Frame-Options can be injected by
+    // a proxy. We set this explicitly in hopes that the proxy won't override a set value.
+    context.getResponse().addHeader("X-Frame-Options", "ALLOWALL");
     context.getResponse().getWriter().write(cachedProxyHtml);
   }
 }
