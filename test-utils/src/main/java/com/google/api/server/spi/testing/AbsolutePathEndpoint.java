@@ -13,6 +13,9 @@ public class AbsolutePathEndpoint {
     return null;
   }
 
-  @ApiMethod(name = "absolutepath", path = "/absolutepathmethod")
+  @ApiMethod(name = "absolutepath", path = "/absolutepathmethod/v1")
   public void absolutePath() { }
+
+  @ApiMethod(name = "absolutepath2", path = "/absolutepathmethod2/v1")
+  public void absolutePath2() { }
 }
