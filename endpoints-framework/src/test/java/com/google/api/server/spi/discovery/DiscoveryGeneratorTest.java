@@ -19,6 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.server.spi.IoUtil;
+import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.ServiceContext;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.ApiConfigLoader;
@@ -47,8 +48,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import io.swagger.util.Json;
-
 /**
  * Tests for {@link DiscoveryGenerator}.
  */
@@ -56,7 +55,7 @@ import io.swagger.util.Json;
 public class DiscoveryGeneratorTest {
   private final DiscoveryContext context = new DiscoveryContext()
       .setApiRoot("https://discovery-test.appspot.com/api");
-  private final ObjectMapper mapper = Json.mapper();
+  private final ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
   private DiscoveryGenerator generator;
   private ApiConfigLoader configLoader;
   private SchemaRepository schemaRepository;

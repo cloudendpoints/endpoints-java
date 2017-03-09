@@ -30,9 +30,20 @@
         }
       }
     },
-    "/absolutepathmethod": {
+    "/absolutepathmethod/v1": {
       "post": {
         "operationId": "AbsolutepathAbsolutePath",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        }
+      }
+    },
+    "/absolutepathmethod2/v1": {
+      "post": {
+        "operationId": "AbsolutepathAbsolutePath2",
         "parameters": [],
         "responses": {
           "200": {

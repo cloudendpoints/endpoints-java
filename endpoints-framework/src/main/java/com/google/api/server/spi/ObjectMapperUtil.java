@@ -18,7 +18,6 @@ package com.google.api.server.spi;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -107,10 +106,9 @@ public class ObjectMapperUtil {
     public JsonSerializer<?> modifyMapSerializer(SerializationConfig config, MapType valueType,
         BeanDescription beanDesc, JsonSerializer<?> serializer) {
       if (serializer instanceof MapSerializer) {
-        // For some reason, NON_EMPTY is not being propagated to MapSerializer, so we replace it
-        // with one that has it set.
-        return new DeepEmptyCheckingSerializer<>(
-            ((MapSerializer) serializer).withContentInclusion(JsonInclude.Include.NON_EMPTY));
+        // TODO: We should probably be propagating the NON_EMPTY inclusion here, but it's breaking
+        // discovery.
+        return new DeepEmptyCheckingSerializer<>(serializer);
       }
       return serializer;
     }

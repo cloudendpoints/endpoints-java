@@ -23,7 +23,15 @@
     "absolutepath": {
       "httpMethod": "POST",
       "id": "absolutepath.absolutepath",
-      "path": "absolutepathmethod",
+      "path": "absolutepathmethod/v1",
+      "scopes": [
+        "https://www.googleapis.com/auth/userinfo.email"
+      ]
+    },
+    "absolutepath2": {
+      "httpMethod": "POST",
+      "id": "absolutepath.absolutepath2",
+      "path": "absolutepathmethod2/v1",
       "scopes": [
         "https://www.googleapis.com/auth/userinfo.email"
       ]
