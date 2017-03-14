@@ -113,4 +113,17 @@ public class ApiMethodConfigTest {
     methodConfig.addParameter("alt", null, false, null, TypeToken.of(String.class));
     assertThat(methodConfig.getPath()).doesNotContain("{alt}");
   }
+
+  @Test
+  public void addPathParameter_appendsToCanonicalPath() {
+    methodConfig.addParameter("test", null, false, null, TypeToken.of(String.class));
+    assertThat(methodConfig.getCanonicalPath()).contains("{test}");
+  }
+
+  @Test
+  public void addPathParameter_doesNotAppendIfInPathAlready() {
+    methodConfig.setPath("test/{test}");
+    methodConfig.addParameter("test", null, false, null, TypeToken.of(String.class));
+    assertThat(methodConfig.getPath()).isEqualTo("test/{test}");
+  }
 }
