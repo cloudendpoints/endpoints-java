@@ -307,7 +307,10 @@ public class ApiMethodConfig {
 
     if (config.getClassification() != Classification.INJECTED && name != null && !nullable
         && defaultValue == null) {
-      path += "/{" + name + "}";
+      String pathFragment = "{" + name + "}";
+      if (!path.contains(pathFragment)) {
+        setPath(path + "/" + pathFragment);
+      }
     }
 
     return config;
