@@ -111,12 +111,12 @@ public class EndpointsMethodHandler {
             serviceName);
         ParamReader reader = createRestParamReader(context, serializationConfig);
         ResultWriter writer = createResultWriter(context, serializationConfig);
-        systemService.invokeServiceMethod(service, endpointMethod.getMethod(), reader, writer);
         if (request.getHeader(Headers.ORIGIN) != null) {
           HttpServletResponse response = context.getResponse();
           CorsHandler.allowOrigin(request, response);
           CorsHandler.setAccessControlAllowCredentials(response);
         }
+        systemService.invokeServiceMethod(service, endpointMethod.getMethod(), reader, writer);
       } catch (Exception e) {
         // All exceptions here are unexpected, including the ServiceException that may be thrown by
         // the findService call. We return an internal server error and leave the details in the
