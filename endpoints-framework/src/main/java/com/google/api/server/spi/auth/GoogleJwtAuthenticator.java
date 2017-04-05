@@ -103,9 +103,9 @@ public class GoogleJwtAuthenticator implements Authenticator {
       com.google.appengine.api.users.User appEngineUser =
           (email == null) ? null : new com.google.appengine.api.users.User(email, "");
       attr.set(Attribute.AUTHENTICATED_APPENGINE_USER, appEngineUser);
-      logger.log(Level.INFO, "appEngineUser = {0}", appEngineUser);
+      logger.log(Level.FINE, "appEngineUser = {0}", appEngineUser);
     } else {
-      logger.log(Level.INFO, "user = {0}", user);
+      logger.log(Level.FINE, "user = {0}", user);
     }
     return user;
   }
