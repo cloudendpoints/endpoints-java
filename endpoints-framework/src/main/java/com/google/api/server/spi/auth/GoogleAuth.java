@@ -69,7 +69,7 @@ public class GoogleAuth {
   static final List<String> SKIP_CLIENT_ID_CHECK_LIST =
       ImmutableList.of(Constant.SKIP_CLIENT_ID_CHECK);
 
-  static String getAuthToken(HttpServletRequest request) {
+  public static String getAuthToken(HttpServletRequest request) {
     if (request.getAttribute(Attribute.AUTH_TOKEN) == null) {
       String token = getAuthTokenFromHeader(request.getHeader(AUTHORIZATION_HEADER));
       if (token == null) {
