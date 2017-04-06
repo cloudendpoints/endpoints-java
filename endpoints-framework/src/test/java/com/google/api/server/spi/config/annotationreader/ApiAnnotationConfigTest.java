@@ -59,7 +59,7 @@ public class ApiAnnotationConfigTest {
   public void setUp() throws Exception {
     serviceContext = Mockito.mock(ServiceContext.class);
     Mockito.when(serviceContext.getDefaultApiName()).thenReturn("api");
-    Mockito.when(serviceContext.getAppHostName()).thenReturn("appHostName.com");
+    Mockito.when(serviceContext.getAppHostname()).thenReturn("appHostName.com");
     Mockito.when(serviceContext.getTransferProtocol()).thenReturn("https");
 
     config = new ApiConfig.Factory().create(serviceContext, new TypeLoader(), TestEndpoint.class);

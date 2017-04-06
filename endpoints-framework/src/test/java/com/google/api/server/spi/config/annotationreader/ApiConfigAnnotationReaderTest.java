@@ -121,7 +121,7 @@ public class ApiConfigAnnotationReaderTest {
 
     serviceContext = Mockito.mock(ServiceContext.class);
     Mockito.when(serviceContext.getDefaultApiName()).thenReturn("api");
-    Mockito.when(serviceContext.getAppHostName()).thenReturn("appHostName.com");
+    Mockito.when(serviceContext.getAppHostname()).thenReturn("appHostName.com");
 
     annotationReader = new ApiConfigAnnotationReader();
   }

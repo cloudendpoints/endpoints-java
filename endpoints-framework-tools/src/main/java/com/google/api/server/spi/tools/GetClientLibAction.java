@@ -33,21 +33,18 @@ public class GetClientLibAction extends EndpointsToolAction {
   public static final String NAME = "get-client-lib";
 
   private Option classPathOption = makeClassPathOption();
-
   private Option languageOption = makeLanguageOption();
-
   private Option outputOption = makeOutputOption();
-
   private Option warOption = makeWarOption();
-
   private Option buildSystemOption = makeBuildSystemOption();
-
   private Option debugOption = makeDebugOption();
+  private Option hostnameOption = makeHostnameOption();
+  private Option basePathOption = makeBasePathOption();
 
   public GetClientLibAction() {
     super(NAME);
     setOptions(Arrays.asList(classPathOption, languageOption, outputOption, warOption,
-        buildSystemOption, debugOption));
+        buildSystemOption, debugOption, hostnameOption, basePathOption));
     setShortDescription("Generates a client library");
     setExampleString("<Endpoints tool> get-client-lib --language=java --build_system=maven "
         + "com.google.devrel.samples.ttt.spi.BoardV1 com.google.devrel.samples.ttt.spi.ScoresV1");
@@ -62,8 +59,10 @@ public class GetClientLibAction extends EndpointsToolAction {
       return false;
     }
     getClientLib(computeClassPath(warPath, getClassPath(classPathOption)),
-        getLanguage(languageOption), getOutputPath(outputOption), warPath, serviceClassNames,
-        getBuildSystem(buildSystemOption), getDebug(debugOption));
+        getLanguage(languageOption), getOutputPath(outputOption), serviceClassNames,
+        getBuildSystem(buildSystemOption), getHostname(hostnameOption, warPath),
+        getBasePath(basePathOption), getDebug(debugOption)
+    );
     return true;
   }
 
@@ -73,16 +72,17 @@ public class GetClientLibAction extends EndpointsToolAction {
    * @param classPath Class path to load service classes and their dependencies
    * @param language Language of the client library.  Only "java" is supported right now
    * @param outputDirPath Directory to write output files into
-   * @param warPath Directory or file containing a WAR layout
    * @param serviceClassNames Array of service class names of the API
    * @param buildSystem The build system to use for the client library
+   * @param hostname The hostname to use
+   * @param basePath The base path to use
    * @param debug Whether or not to output intermediate output files
    */
   public Object getClientLib(URL[] classPath, String language, String outputDirPath,
-      String warPath, List<String> serviceClassNames, String buildSystem, boolean debug)
-          throws ClassNotFoundException, IOException, ApiConfigException {
+      List<String> serviceClassNames, String buildSystem, String hostname, String basePath,
+      boolean debug) throws ClassNotFoundException, IOException, ApiConfigException {
     Map<String, String> discoveryDocs = new GetDiscoveryDocAction().getDiscoveryDoc(
-        classPath, outputDirPath, warPath, serviceClassNames, debug, false /* outputToDisk */);
+        classPath, outputDirPath, serviceClassNames, basePath, hostname, debug /* outputToDisk */);
     for (Map.Entry<String, String> entry : discoveryDocs.entrySet()) {
       new GenClientLibAction().genClientLib(language, outputDirPath, entry.getValue(), buildSystem);
     }

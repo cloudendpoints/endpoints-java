@@ -41,10 +41,11 @@ public class GetDiscoveryDocActionTest extends EndpointsToolTest {
 
   private URL[] classPath;
   private String outputDirPath;
-  private String warPath;
   private List<String> serviceClassNames;
   private GetDiscoveryDocAction testAction;
-  private boolean debugOutput;
+  private String hostname;
+  private String basePath;
+  private boolean outputToDisk;
 
   @Override
   protected void addTestAction(Map<String, EndpointsToolAction> commands) {
@@ -58,18 +59,20 @@ public class GetDiscoveryDocActionTest extends EndpointsToolTest {
     usagePrinted = false;
     classPath = null;
     outputDirPath = null;
-    warPath = null;
     serviceClassNames = null;
+    hostname = null;
+    basePath = null;
     testAction = new GetDiscoveryDocAction() {
 
       @Override
       public Map<String, String> getDiscoveryDoc(
-          URL[] c, String o, String w, List<String> s, boolean d) {
+          URL[] c, String o, List<String> s, String h, String b, boolean d) {
         classPath = c;
         outputDirPath = o;
-        warPath = w;
         serviceClassNames = s;
-        debugOutput = d;
+        hostname = h;
+        basePath = b;
+        outputToDisk = d;
         return null;
       }
     };
@@ -77,9 +80,10 @@ public class GetDiscoveryDocActionTest extends EndpointsToolTest {
 
   @Test
   public void testMissingOption() throws Exception {
-    tool.execute(new String[]{
-        GetDiscoveryDocAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT),
-        "classPath", "MyService"});
+    tool.execute(new String[]{GetDiscoveryDocAction.NAME,
+        option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT), "classPath",
+        option(EndpointsToolAction.OPTION_HOSTNAME_SHORT), "foo.com",
+        "MyService"});
     assertFalse(usagePrinted);
     assertThat(Lists.newArrayList(classPath))
         .containsExactly(new File("classPath").toURI().toURL(),
@@ -88,15 +92,15 @@ public class GetDiscoveryDocActionTest extends EndpointsToolTest {
                 .toURI()
                 .toURL());
     assertEquals(EndpointsToolAction.DEFAULT_OUTPUT_PATH, outputDirPath);
-    assertEquals(EndpointsToolAction.DEFAULT_WAR_PATH, warPath);
     assertStringsEqual(Arrays.asList("MyService"), serviceClassNames);
   }
 
   @Test
   public void testMissingArgument() throws Exception {
-    tool.execute(new String[]{
-        GetDiscoveryDocAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT),
-        "classPath", option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir"});
+    tool.execute(new String[]{GetDiscoveryDocAction.NAME,
+        option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT), "classPath",
+        option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir",
+        option(EndpointsToolAction.OPTION_HOSTNAME_SHORT), "foo.com"});
     assertTrue(usagePrinted);
   }
 
@@ -105,6 +109,8 @@ public class GetDiscoveryDocActionTest extends EndpointsToolTest {
     tool.execute(new String[]{GetDiscoveryDocAction.NAME,
         option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT), "classPath",
         option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir",
+        option(EndpointsToolAction.OPTION_HOSTNAME_SHORT), "foo.com",
+        option(EndpointsToolAction.OPTION_BASE_PATH_SHORT), "/api",
         "MyService", "MyService2"});
     assertFalse(usagePrinted);
     assertThat(Lists.newArrayList(classPath))
@@ -114,8 +120,9 @@ public class GetDiscoveryDocActionTest extends EndpointsToolTest {
                 .toURI()
                 .toURL());
     assertEquals("outputDir", outputDirPath);
-    assertEquals(EndpointsToolAction.DEFAULT_WAR_PATH, warPath);
     assertStringsEqual(Arrays.asList("MyService", "MyService2"), serviceClassNames);
-    assertFalse(debugOutput);
+    assertTrue(outputToDisk);
+    assertThat(hostname).isEqualTo("foo.com");
+    assertThat(basePath).isEqualTo("/api");
   }
 }

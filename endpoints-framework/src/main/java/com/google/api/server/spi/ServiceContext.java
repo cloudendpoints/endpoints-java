@@ -27,7 +27,7 @@ public class ServiceContext {
   public static final String DEFAULT_APP_NAME = "myapp";
 
   private final String defaultApiName;
-  private final String appHostName;
+  private final String appHostname;
 
   /**
    * Creates a service context with default application and API name.
@@ -44,37 +44,45 @@ public class ServiceContext {
    * @param apiName Default API name to use.
    */
   public static ServiceContext create(String applicationId, String apiName) {
-    return new ServiceContext(applicationId, apiName);
-  }
-
-  private ServiceContext(String applicationId, String apiName) {
+    String hostname = null;
+    String defaultApiName = null;
     if (applicationId == null || applicationId.trim().isEmpty()) {
       applicationId = DEFAULT_APP_NAME;
     }
-    // For Endpoints runtime, appHostName is generated from App Engine environment directly. When
-    // generating endpoints client library statically from annotated class, derive appHostName from
+    // For Endpoints runtime, appHostname is generated from App Engine environment directly. When
+    // generating endpoints client library statically from annotated class, derive appHostname from
     // application id set in appengine-web.xml.
     int colon = applicationId.indexOf(":");
     if (colon >= 0) {
       String appName = applicationId.substring(colon + 1);
-      this.defaultApiName = apiName == null ? appName : apiName;
+      defaultApiName = apiName == null ? appName : apiName;
       if (applicationId.substring(0, colon).equals("google.com")) {
-        this.appHostName = appName + ".googleplex.com";
+        hostname = appName + ".googleplex.com";
       } else {
         throw new IllegalArgumentException("Invalid application id '" + applicationId + "'");
       }
     } else {
-      this.defaultApiName = apiName == null ? applicationId : apiName;
-      this.appHostName = applicationId + ".appspot.com";
+      defaultApiName = apiName == null ? applicationId : apiName;
+      hostname = applicationId + ".appspot.com";
     }
+    return new ServiceContext(hostname, defaultApiName);
+  }
+
+  public static ServiceContext createFromHostname(String hostname, String apiName) {
+    return new ServiceContext(hostname, apiName);
+  }
+
+  private ServiceContext(String appHostname, String defaultApiName) {
+    this.appHostname = appHostname;
+    this.defaultApiName = defaultApiName;
   }
 
   public String getDefaultApiName() {
     return defaultApiName;
   }
 
-  public String getAppHostName() {
-    return appHostName;
+  public String getAppHostname() {
+    return appHostname;
   }
 
   public String getTransferProtocol() {

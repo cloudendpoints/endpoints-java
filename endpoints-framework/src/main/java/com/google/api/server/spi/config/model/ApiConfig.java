@@ -255,13 +255,13 @@ public class ApiConfig {
    */
   protected void setDefaults(ServiceContext serviceContext) {
     root =
-        serviceContext.getTransferProtocol() + "://" + serviceContext.getAppHostName() + "/_ah/api";
+        serviceContext.getTransferProtocol() + "://" + serviceContext.getAppHostname() + "/_ah/api";
     name = serviceContext.getDefaultApiName();
     canonicalName = null;
     version = "v1";
     description = null;
     backendRoot =
-        serviceContext.getTransferProtocol() + "://" + serviceContext.getAppHostName() + "/_ah/spi";
+        serviceContext.getTransferProtocol() + "://" + serviceContext.getAppHostname() + "/_ah/spi";
     isAbstract = false;
     defaultVersion = true;
     discoverable = true;

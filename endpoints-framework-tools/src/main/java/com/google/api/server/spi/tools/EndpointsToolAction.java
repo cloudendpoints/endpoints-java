@@ -326,8 +326,7 @@ public abstract class EndpointsToolAction extends Action {
         OPTION_HOSTNAME_SHORT,
         OPTION_HOSTNAME_LONG,
         "HOSTNAME",
-        "Sets the hostname for the generated OpenAPI document. Default is the app's default "
-            + "hostname.");
+        "Sets the hostname for the generated document. Default is the app's default hostname.");
   }
 
   protected Option makeBasePathOption() {
@@ -335,8 +334,7 @@ public abstract class EndpointsToolAction extends Action {
         OPTION_BASE_PATH_SHORT,
         OPTION_BASE_PATH_LONG,
         "BASE_PATH",
-        "Sets the base path for the generated OpenAPI document. Default is " + DEFAULT_BASE_PATH
-            + ".");
+        "Sets the base path for the generated document. Default is " + DEFAULT_BASE_PATH + ".");
   }
 
   /**
