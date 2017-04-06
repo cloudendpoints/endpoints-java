@@ -31,14 +31,14 @@ public class ServiceContextTest {
   @Test
   public void testAppspotHost() {
     ServiceContext c = ServiceContext.create("abc", "xyz");
-    assertEquals("abc.appspot.com", c.getAppHostName());
+    assertEquals("abc.appspot.com", c.getAppHostname());
     assertEquals("xyz", c.getDefaultApiName());
   }
 
   @Test
   public void testGoogleplexHost() {
     ServiceContext c = ServiceContext.create("google.com:abc", "xyz");
-    assertEquals("abc.googleplex.com", c.getAppHostName());
+    assertEquals("abc.googleplex.com", c.getAppHostname());
     assertEquals("xyz", c.getDefaultApiName());
   }
 
@@ -55,7 +55,7 @@ public class ServiceContextTest {
   @Test
   public void testEmptyAppId() {
     ServiceContext c = ServiceContext.create("", "xyz");
-    assertEquals("myapp.appspot.com", c.getAppHostName());
+    assertEquals("myapp.appspot.com", c.getAppHostname());
     assertEquals("xyz", c.getDefaultApiName());
   }
 

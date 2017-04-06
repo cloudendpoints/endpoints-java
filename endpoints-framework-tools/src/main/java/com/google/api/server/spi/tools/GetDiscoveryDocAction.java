@@ -58,18 +58,18 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
   public static final String NAME = "get-discovery-doc";
 
   private Option classPathOption = makeClassPathOption();
-
   private Option outputOption = makeOutputOption();
-
   private Option warOption = makeWarOption();
-
   private Option debugOption = makeDebugOption();
+  private Option hostnameOption = makeHostnameOption();
+  private Option basePathOption = makeBasePathOption();
 
   public GetDiscoveryDocAction() {
     super(NAME);
-    setOptions(Arrays.asList(classPathOption, outputOption, warOption, debugOption));
+    setOptions(Arrays.asList(classPathOption, outputOption, warOption, debugOption, hostnameOption,
+        basePathOption));
     setShortDescription("Generates discovery documents");
-    setExampleString("<Endpoints tool> get-discovery-doc --format=rpc "
+    setExampleString("<Endpoints tool> get-discovery-doc "
         + "com.google.devrel.samples.ttt.spi.BoardV1 com.google.devrel.samples.ttt.spi.ScoresV1");
     setHelpDisplayNeeded(true);
   }
@@ -82,7 +82,8 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
       return false;
     }
     getDiscoveryDoc(computeClassPath(warPath, getClassPath(classPathOption)),
-        getOutputPath(outputOption), warPath, serviceClassNames, getDebug(debugOption));
+        getOutputPath(outputOption), serviceClassNames, getHostname(hostnameOption, warPath),
+        getBasePath(basePathOption), true);
     return true;
   }
 
@@ -91,28 +92,13 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
    * configuration, generating Discovery doc and generating client library into one.
    * @param classPath Class path to load service classes and their dependencies
    * @param outputDirPath Directory to write output files into
-   * @param warPath Directory or file containing a WAR layout
    * @param serviceClassNames Array of service class names of the API
-   * @param debug Whether or not to output intermediate output files
-   */
-  public Map<String, String> getDiscoveryDoc(URL[] classPath, String outputDirPath,
-      String warPath, List<String> serviceClassNames, boolean debug)
-          throws ClassNotFoundException, IOException, ApiConfigException {
-    return getDiscoveryDoc(classPath, outputDirPath, warPath, serviceClassNames, debug, true);
-  }
-
-  /**
-   * Generates a Java client library for an API.  Combines the steps of generating API
-   * configuration, generating Discovery doc and generating client library into one.
-   * @param classPath Class path to load service classes and their dependencies
-   * @param outputDirPath Directory to write output files into
-   * @param warPath Directory or file containing a WAR layout
-   * @param serviceClassNames Array of service class names of the API
-   * @param debug Whether or not to output intermediate output files
+   * @param hostname The hostname to use
+   * @param basePath The base path to use
    * @param outputToDisk Whether or not to output discovery docs to disk
    */
   public Map<String, String> getDiscoveryDoc(URL[] classPath, String outputDirPath,
-      String warPath, List<String> serviceClassNames, boolean debug, boolean outputToDisk)
+      List<String> serviceClassNames, String hostname, String basePath, boolean outputToDisk)
       throws ClassNotFoundException, IOException, ApiConfigException {
     File outputDir = new File(outputDirPath);
     if (!outputDir.isDirectory()) {
@@ -138,13 +124,13 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
     }
     ApiConfigLoader configLoader = new ApiConfigLoader(
         configFactory, typeLoader, new ApiConfigAnnotationReader(typeLoader.getAnnotationTypes()));
-    ServiceContext serviceContext = ServiceContext.create(
-        AppEngineUtil.getApplicationId(warPath), ServiceContext.DEFAULT_API_NAME);
+    ServiceContext serviceContext = ServiceContext.createFromHostname(
+        hostname, ServiceContext.DEFAULT_API_NAME);
     for (Class<?> serviceClass : loadClasses(classLoader, serviceClassNames)) {
       apiConfigs.add(configLoader.loadConfiguration(serviceContext, serviceClass));
     }
     DiscoveryGenerator.Result result = discoveryGenerator.writeDiscovery(
-        apiConfigs, new DiscoveryContext().setHostname(serviceContext.getAppHostName()),
+        apiConfigs, new DiscoveryContext().setHostname(hostname).setBasePath(basePath),
         schemaRepository);
     ObjectWriter writer =
         ObjectMapperUtil.createStandardObjectMapper().writer(new EndpointsPrettyPrinter());

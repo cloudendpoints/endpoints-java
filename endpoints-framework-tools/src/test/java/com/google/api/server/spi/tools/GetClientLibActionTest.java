@@ -42,10 +42,11 @@ public class GetClientLibActionTest extends EndpointsToolTest {
   private URL[] classPath;
   private String language;
   private String outputDirPath;
-  private String warPath;
   private List<String> serviceClassNames;
   private String buildSystem;
   private boolean debugOutput;
+  private String hostname;
+  private String basePath;
   private GetClientLibAction testAction;
 
   @Override
@@ -61,19 +62,21 @@ public class GetClientLibActionTest extends EndpointsToolTest {
     classPath = null;
     language = null;
     outputDirPath = null;
-    warPath = null;
     serviceClassNames = null;
+    hostname = null;
+    basePath = null;
     testAction = new GetClientLibAction() {
 
       @Override
       public Object getClientLib(
-          URL[] c, String l, String o, String w, List<String> s, String b, boolean d) {
+          URL[] c, String l, String o, List<String> s, String bs, String h, String bp, boolean d) {
         classPath = c;
         language = l;
         outputDirPath = o;
-        warPath = w;
         serviceClassNames = s;
-        buildSystem = b;
+        buildSystem = bs;
+        hostname = h;
+        basePath = bp;
         debugOutput = d;
         return null;
       }
@@ -82,8 +85,9 @@ public class GetClientLibActionTest extends EndpointsToolTest {
 
   @Test
   public void testMissingOption() throws Exception {
-    tool.execute(new String[]{
-        GetClientLibAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT), "classPath",
+    tool.execute(new String[]{GetClientLibAction.NAME,
+        option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT), "classPath",
+        option(EndpointsToolAction.OPTION_HOSTNAME_SHORT), "foo.com",
         "MyService"});
     assertFalse(usagePrinted);
     assertThat(Lists.newArrayList(classPath))
@@ -94,7 +98,6 @@ public class GetClientLibActionTest extends EndpointsToolTest {
                 .toURL());
     assertEquals(EndpointsToolAction.DEFAULT_LANGUAGE, language);
     assertEquals(EndpointsToolAction.DEFAULT_OUTPUT_PATH, outputDirPath);
-    assertEquals(EndpointsToolAction.DEFAULT_WAR_PATH, warPath);
     assertStringsEqual(Arrays.asList("MyService"), serviceClassNames);
   }
 
@@ -108,10 +111,11 @@ public class GetClientLibActionTest extends EndpointsToolTest {
 
   @Test
   public void testGetClientLib() throws Exception {
-    tool.execute(
-        new String[]{GetClientLibAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT),
-        "classPath", option(EndpointsToolAction.OPTION_LANGUAGE_SHORT), "java",
+    tool.execute(new String[]{GetClientLibAction.NAME,
+        option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT), "classPath",
+        option(EndpointsToolAction.OPTION_LANGUAGE_SHORT), "java",
         option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir",
+        option(EndpointsToolAction.OPTION_HOSTNAME_SHORT), "foo.com",
         "MyService", "MyService2"});
     assertFalse(usagePrinted);
     assertThat(Lists.newArrayList(classPath))
@@ -122,19 +126,20 @@ public class GetClientLibActionTest extends EndpointsToolTest {
                 .toURL());
     assertEquals("java", language);
     assertEquals("outputDir", outputDirPath);
-    assertEquals(EndpointsToolAction.DEFAULT_WAR_PATH, warPath);
     assertStringsEqual(Arrays.asList("MyService", "MyService2"), serviceClassNames);
     assertEquals(null, buildSystem);
     assertFalse(debugOutput);
+    assertThat(basePath).isEqualTo("/_ah/api");
   }
 
   @Test
   public void testGetClientLibWithBuildSystem() throws Exception {
-    tool.execute(
-        new String[]{GetClientLibAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT),
-        "classPath", option(EndpointsToolAction.OPTION_LANGUAGE_SHORT), "java",
+    tool.execute(new String[]{GetClientLibAction.NAME,
+        option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT), "classPath",
+        option(EndpointsToolAction.OPTION_LANGUAGE_SHORT), "java",
         option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir",
         option(EndpointsToolAction.OPTION_BUILD_SYSTEM_SHORT), "maven",
+        option(EndpointsToolAction.OPTION_HOSTNAME_SHORT), "foo.com",
         "MyService", "MyService2"});
     assertFalse(usagePrinted);
     assertThat(Lists.newArrayList(classPath))
@@ -145,7 +150,6 @@ public class GetClientLibActionTest extends EndpointsToolTest {
                 .toURL());
     assertEquals("java", language);
     assertEquals("outputDir", outputDirPath);
-    assertEquals(EndpointsToolAction.DEFAULT_WAR_PATH, warPath);
     assertStringsEqual(Arrays.asList("MyService", "MyService2"), serviceClassNames);
     assertEquals("maven", buildSystem);
     assertFalse(debugOutput);
@@ -153,11 +157,14 @@ public class GetClientLibActionTest extends EndpointsToolTest {
 
   @Test
   public void testGetClientLibWithDebugOutput() throws Exception {
-    tool.execute(
-        new String[]{GetClientLibAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT),
-        "classPath", option(EndpointsToolAction.OPTION_LANGUAGE_SHORT), "java",
+    tool.execute(new String[]{GetClientLibAction.NAME,
+        option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT), "classPath",
+        option(EndpointsToolAction.OPTION_LANGUAGE_SHORT), "java",
         option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir",
-        option(EndpointsToolAction.OPTION_DEBUG, false), "MyService", "MyService2"});
+        option(EndpointsToolAction.OPTION_DEBUG, false),
+        option(EndpointsToolAction.OPTION_HOSTNAME_SHORT), "foo.com",
+        option(EndpointsToolAction.OPTION_BASE_PATH_SHORT), "/api",
+        "MyService", "MyService2"});
     assertFalse(usagePrinted);
     assertThat(Lists.newArrayList(classPath))
         .containsExactly(new File("classPath").toURI().toURL(),
@@ -167,9 +174,10 @@ public class GetClientLibActionTest extends EndpointsToolTest {
                 .toURL());
     assertEquals("java", language);
     assertEquals("outputDir", outputDirPath);
-    assertEquals(EndpointsToolAction.DEFAULT_WAR_PATH, warPath);
     assertStringsEqual(Arrays.asList("MyService", "MyService2"), serviceClassNames);
     assertEquals(null, buildSystem);
     assertTrue(debugOutput);
+    assertThat(hostname).isEqualTo("foo.com");
+    assertThat(basePath).isEqualTo("/api");
   }
 }
