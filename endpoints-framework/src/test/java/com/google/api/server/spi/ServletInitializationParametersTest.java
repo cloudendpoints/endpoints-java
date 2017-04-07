@@ -16,9 +16,6 @@
 package com.google.api.server.spi;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableSet;
@@ -46,11 +43,11 @@ public class ServletInitializationParametersTest {
     ServletInitializationParameters initParameters = ServletInitializationParameters.builder()
         .build();
     assertThat(initParameters.getServiceClasses()).isEmpty();
-    assertTrue(initParameters.isServletRestricted());
-    assertTrue(initParameters.isClientIdWhitelistEnabled());
-    assertFalse(initParameters.isIllegalArgumentBackendError());
-    assertTrue(initParameters.isExceptionCompatibilityEnabled());
-    assertTrue(initParameters.isPrettyPrintEnabled());
+    assertThat(initParameters.isServletRestricted()).isTrue();
+    assertThat(initParameters.isClientIdWhitelistEnabled()).isTrue();
+    assertThat(initParameters.isIllegalArgumentBackendError()).isFalse();
+    assertThat(initParameters.isExceptionCompatibilityEnabled()).isTrue();
+    assertThat(initParameters.isPrettyPrintEnabled()).isTrue();
     verifyAsMap(initParameters, "", "true", "true", "false", "true", "true");
   }
 
@@ -65,10 +62,10 @@ public class ServletInitializationParametersTest {
         .setPrettyPrintEnabled(true)
         .build();
     assertThat(initParameters.getServiceClasses()).isEmpty();
-    assertTrue(initParameters.isServletRestricted());
-    assertTrue(initParameters.isClientIdWhitelistEnabled());
-    assertTrue(initParameters.isIllegalArgumentBackendError());
-    assertTrue(initParameters.isExceptionCompatibilityEnabled());
+    assertThat(initParameters.isServletRestricted()).isTrue();
+    assertThat(initParameters.isClientIdWhitelistEnabled()).isTrue();
+    assertThat(initParameters.isIllegalArgumentBackendError()).isTrue();
+    assertThat(initParameters.isExceptionCompatibilityEnabled()).isTrue();
     verifyAsMap(initParameters, "", "true", "true", "true", "true", "true");
   }
 
@@ -83,8 +80,8 @@ public class ServletInitializationParametersTest {
         .setPrettyPrintEnabled(false)
         .build();
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class);
-    assertFalse(initParameters.isServletRestricted());
-    assertFalse(initParameters.isClientIdWhitelistEnabled());
+    assertThat(initParameters.isServletRestricted()).isFalse();
+    assertThat(initParameters.isClientIdWhitelistEnabled()).isFalse();
     verifyAsMap(
         initParameters, String.class.getName(), "false", "false", "false", "false", "false");
   }
@@ -104,8 +101,8 @@ public class ServletInitializationParametersTest {
     ServletInitializationParameters initParameters =
         ServletInitializationParameters.fromServletConfig(null, getClass().getClassLoader());
     assertThat(initParameters.getServiceClasses()).isEmpty();
-    assertTrue(initParameters.isServletRestricted());
-    assertTrue(initParameters.isClientIdWhitelistEnabled());
+    assertThat(initParameters.isServletRestricted()).isTrue();
+    assertThat(initParameters.isClientIdWhitelistEnabled()).isTrue();
   }
 
   @Test
@@ -113,11 +110,11 @@ public class ServletInitializationParametersTest {
     ServletInitializationParameters initParameters =
         fromServletConfig(null, null, null, null, null, null);
     assertThat(initParameters.getServiceClasses()).isEmpty();
-    assertTrue(initParameters.isServletRestricted());
-    assertTrue(initParameters.isClientIdWhitelistEnabled());
-    assertFalse(initParameters.isIllegalArgumentBackendError());
-    assertTrue(initParameters.isExceptionCompatibilityEnabled());
-    assertTrue(initParameters.isPrettyPrintEnabled());
+    assertThat(initParameters.isServletRestricted()).isTrue();
+    assertThat(initParameters.isClientIdWhitelistEnabled()).isTrue();
+    assertThat(initParameters.isIllegalArgumentBackendError()).isFalse();
+    assertThat(initParameters.isExceptionCompatibilityEnabled()).isTrue();
+    assertThat(initParameters.isPrettyPrintEnabled()).isTrue();
   }
 
   @Test
@@ -125,11 +122,11 @@ public class ServletInitializationParametersTest {
     ServletInitializationParameters initParameters =
         fromServletConfig("", "false", "false", "false", "false", "false");
     assertThat(initParameters.getServiceClasses()).isEmpty();
-    assertFalse(initParameters.isServletRestricted());
-    assertFalse(initParameters.isClientIdWhitelistEnabled());
-    assertFalse(initParameters.isIllegalArgumentBackendError());
-    assertFalse(initParameters.isExceptionCompatibilityEnabled());
-    assertFalse(initParameters.isPrettyPrintEnabled());
+    assertThat(initParameters.isServletRestricted()).isFalse();
+    assertThat(initParameters.isClientIdWhitelistEnabled()).isFalse();
+    assertThat(initParameters.isIllegalArgumentBackendError()).isFalse();
+    assertThat(initParameters.isExceptionCompatibilityEnabled()).isFalse();
+    assertThat(initParameters.isPrettyPrintEnabled()).isFalse();
   }
 
   @Test
@@ -137,11 +134,11 @@ public class ServletInitializationParametersTest {
     ServletInitializationParameters initParameters =
         fromServletConfig(String.class.getName(), "true", "true", "true", "true", "true");
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class);
-    assertTrue(initParameters.isServletRestricted());
-    assertTrue(initParameters.isClientIdWhitelistEnabled());
-    assertTrue(initParameters.isIllegalArgumentBackendError());
-    assertTrue(initParameters.isExceptionCompatibilityEnabled());
-    assertTrue(initParameters.isPrettyPrintEnabled());
+    assertThat(initParameters.isServletRestricted()).isTrue();
+    assertThat(initParameters.isClientIdWhitelistEnabled()).isTrue();
+    assertThat(initParameters.isIllegalArgumentBackendError()).isTrue();
+    assertThat(initParameters.isExceptionCompatibilityEnabled()).isTrue();
+    assertThat(initParameters.isPrettyPrintEnabled()).isTrue();
   }
 
   @Test
@@ -175,13 +172,13 @@ public class ServletInitializationParametersTest {
       String isIllegalArgumentBackendError, String isExceptionCompatibilityEnabled,
       String isPrettyPrintEnabled) {
     Map<String, String> map = initParameters.asMap();
-    assertEquals(6, map.size());
-    assertEquals(serviceClasses, map.get("services"));
-    assertEquals(isServletRestricted, map.get("restricted"));
-    assertEquals(isClientIdWhitelistEnabled, map.get("clientIdWhitelistEnabled"));
-    assertEquals(isIllegalArgumentBackendError, map.get("illegalArgumentIsBackendError"));
-    assertEquals(isExceptionCompatibilityEnabled, map.get("enableExceptionCompatibility"));
-    assertEquals(isPrettyPrintEnabled, map.get("prettyPrint"));
+    assertThat(map).hasSize(6);
+    assertThat(map.get("services")).isEqualTo(serviceClasses);
+    assertThat(map.get("restricted")).isEqualTo(isServletRestricted);
+    assertThat(map.get("clientIdWhitelistEnabled")).isEqualTo(isClientIdWhitelistEnabled);
+    assertThat(map.get("illegalArgumentIsBackendError")).isEqualTo(isIllegalArgumentBackendError);
+    assertThat(map.get("enableExceptionCompatibility")).isEqualTo(isExceptionCompatibilityEnabled);
+    assertThat(map.get("prettyPrint")).isEqualTo(isPrettyPrintEnabled);
   }
 
   private ServletInitializationParameters fromServletConfig(
