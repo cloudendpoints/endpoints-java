@@ -50,7 +50,8 @@ public class ServletInitializationParametersTest {
     assertTrue(initParameters.isClientIdWhitelistEnabled());
     assertFalse(initParameters.isIllegalArgumentBackendError());
     assertTrue(initParameters.isExceptionCompatibilityEnabled());
-    verifyAsMap(initParameters, "", "true", "true", "false", "true");
+    assertTrue(initParameters.isPrettyPrintEnabled());
+    verifyAsMap(initParameters, "", "true", "true", "false", "true", "true");
   }
 
   @Test
@@ -61,13 +62,14 @@ public class ServletInitializationParametersTest {
         .addServiceClasses(ImmutableSet.<Class<?>>of())
         .setIllegalArgumentBackendError(true)
         .setExceptionCompatibilityEnabled(true)
+        .setPrettyPrintEnabled(true)
         .build();
     assertThat(initParameters.getServiceClasses()).isEmpty();
     assertTrue(initParameters.isServletRestricted());
     assertTrue(initParameters.isClientIdWhitelistEnabled());
     assertTrue(initParameters.isIllegalArgumentBackendError());
     assertTrue(initParameters.isExceptionCompatibilityEnabled());
-    verifyAsMap(initParameters, "", "true", "true", "true", "true");
+    verifyAsMap(initParameters, "", "true", "true", "true", "true", "true");
   }
 
   @Test
@@ -78,11 +80,13 @@ public class ServletInitializationParametersTest {
         .setClientIdWhitelistEnabled(false)
         .setIllegalArgumentBackendError(false)
         .setExceptionCompatibilityEnabled(false)
+        .setPrettyPrintEnabled(false)
         .build();
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class);
     assertFalse(initParameters.isServletRestricted());
     assertFalse(initParameters.isClientIdWhitelistEnabled());
-    verifyAsMap(initParameters, String.class.getName(), "false", "false", "false", "false");
+    verifyAsMap(
+        initParameters, String.class.getName(), "false", "false", "false", "false", "false");
   }
 
   @Test
@@ -92,7 +96,7 @@ public class ServletInitializationParametersTest {
         .build();
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class, Integer.class);
     verifyAsMap(initParameters, String.class.getName() + ',' + Integer.class.getName(), "true",
-        "true", "false", "true");
+        "true", "false", "true", "true");
   }
 
   @Test
@@ -107,51 +111,58 @@ public class ServletInitializationParametersTest {
   @Test
   public void testFromServletConfig_nullValues() throws ServletException {
     ServletInitializationParameters initParameters =
-        fromServletConfig(null, null, null, null);
+        fromServletConfig(null, null, null, null, null, null);
     assertThat(initParameters.getServiceClasses()).isEmpty();
     assertTrue(initParameters.isServletRestricted());
     assertTrue(initParameters.isClientIdWhitelistEnabled());
     assertFalse(initParameters.isIllegalArgumentBackendError());
+    assertTrue(initParameters.isExceptionCompatibilityEnabled());
+    assertTrue(initParameters.isPrettyPrintEnabled());
   }
 
   @Test
   public void testFromServletConfig_emptySetsAndFalse() throws ServletException {
     ServletInitializationParameters initParameters =
-        fromServletConfig("", "false", "false", "false");
+        fromServletConfig("", "false", "false", "false", "false", "false");
     assertThat(initParameters.getServiceClasses()).isEmpty();
     assertFalse(initParameters.isServletRestricted());
     assertFalse(initParameters.isClientIdWhitelistEnabled());
     assertFalse(initParameters.isIllegalArgumentBackendError());
+    assertFalse(initParameters.isExceptionCompatibilityEnabled());
+    assertFalse(initParameters.isPrettyPrintEnabled());
   }
 
   @Test
   public void testFromServletConfig_oneEntrySetsAndTrue() throws ServletException {
     ServletInitializationParameters initParameters =
-        fromServletConfig(String.class.getName(), "true", "true", "true");
+        fromServletConfig(String.class.getName(), "true", "true", "true", "true", "true");
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class);
     assertTrue(initParameters.isServletRestricted());
     assertTrue(initParameters.isClientIdWhitelistEnabled());
     assertTrue(initParameters.isIllegalArgumentBackendError());
+    assertTrue(initParameters.isExceptionCompatibilityEnabled());
+    assertTrue(initParameters.isPrettyPrintEnabled());
   }
 
   @Test
   public void testFromServletConfig_twoEntrySets() throws ServletException {
     ServletInitializationParameters initParameters = fromServletConfig(
-        String.class.getName() + ',' + Integer.class.getName(), null, null, null);
+        String.class.getName() + ',' + Integer.class.getName(), null, null, null, null, null);
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class, Integer.class);
   }
 
   @Test
   public void testFromServletConfig_skipsEmptyElements() throws ServletException {
     ServletInitializationParameters initParameters = fromServletConfig(
-        ",," + String.class.getName() + ",,," + Integer.class.getName() + ",", null, null, null);
+        ",," + String.class.getName() + ",,," + Integer.class.getName() + ",", null, null, null,
+        null, null);
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class, Integer.class);
   }
 
   @Test
   public void testFromServletConfig_invalidRestrictedThrows() throws ServletException {
     try {
-      fromServletConfig(null, "yes", null, null);
+      fromServletConfig(null, "yes", null, null, null, null);
       fail("Expected IllegalArgumentException");
     } catch (IllegalArgumentException expected) {
       // expected
@@ -161,22 +172,26 @@ public class ServletInitializationParametersTest {
   private void verifyAsMap(
       ServletInitializationParameters initParameters, String serviceClasses,
       String isServletRestricted, String isClientIdWhitelistEnabled,
-      String isIllegalArgumentBackendError, String isExceptionCompatibilityEnabled) {
+      String isIllegalArgumentBackendError, String isExceptionCompatibilityEnabled,
+      String isPrettyPrintEnabled) {
     Map<String, String> map = initParameters.asMap();
-    assertEquals(5, map.size());
+    assertEquals(6, map.size());
     assertEquals(serviceClasses, map.get("services"));
     assertEquals(isServletRestricted, map.get("restricted"));
     assertEquals(isClientIdWhitelistEnabled, map.get("clientIdWhitelistEnabled"));
     assertEquals(isIllegalArgumentBackendError, map.get("illegalArgumentIsBackendError"));
     assertEquals(isExceptionCompatibilityEnabled, map.get("enableExceptionCompatibility"));
+    assertEquals(isPrettyPrintEnabled, map.get("prettyPrint"));
   }
 
   private ServletInitializationParameters fromServletConfig(
       String serviceClasses, String isServletRestricted,
-      String isClientIdWhitelistEnabled, String isIllegalArgumentBackendError)
+      String isClientIdWhitelistEnabled, String isIllegalArgumentBackendError,
+      String isExceptionCompatibilityEnabled, String isPrettyPrintEnabled)
       throws ServletException {
     ServletConfig servletConfig = new StubServletConfig(serviceClasses,
-        isServletRestricted, isClientIdWhitelistEnabled, isIllegalArgumentBackendError);
+        isServletRestricted, isClientIdWhitelistEnabled, isIllegalArgumentBackendError,
+        isExceptionCompatibilityEnabled, isPrettyPrintEnabled);
     return ServletInitializationParameters.fromServletConfig(
             servletConfig, getClass().getClassLoader());
   }
@@ -186,12 +201,15 @@ public class ServletInitializationParametersTest {
 
     public StubServletConfig(
         String serviceClasses, String isServletRestricted, String isClientIdWhitelistEnabled,
-        String isIllegalArgumentBackendError) {
+        String isIllegalArgumentBackendError, String isExceptionCompatibilityEnabled,
+        String isPrettyPrintEnabled) {
       initParameters = Maps.newHashMap();
       initParameters.put("services", serviceClasses);
       initParameters.put("restricted", isServletRestricted);
       initParameters.put("clientIdWhitelistEnabled", isClientIdWhitelistEnabled);
       initParameters.put("illegalArgumentIsBackendError", isIllegalArgumentBackendError);
+      initParameters.put("enableExceptionCompatibility", isExceptionCompatibilityEnabled);
+      initParameters.put("prettyPrint", isPrettyPrintEnabled);
     }
 
     @Override

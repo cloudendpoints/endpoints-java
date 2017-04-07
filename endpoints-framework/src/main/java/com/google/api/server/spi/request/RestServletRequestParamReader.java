@@ -16,6 +16,7 @@
 package com.google.api.server.spi.request;
 
 import com.google.api.server.spi.EndpointMethod;
+import com.google.api.server.spi.EndpointsContext;
 import com.google.api.server.spi.IoUtil;
 import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.Strings;
@@ -59,11 +60,10 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
   private final Map<String, ApiParameterConfig> parameterConfigMap;
 
   public RestServletRequestParamReader(EndpointMethod method,
-      HttpServletRequest servletRequest, ServletContext servletContext,
-      ApiSerializationConfig serializationConfig, ApiMethodConfig methodConfig,
-      Map<String, String> rawPathParameters) {
-    super(method, servletRequest, servletContext, serializationConfig, methodConfig);
-    this.rawPathParameters = rawPathParameters;
+      EndpointsContext endpointsContext, ServletContext servletContext,
+      ApiSerializationConfig serializationConfig, ApiMethodConfig methodConfig) {
+    super(method, endpointsContext, servletContext, serializationConfig, methodConfig);
+    this.rawPathParameters = endpointsContext.getRawPathParameters();
     ImmutableMap.Builder<String, ApiParameterConfig> builder = ImmutableMap.builder();
     for (ApiParameterConfig config : methodConfig.getParameterConfigs()) {
       if (config.getName() != null) {
@@ -82,6 +82,7 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
       if (method.getParameterClasses().length == 0) {
         return new Object[0];
       }
+      HttpServletRequest servletRequest = endpointsContext.getRequest();
       String requestBody = IoUtil.readRequestBody(servletRequest);
       logger.log(Level.FINE, "requestBody=" + requestBody);
       // Unlike the Lily protocol, which essentially always requires a JSON body to exist (due to

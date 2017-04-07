@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.config.model;
 
+import com.google.api.server.spi.EndpointsContext;
 import com.google.common.collect.ImmutableSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,8 +46,12 @@ public final class StandardParameters {
     return STANDARD_PARAM_NAMES.contains(paramName);
   }
 
-  public static boolean shouldPrettyPrint(HttpServletRequest request) {
+  public static boolean shouldPrettyPrint(EndpointsContext context) {
+    HttpServletRequest request = context.getRequest();
     String prettyPrintStr = request.getParameter("prettyPrint");
-    return prettyPrintStr == null || "true".equals(prettyPrintStr.toLowerCase());
+    if (prettyPrintStr == null) {
+      return context.isPrettyPrintEnabled();
+    }
+    return "true".equals(prettyPrintStr.toLowerCase());
   }
 }

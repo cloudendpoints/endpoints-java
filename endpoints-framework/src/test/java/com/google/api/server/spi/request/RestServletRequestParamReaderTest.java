@@ -19,6 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.api.server.spi.EndpointMethod;
+import com.google.api.server.spi.EndpointsContext;
 import com.google.api.server.spi.ServiceContext;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.Api;
@@ -41,6 +42,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -202,8 +204,11 @@ public class RestServletRequestParamReaderTest {
   }
 
   private RestServletRequestParamReader createReader(Map<String, String> rawPathParameters) {
-    return new RestServletRequestParamReader(endpointMethod, request, null,
-        serializationConfig, methodConfig, rawPathParameters);
+    EndpointsContext endpointsContext =
+        new EndpointsContext("GET", "/", request, new MockHttpServletResponse(), true);
+    endpointsContext.setRawPathParameters(rawPathParameters);
+    return new RestServletRequestParamReader(endpointMethod, endpointsContext, null,
+        serializationConfig, methodConfig);
   }
 
   public static class TestResource {

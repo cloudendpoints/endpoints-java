@@ -67,7 +67,8 @@ public class EndpointsServlet extends HttpServlet {
     } else {
       String path = Strings.stripSlash(
           request.getRequestURI().substring(request.getServletPath().length()));
-      EndpointsContext context = new EndpointsContext(method, path, request, response);
+      EndpointsContext context = new EndpointsContext(method, path, request, response,
+          initParameters.isPrettyPrintEnabled());
       if (!dispatcher.dispatch(method, path, context)) {
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         response.getWriter().append("Not Found");

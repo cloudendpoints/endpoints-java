@@ -82,15 +82,15 @@ public class EndpointsMethodHandler {
   @VisibleForTesting
   protected ParamReader createRestParamReader(EndpointsContext context,
       ApiSerializationConfig serializationConfig) {
-    return new RestServletRequestParamReader(endpointMethod, context.getRequest(),
-        servletContext, serializationConfig, methodConfig, context.getRawPathParameters());
+    return new RestServletRequestParamReader(endpointMethod, context,
+        servletContext, serializationConfig, methodConfig);
   }
 
   @VisibleForTesting
   protected ResultWriter createResultWriter(EndpointsContext context,
       ApiSerializationConfig serializationConfig) {
     return new RestResponseResultWriter(context.getResponse(), serializationConfig,
-        StandardParameters.shouldPrettyPrint(context.getRequest()),
+        StandardParameters.shouldPrettyPrint(context),
         initParameters.isExceptionCompatibilityEnabled());
   }
 

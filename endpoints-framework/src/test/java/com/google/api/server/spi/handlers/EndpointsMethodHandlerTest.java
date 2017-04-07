@@ -66,7 +66,7 @@ public class EndpointsMethodHandlerTest {
     classLoader = EndpointsMethodHandlerTest.class.getClassLoader();
     request = new MockHttpServletRequest();
     response = new MockHttpServletResponse();
-    context = new EndpointsContext("", "", request, response);
+    context = new EndpointsContext("", "", request, response, true);
     systemService = SystemService.builder()
         .withDefaults(classLoader)
         .addService(TestEndpoint.class, new TestEndpoint())

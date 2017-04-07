@@ -55,7 +55,7 @@ public class ExplorerHandlerTest {
     request.setRequestURI("/_ah/api/explorer/");
     MockHttpServletResponse response = new MockHttpServletResponse();
     ExplorerHandler handler = new ExplorerHandler();
-    EndpointsContext context = new EndpointsContext("GET", "explorer", request, response);
+    EndpointsContext context = new EndpointsContext("GET", "explorer", request, response, true);
     handler.handle(context);
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);

@@ -26,7 +26,7 @@ import java.util.Map;
 public class DispatcherContext {
   private final String httpMethod;
   private final String path;
-  private ImmutableMap<String, String> rawPathParameters;
+  private ImmutableMap<String, String> rawPathParameters = ImmutableMap.of();
 
   public DispatcherContext(String httpMethod, String path) {
     this.httpMethod = Preconditions.checkNotNull(httpMethod, "httpMethod").toUpperCase();

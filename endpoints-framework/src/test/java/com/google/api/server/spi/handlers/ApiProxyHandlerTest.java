@@ -47,7 +47,8 @@ public class ApiProxyHandlerTest {
     request.setServletPath(servletPath);
     MockHttpServletResponse response = new MockHttpServletResponse();
     ApiProxyHandler handler = new ApiProxyHandler();
-    EndpointsContext context = new EndpointsContext("GET", "static/proxy.html", request, response);
+    EndpointsContext context =
+        new EndpointsContext("GET", "static/proxy.html", request, response, true);
 
     handler.handle(context);
 
