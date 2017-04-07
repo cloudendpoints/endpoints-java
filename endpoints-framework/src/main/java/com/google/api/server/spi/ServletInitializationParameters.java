@@ -37,6 +37,7 @@ public abstract class ServletInitializationParameters {
   private static final String CLIENT_ID_WHITELIST_ENABLED = "clientIdWhitelistEnabled";
   private static final String ILLEGAL_ARGUMENT_BACKEND_ERROR = "illegalArgumentIsBackendError";
   private static final String EXCEPTION_COMPATIBILITY = "enableExceptionCompatibility";
+  private static final String PRETTY_PRINT = "prettyPrint";
 
   private static final Splitter CSV_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Joiner CSV_JOINER = Joiner.on(',').skipNulls();
@@ -77,12 +78,18 @@ public abstract class ServletInitializationParameters {
    */
   public abstract boolean isExceptionCompatibilityEnabled();
 
+  /**
+   * Returns if pretty printing should be enabled for responses by default. Defaults to true.
+   */
+  public abstract boolean isPrettyPrintEnabled();
+
   public static Builder builder() {
     return new AutoValue_ServletInitializationParameters.Builder()
         .setServletRestricted(true)
         .setClientIdWhitelistEnabled(true)
         .setIllegalArgumentBackendError(false)
-        .setExceptionCompatibilityEnabled(true);
+        .setExceptionCompatibilityEnabled(true)
+        .setPrettyPrintEnabled(true);
   }
 
   /**
@@ -148,6 +155,11 @@ public abstract class ServletInitializationParameters {
      */
     public abstract Builder setExceptionCompatibilityEnabled(boolean exceptionCompatibility);
 
+    /**
+     * Sets if pretty printing should be enabled for responses by default. Defaults to {@code true}.
+     */
+    public abstract Builder setPrettyPrintEnabled(boolean prettyPrint);
+
     abstract ServletInitializationParameters autoBuild();
 
     public ServletInitializationParameters build() {
@@ -187,6 +199,10 @@ public abstract class ServletInitializationParameters {
         builder.setExceptionCompatibilityEnabled(
             parseBoolean(exceptionCompatibility, EXCEPTION_COMPATIBILITY));
       }
+      String prettyPrint = config.getInitParameter(PRETTY_PRINT);
+      if (prettyPrint != null) {
+        builder.setPrettyPrintEnabled(parseBoolean(prettyPrint, PRETTY_PRINT));
+      }
     }
     return builder.build();
   }
@@ -221,6 +237,7 @@ public abstract class ServletInitializationParameters {
         .put(CLIENT_ID_WHITELIST_ENABLED, Boolean.toString(isClientIdWhitelistEnabled()))
         .put(ILLEGAL_ARGUMENT_BACKEND_ERROR, Boolean.toString(isIllegalArgumentBackendError()))
         .put(EXCEPTION_COMPATIBILITY, Boolean.toString(isExceptionCompatibilityEnabled()))
+        .put(PRETTY_PRINT, Boolean.toString(isPrettyPrintEnabled()))
         .build();
   }
 }

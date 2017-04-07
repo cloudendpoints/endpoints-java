@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 
 import com.google.api.server.spi.EndpointMethod;
+import com.google.api.server.spi.EndpointsContext;
 import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Named;
@@ -39,6 +40,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -86,6 +88,15 @@ public class ServletRequestParamReaderTest {
 
   @Mock
   private ServletContext context;
+
+  @Mock
+  private EndpointsContext endpointsContext;
+
+  @Before
+  public void setUp() {
+    when(endpointsContext.getRequest()).thenReturn(request);
+    when(endpointsContext.isPrettyPrintEnabled()).thenReturn(true);
+  }
 
   @Test
   public void testRead() throws Exception {
@@ -644,7 +655,8 @@ public class ServletRequestParamReaderTest {
     final TestUser user = new TestUser("test");
     Method method = TestUserEndpoint.class.getDeclaredMethod("user", TestUser.class);
     ParamReader reader = new ServletRequestParamReader(
-        EndpointMethod.create(method.getDeclaringClass(), method), request, context, null, null) {
+        EndpointMethod.create(method.getDeclaringClass(), method), endpointsContext, context, null,
+        null) {
       @Override
       User getUser() {
         return user;
@@ -832,8 +844,8 @@ public class ServletRequestParamReaderTest {
       ApiMethodConfig methodConfig, final User user,
       final com.google.appengine.api.users.User appEngineUser)
       throws Exception {
-    ParamReader reader = new ServletRequestParamReader(
-        method, request, context, null, methodConfig) {
+    ParamReader reader = new ServletRequestParamReader(method, endpointsContext, context, null,
+        methodConfig) {
       @Override
       User getUser() {
         return user;

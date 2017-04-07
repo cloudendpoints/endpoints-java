@@ -17,10 +17,13 @@ package com.google.api.server.spi.config.model;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.api.server.spi.EndpointsContext;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Tests for {@link StandardParameters}.
@@ -28,22 +31,48 @@ import org.springframework.mock.web.MockHttpServletRequest;
 @RunWith(JUnit4.class)
 public class StandardParametersTest {
   @Test
-  public void shouldPrettyPrint_defaultValueIsTrue() {
-    assertThat(StandardParameters.shouldPrettyPrint(new MockHttpServletRequest())).isTrue();
+  public void shouldPrettyPrint_defaultValueIsTrue_globalDefaultTrue() {
+    assertThat(StandardParameters.shouldPrettyPrint(
+        getEndpointsContext(new MockHttpServletRequest(), true))).isTrue();
   }
 
   @Test
-  public void shouldPrettyPrint_false() {
+  public void shouldPrettyPrint_false_globalDefaultTrue() {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setParameter("prettyPrint", "false");
-    assertThat(StandardParameters.shouldPrettyPrint(request)).isFalse();
+    assertThat(StandardParameters.shouldPrettyPrint(getEndpointsContext(request, true))).isFalse();
   }
 
   @Test
-  public void shouldPrettyPrint_true() {
+  public void shouldPrettyPrint_true_globalDefaultTrue() {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setParameter("prettyPrint", "true");
-    assertThat(StandardParameters.shouldPrettyPrint(request)).isTrue();
+    assertThat(StandardParameters.shouldPrettyPrint(getEndpointsContext(request, true))).isTrue();
+  }
+
+  @Test
+  public void shouldPrettyPrint_defaultValueIsFalse_globalDefaultFalse() {
+    assertThat(StandardParameters.shouldPrettyPrint(
+        getEndpointsContext(new MockHttpServletRequest(), false))).isFalse();
+  }
+
+  @Test
+  public void shouldPrettyPrint_false_globalDefaultFalse() {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setParameter("prettyPrint", "false");
+    assertThat(StandardParameters.shouldPrettyPrint(getEndpointsContext(request, false))).isFalse();
+  }
+
+  @Test
+  public void shouldPrettyPrint_true_globalDefaultFalse() {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setParameter("prettyPrint", "true");
+    assertThat(StandardParameters.shouldPrettyPrint(getEndpointsContext(request, false))).isTrue();
+  }
+
+  private EndpointsContext getEndpointsContext(
+      MockHttpServletRequest request, boolean prettyPrint) {
+    return new EndpointsContext("GET", "/", request, new MockHttpServletResponse(), prettyPrint);
   }
 
   @Test

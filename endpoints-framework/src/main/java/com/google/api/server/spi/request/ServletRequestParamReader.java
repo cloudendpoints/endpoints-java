@@ -17,6 +17,7 @@ package com.google.api.server.spi.request;
 
 import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.EndpointMethod;
+import com.google.api.server.spi.EndpointsContext;
 import com.google.api.server.spi.IoUtil;
 import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.auth.common.User;
@@ -162,7 +163,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
         logger.log(Level.FINE, "deserialize: App Engine User injected into param[{0}]", i);
       } else if (clazz == HttpServletRequest.class) {
         // HttpServletRequest type parameter requires no Named annotation (ignored if present)
-        params[i] = servletRequest;
+        params[i] = endpointsContext.getRequest();
         logger.log(Level.FINE, "deserialize: HttpServletRequest injected into param[{0}]", i);
       } else if (clazz == ServletContext.class) {
         // ServletContext type parameter requires no Named annotation (ignored if present)
@@ -201,21 +202,21 @@ public class ServletRequestParamReader extends AbstractParamReader {
 
   @VisibleForTesting
   User getUser() throws ServiceException {
-    return Auth.from(servletRequest).authenticate();
+    return Auth.from(endpointsContext.getRequest()).authenticate();
   }
 
   @VisibleForTesting
   com.google.appengine.api.users.User getAppEngineUser() throws ServiceException {
-    return Auth.from(servletRequest).authenticateAppEngineUser();
+    return Auth.from(endpointsContext.getRequest()).authenticateAppEngineUser();
   }
 
   private Object getStandardParamValue(JsonNode body, String paramName) {
     if (!StandardParameters.isStandardParamName(paramName)) {
       throw new IllegalArgumentException("paramName");
     } else if (StandardParameters.USER_IP.equals(paramName)) {
-      return servletRequest.getRemoteAddr();
+      return endpointsContext.getRequest().getRemoteAddr();
     } else if (StandardParameters.PRETTY_PRINT.equals(paramName)) {
-      return StandardParameters.shouldPrettyPrint(servletRequest);
+      return StandardParameters.shouldPrettyPrint(endpointsContext);
     }
     JsonNode value = body.get(paramName);
     if (value == null && StandardParameters.ALT.equals(paramName)) {
@@ -288,21 +289,21 @@ public class ServletRequestParamReader extends AbstractParamReader {
     }
   }
 
-  protected final HttpServletRequest servletRequest;
+  protected final EndpointsContext endpointsContext;
   private final ServletContext servletContext;
   protected final ObjectReader objectReader;
   protected final ApiMethodConfig methodConfig;
 
   public ServletRequestParamReader(
       EndpointMethod method,
-      HttpServletRequest servletRequest,
+      EndpointsContext endpointsContext,
       ServletContext servletContext,
       ApiSerializationConfig serializationConfig,
       ApiMethodConfig methodConfig) {
     super(method);
 
     this.methodConfig = methodConfig;
-    this.servletRequest = servletRequest;
+    this.endpointsContext = endpointsContext;
     this.servletContext = servletContext;
 
     LinkedHashSet<SimpleModule> modules = new LinkedHashSet<>();
@@ -320,7 +321,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
     // Assumes input stream to be encoded in UTF-8
     // TODO: Take charset from content-type as encoding
     try {
-      String requestBody = IoUtil.readStream(servletRequest.getInputStream());
+      String requestBody = IoUtil.readStream(endpointsContext.getRequest().getInputStream());
       logger.log(Level.FINE, "requestBody=" + requestBody);
       if (requestBody == null || requestBody.trim().isEmpty()) {
         return new Object[0];

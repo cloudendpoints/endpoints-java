@@ -27,12 +27,14 @@ import javax.servlet.http.HttpServletResponse;
 public class EndpointsContext extends DispatcherContext {
   private final HttpServletRequest request;
   private final HttpServletResponse response;
+  private final boolean prettyPrint;
 
   public EndpointsContext(String httpMethod, String path, HttpServletRequest request,
-      HttpServletResponse response) {
+      HttpServletResponse response, boolean prettyPrint) {
     super(httpMethod, path);
     this.request = Preconditions.checkNotNull(request, "request");
     this.response = Preconditions.checkNotNull(response, "response");
+    this.prettyPrint = prettyPrint;
   }
 
   public HttpServletRequest getRequest() {
@@ -41,5 +43,9 @@ public class EndpointsContext extends DispatcherContext {
 
   public HttpServletResponse getResponse() {
     return response;
+  }
+
+  public boolean isPrettyPrintEnabled() {
+    return prettyPrint;
   }
 }
