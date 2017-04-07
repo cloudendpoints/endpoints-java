@@ -59,7 +59,7 @@ public class ServletInitializationParametersTest {
         .setClientIdWhitelistEnabled(true)
         .setRestricted(true)
         .addServiceClasses(ImmutableSet.<Class<?>>of())
-        .setIllegalArgumentIsBackendError(true)
+        .setIllegalArgumentBackendError(true)
         .setExceptionCompatibilityEnabled(true)
         .build();
     assertThat(initParameters.getServiceClasses()).isEmpty();
@@ -76,7 +76,7 @@ public class ServletInitializationParametersTest {
         .setRestricted(false)
         .addServiceClass(String.class)
         .setClientIdWhitelistEnabled(false)
-        .setIllegalArgumentIsBackendError(false)
+        .setIllegalArgumentBackendError(false)
         .setExceptionCompatibilityEnabled(false)
         .build();
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class);

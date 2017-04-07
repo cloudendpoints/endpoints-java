@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -28,170 +29,68 @@ import javax.servlet.ServletException;
 /**
  * Initialization parameters supported by the {@link EndpointsServlet}.
  */
-public class ServletInitializationParameters {
-  private static final String INIT_PARAM_NAME_SERVICES = "services";
-  private static final String INIT_PARAM_NAME_RESTRICTED = "restricted";
-  private static final String INIT_PARAM_NAME_CLIENT_ID_WHITELIST_ENABLED =
-      "clientIdWhitelistEnabled";
-  private static final String INIT_PARAM_NAME_ILLEGAL_ARGUMENT_BACKEND_ERROR =
-      "illegalArgumentIsBackendError";
-  private static final String INIT_PARAM_NAME_ENABLE_EXCEPTION_COMPATIBILITY =
-      "enableExceptionCompatibility";
+@AutoValue
+public abstract class ServletInitializationParameters {
+  // Initialization parameter names used to extract values from a ServletConfig.
+  private static final String SERVICES = "services";
+  private static final String RESTRICTED = "restricted";
+  private static final String CLIENT_ID_WHITELIST_ENABLED = "clientIdWhitelistEnabled";
+  private static final String ILLEGAL_ARGUMENT_BACKEND_ERROR = "illegalArgumentIsBackendError";
+  private static final String EXCEPTION_COMPATIBILITY = "enableExceptionCompatibility";
 
   private static final Splitter CSV_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Joiner CSV_JOINER = Joiner.on(',').skipNulls();
   private static final Function<Class<?>, String> CLASS_TO_NAME = new Function<Class<?>, String>() {
-    @Override public String apply(Class<?> clazz) {
+    @Override
+    public String apply(Class<?> clazz) {
       return clazz.getName();
     }
   };
 
-  private final ImmutableSet<Class<?>> serviceClasses;
-  private final boolean isServletRestricted;
-  private final boolean isClientIdWhitelistEnabled;
-  private final boolean isIllegalArgumentBackendError;
-  private final boolean isExceptionCompatibilityEnabled;
-
-  /**
-   * Returns a new {@link Builder} for this class.
-   */
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /**
-   * Constructs a new instance from the provided {@link ServletConfig} and {@link ClassLoader}.
-   */
-  public static ServletInitializationParameters fromServletConfig(
-      ServletConfig config, ClassLoader classLoader) throws ServletException {
-    Builder builder = builder();
-    if (config != null) {
-      String serviceClassNames = config.getInitParameter(INIT_PARAM_NAME_SERVICES);
-      if (serviceClassNames != null) {
-        for (String serviceClassName : CSV_SPLITTER.split(serviceClassNames)) {
-          builder.addServiceClass(getClassForName(serviceClassName, classLoader));
-        }
-      }
-      String isServletRestricted = config.getInitParameter(INIT_PARAM_NAME_RESTRICTED);
-      if (isServletRestricted != null) {
-        builder.setRestricted(parseBoolean(isServletRestricted, "is servlet restricted"));
-      }
-      String isClientIdWhitelistEnabled =
-          config.getInitParameter(INIT_PARAM_NAME_CLIENT_ID_WHITELIST_ENABLED);
-      if (isClientIdWhitelistEnabled != null) {
-        builder.setClientIdWhitelistEnabled(
-            parseBoolean(isClientIdWhitelistEnabled, "is the client id whitelist enabled"));
-      }
-      String isIllegalArgumentBackendError =
-          config.getInitParameter(INIT_PARAM_NAME_ILLEGAL_ARGUMENT_BACKEND_ERROR);
-      if (isIllegalArgumentBackendError != null) {
-        builder.setIllegalArgumentIsBackendError(parseBoolean(
-            isIllegalArgumentBackendError, "is IllegalArgumentException a backend error"));
-      }
-      String isExceptionCompatibilityEnabled =
-          config.getInitParameter(INIT_PARAM_NAME_ENABLE_EXCEPTION_COMPATIBILITY);
-      if (isExceptionCompatibilityEnabled != null) {
-        builder.setExceptionCompatibilityEnabled(
-            parseBoolean(isExceptionCompatibilityEnabled, "is exception compatibility enabled"));
-      }
-    }
-    return builder.build();
-  }
-
-  private static boolean parseBoolean(String booleanString, String descriptionForErrors) {
-    if ("true".equalsIgnoreCase(booleanString)) {
-      return true;
-    } else if ("false".equalsIgnoreCase(booleanString)) {
-      return false;
-    }
-    throw new IllegalArgumentException(String.format(
-        "Expected 'true' or 'false' for %s servlet initialization parameter but got '%s'",
-        descriptionForErrors, booleanString));
-  }
-
-  private static Class<?> getClassForName(String className, ClassLoader classLoader)
-      throws ServletException {
-    try {
-      return Class.forName(className, true, classLoader);
-    } catch (ClassNotFoundException e) {
-      throw new ServletException(String.format("Cannot find service class: %s", className), e);
-    }
-  }
-
   /**
    * Returns the endpoint service classes to serve.
    */
-  public ImmutableSet<Class<?>> getServiceClasses() {
-    return serviceClasses;
-  }
+  public abstract ImmutableSet<Class<?>> getServiceClasses();
 
   /**
-   * Returns {@code true} if the SPI servlet is restricted.
+   * Returns if the SPI servlet is restricted.
+   *
+   * @deprecated No longer serves any purpose and will be removed in a future release
    */
-  public boolean isServletRestricted() {
-    return isServletRestricted;
-  }
+  @Deprecated
+  public abstract boolean isServletRestricted();
 
   /**
-   * Returns {@code true} if client ID whitelisting is enabled.
+   * Returns if client ID whitelisting is enabled.
    */
-  public boolean isClientIdWhitelistEnabled() {
-    return isClientIdWhitelistEnabled;
-  }
+  public abstract boolean isClientIdWhitelistEnabled();
 
   /**
-   * Returns {@code true} if an {@link IllegalArgumentException} should be returned as a backend
-   * error (500) instead of a user error (400).
+   * Returns if an {@link IllegalArgumentException} should be returned as a backend error (500
+   * level) instead of a user error (400 level).
    */
-  public boolean isIllegalArgumentBackendError() {
-    return isIllegalArgumentBackendError;
-  }
+  public abstract boolean isIllegalArgumentBackendError();
 
   /**
-   * Returns {@code true} if v1.0 style exceptions should be returned to users. In v1.0, certain
-   * codes are not permissible, and other codes are translated to other status codes.
+   * Returns if v1.0 style exceptions should be returned to users. In v1.0, certain codes are not
+   * permissible, and other codes are translated to other status codes.
    */
-  public boolean isExceptionCompatibilityEnabled() {
-    return isExceptionCompatibilityEnabled;
-  }
+  public abstract boolean isExceptionCompatibilityEnabled();
 
-  /**
-   * Returns the parameters as a {@link java.util.Map} of parameter name to {@link String} value.
-   */
-  public ImmutableMap<String, String> asMap() {
-    ImmutableMap.Builder<String, String> parameterNameToValue = ImmutableMap.builder();
-    parameterNameToValue.put(INIT_PARAM_NAME_SERVICES,
-        CSV_JOINER.join(Iterables.transform(serviceClasses, CLASS_TO_NAME)));
-    parameterNameToValue.put(INIT_PARAM_NAME_RESTRICTED, Boolean.toString(isServletRestricted));
-    parameterNameToValue.put(
-        INIT_PARAM_NAME_CLIENT_ID_WHITELIST_ENABLED, Boolean.toString(isClientIdWhitelistEnabled));
-    parameterNameToValue.put(INIT_PARAM_NAME_ILLEGAL_ARGUMENT_BACKEND_ERROR,
-        Boolean.toString(isIllegalArgumentBackendError));
-    parameterNameToValue.put(INIT_PARAM_NAME_ENABLE_EXCEPTION_COMPATIBILITY,
-        Boolean.toString(isExceptionCompatibilityEnabled));
-    return parameterNameToValue.build();
-  }
-
-  private ServletInitializationParameters(
-      ImmutableSet<Class<?>> serviceClasses, boolean isServletRestricted,
-      boolean isClientIdWhitelistEnabled, boolean isIllegalArgumentBackendError,
-      boolean isExceptionCompatibilityEnabled) {
-    this.serviceClasses = serviceClasses;
-    this.isServletRestricted = isServletRestricted;
-    this.isClientIdWhitelistEnabled = isClientIdWhitelistEnabled;
-    this.isIllegalArgumentBackendError = isIllegalArgumentBackendError;
-    this.isExceptionCompatibilityEnabled = isExceptionCompatibilityEnabled;
+  public static Builder builder() {
+    return new AutoValue_ServletInitializationParameters.Builder()
+        .setServletRestricted(true)
+        .setClientIdWhitelistEnabled(true)
+        .setIllegalArgumentBackendError(false)
+        .setExceptionCompatibilityEnabled(true);
   }
 
   /**
    * A builder for {@link ServletInitializationParameters}.
    */
-  public static class Builder {
+  @AutoValue.Builder
+  public abstract static class Builder {
     private final ImmutableSet.Builder<Class<?>> serviceClasses = ImmutableSet.builder();
-    private boolean isServletRestricted = true;
-    private boolean isClientIdWhitelistEnabled = true;
-    private boolean isIllegalArgumentBackendError = false;
-    private boolean isExceptionCompatibilityEnabled = true;
 
     /**
      * Adds an endpoint service class to serve.
@@ -210,45 +109,118 @@ public class ServletInitializationParameters {
     }
 
     /**
-     * Sets if the SPI servlet is restricted ({@code true}) or not ({@code false}).  If this
-     * method is not called, it defaults to {@code true}.
+     * Sets the complete list of endpoint service classes to serve.
      */
-    public Builder setRestricted(boolean isServletRestricted) {
-      this.isServletRestricted = isServletRestricted;
-      return this;
+    public abstract Builder setServiceClasses(ImmutableSet<Class<?>> clazzes);
+
+    /**
+     * Sets if the servlet is restricted. Defaults to {@code true}.
+     *
+     * @deprecated No longer serves any purpose and will be removed in a future release
+     */
+    @Deprecated
+    public abstract Builder setServletRestricted(boolean servletRestricted);
+
+    /**
+     * Sets if the servlet is restricted. Retained for API compatibility.
+     *
+     * @deprecated Retained for API compatibility
+     */
+    @Deprecated
+    public Builder setRestricted(boolean servletRestricted) {
+      return setServletRestricted(servletRestricted);
     }
 
     /**
-     * Sets if the client ID whitelist is enabled ({@code true}) or not ({@code false}).  If this
-     * method is not called, it defaults to {@code true}.
+     * Sets if the client ID whitelist is enabled, defaulting to {@code true}.
      */
-    public Builder setClientIdWhitelistEnabled(boolean isClientIdWhitelistEnabled) {
-      this.isClientIdWhitelistEnabled = isClientIdWhitelistEnabled;
-      return this;
-    }
+    public abstract Builder setClientIdWhitelistEnabled(boolean clientIdWhitelist);
 
     /**
      * Sets if an {@link IllegalArgumentException} should be treated as a backend error (500)
-     * instead of a user error (400).
+     * instead of a user error (400). Defaults to {@code false}.
      */
-    public Builder setIllegalArgumentIsBackendError(boolean isIllegalArgumentBackendError) {
-      this.isIllegalArgumentBackendError = isIllegalArgumentBackendError;
-      return this;
-    }
-
-    public Builder setExceptionCompatibilityEnabled(boolean isExceptionCompatibilityEnabled) {
-      this.isExceptionCompatibilityEnabled = isExceptionCompatibilityEnabled;
-      return this;
-    }
+    public abstract Builder setIllegalArgumentBackendError(boolean illegalArgumentBackendError);
 
     /**
-     * Builds a new {@link ServletInitializationParameters} instance with the values from this
-     * builder.
+     * Sets if v1.0 style exceptions should be returned to users. In v1.0, certain codes are not
+     * permissible, and other codes are translated to other status codes. Defaults to {@code true}.
      */
+    public abstract Builder setExceptionCompatibilityEnabled(boolean exceptionCompatibility);
+
+    abstract ServletInitializationParameters autoBuild();
+
     public ServletInitializationParameters build() {
-      return new ServletInitializationParameters(
-          serviceClasses.build(), isServletRestricted, isClientIdWhitelistEnabled,
-          isIllegalArgumentBackendError, isExceptionCompatibilityEnabled);
+      return setServiceClasses(serviceClasses.build()).autoBuild();
     }
+  }
+
+  /**
+   * Constructs a new instance from the provided {@link ServletConfig} and {@link ClassLoader}.
+   */
+  public static ServletInitializationParameters fromServletConfig(
+      ServletConfig config, ClassLoader classLoader) throws ServletException {
+    Builder builder = builder();
+    if (config != null) {
+      String serviceClassNames = config.getInitParameter(SERVICES);
+      if (serviceClassNames != null) {
+        for (String serviceClassName : CSV_SPLITTER.split(serviceClassNames)) {
+          builder.addServiceClass(getClassForName(serviceClassName, classLoader));
+        }
+      }
+      String servletRestricted = config.getInitParameter(RESTRICTED);
+      if (servletRestricted != null) {
+        builder.setServletRestricted(parseBoolean(servletRestricted, RESTRICTED));
+      }
+      String clientIdWhitelist = config.getInitParameter(CLIENT_ID_WHITELIST_ENABLED);
+      if (clientIdWhitelist != null) {
+        builder.setClientIdWhitelistEnabled(
+            parseBoolean(clientIdWhitelist, CLIENT_ID_WHITELIST_ENABLED));
+      }
+      String illegalArgumentBackendError = config.getInitParameter(ILLEGAL_ARGUMENT_BACKEND_ERROR);
+      if (illegalArgumentBackendError != null) {
+        builder.setIllegalArgumentBackendError(
+            parseBoolean(illegalArgumentBackendError, ILLEGAL_ARGUMENT_BACKEND_ERROR));
+      }
+      String exceptionCompatibility = config.getInitParameter(EXCEPTION_COMPATIBILITY);
+      if (exceptionCompatibility != null) {
+        builder.setExceptionCompatibilityEnabled(
+            parseBoolean(exceptionCompatibility, EXCEPTION_COMPATIBILITY));
+      }
+    }
+    return builder.build();
+  }
+
+  private static boolean parseBoolean(String booleanString, String descriptionForErrors) {
+    if ("true".equalsIgnoreCase(booleanString)) {
+      return true;
+    } else if ("false".equalsIgnoreCase(booleanString)) {
+      return false;
+    }
+    throw new IllegalArgumentException(String.format(
+        "Expected 'true' or 'false' for '%s' servlet initialization parameter but got '%s'",
+        descriptionForErrors, booleanString));
+  }
+
+  private static Class<?> getClassForName(String className, ClassLoader classLoader)
+      throws ServletException {
+    try {
+      return Class.forName(className, true, classLoader);
+    } catch (ClassNotFoundException e) {
+      throw new ServletException(String.format("Cannot find service class: %s", className), e);
+    }
+  }
+
+  /**
+   * Returns the parameters as a {@link java.util.Map} of parameter name to {@link String} value.
+   */
+  public ImmutableMap<String, String> asMap() {
+    return ImmutableMap.<String, String>builder()
+        .put(SERVICES, CSV_JOINER.join(Iterables.transform(getServiceClasses(), CLASS_TO_NAME)))
+        .put(RESTRICTED, Boolean.toString(isServletRestricted()))
+        .put(CLIENT_ID_WHITELIST_ENABLED, Boolean.toString(isClientIdWhitelistEnabled()))
+        .put(ILLEGAL_ARGUMENT_BACKEND_ERROR, Boolean.toString(isIllegalArgumentBackendError()))
+        .put(EXCEPTION_COMPATIBILITY, Boolean.toString(isExceptionCompatibilityEnabled()))
+        .build();
   }
 }
