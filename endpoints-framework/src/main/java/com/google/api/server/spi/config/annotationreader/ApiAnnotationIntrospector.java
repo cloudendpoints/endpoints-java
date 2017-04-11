@@ -27,6 +27,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -40,6 +41,7 @@ import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
+import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
@@ -116,6 +118,12 @@ public class ApiAnnotationIntrospector extends NopAnnotationIntrospector {
   @Override
   public JsonDeserializer<?> findDeserializer(Annotated a) {
     return getJsonDeserializer(findSerializerInstance(a));
+  }
+
+  @Override
+  public VisibilityChecker<?> findAutoDetectVisibility(
+      AnnotatedClass ac, VisibilityChecker<?> checker) {
+    return checker.withSetterVisibility(Visibility.PUBLIC_ONLY);
   }
 
   private static <TFrom, TTo> JsonDeserializer<TFrom> getJsonDeserializer(
