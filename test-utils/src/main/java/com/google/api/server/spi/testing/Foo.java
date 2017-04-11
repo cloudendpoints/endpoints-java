@@ -27,4 +27,11 @@ public class Foo {
   public int getValue() {
     return 0;
   }
+
+  private String getHidden() {
+    return null;
+  }
+
+  private void setHidden(String hidden) {
+  }
 }
