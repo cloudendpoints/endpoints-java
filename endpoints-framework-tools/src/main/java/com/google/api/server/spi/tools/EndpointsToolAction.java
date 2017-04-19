@@ -230,7 +230,11 @@ public abstract class EndpointsToolAction extends Action {
     if (hostnameOption.getValue() != null) {
       return hostnameOption.getValue();
     }
-    return AppEngineUtil.getApplicationDefaultHostname(warPath);
+    String defaultHostname = AppEngineUtil.getApplicationDefaultHostname(warPath);
+    if (defaultHostname != null) {
+      return defaultHostname;
+    }
+    return DEFAULT_HOSTNAME;
   }
 
   protected String getBasePath(Option basePathOption) {
