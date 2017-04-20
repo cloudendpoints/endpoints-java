@@ -156,6 +156,20 @@
         }
       }
     },
+    "/myapi/v1/getListOfString": {
+      "get": {
+        "operationId": "MyapiGetListOfString",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/ListContainer"
+            }
+          }
+        }
+      }
+    },
     "/myapi/v1/getObjectIntegers": {
       "get": {
         "operationId": "MyapiGetObjectIntegers",
@@ -250,6 +264,16 @@
         }
       }
     },
+    "ListContainer": {
+      "properties": {
+        "strings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "CollectionResponse_FooCollection": {
       "properties": {
         "items": {
@@ -322,6 +346,9 @@
         },
         "integersResponse": {
           "$ref": "#/definitions/CollectionResponse_Integer"
+        },
+        "listOfString": {
+          "$ref": "#/definitions/ListContainer"
         },
         "objectIntegers": {
           "type": "array",

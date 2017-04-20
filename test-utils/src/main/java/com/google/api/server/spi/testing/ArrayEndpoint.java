@@ -20,11 +20,12 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.response.CollectionResponse;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Test service used for testing array schemas.
  */
-@Api
+@Api(transformers = StringValueTransformer.class)
 public class ArrayEndpoint {
 
   public ArrayEndpoint getArrayService() {
@@ -80,4 +81,14 @@ public class ArrayEndpoint {
   public CollectionResponse<Integer> getIntegersResponse() {
     return null;
   }
+
+  @ApiMethod(path = "getListOfString")
+  public ListContainer getListOfString() {
+    return null;
+  }
+
+  public static class ListContainer {
+    public List<StringValue> strings;
+  }
+
 }

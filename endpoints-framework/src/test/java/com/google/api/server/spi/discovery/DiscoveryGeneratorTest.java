@@ -183,7 +183,6 @@ public class DiscoveryGeneratorTest {
 
   private RestDescription getDiscovery(DiscoveryContext context, Class<?> serviceClass)
       throws Exception {
-    ImmutableList.Builder<ApiConfig> builder = ImmutableList.builder();
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), serviceClass);
     // If the clone call fails, the generated discovery is invalid.
     return Iterables.getFirst(

@@ -211,8 +211,11 @@ public class SchemaRepository {
       builder.setSchemaReference(SchemaReference.create(this, config, fieldType));
     } else if (ft == FieldType.ARRAY) {
       Field.Builder arrayItemBuilder = Field.builder().setName(ARRAY_UNUSED_MSG);
-      fillInFieldInformation(arrayItemBuilder, Types.getArrayItemType(fieldType),
-          typesForConfig, config);
+      fillInFieldInformation(
+          arrayItemBuilder,
+          ApiAnnotationIntrospector.getSchemaType(Types.getArrayItemType(fieldType), config),
+          typesForConfig,
+          config);
       builder.setArrayItemSchema(arrayItemBuilder.build());
     }
   }
