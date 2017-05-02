@@ -128,4 +128,9 @@ public @interface ApiMethod {
    * no effect unless used with endpoints-management-control-appengine.
    */
   AnnotationBoolean apiKeyRequired() default AnnotationBoolean.UNSPECIFIED;
+
+  /**
+   * A list of metric costs associated with this method.
+   */
+  ApiMetricCost[] metricCosts() default {};
 }

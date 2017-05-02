@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.api.server.spi.testing;
+package com.google.api.server.spi.config.model;
 
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
+import com.google.auto.value.AutoValue;
 
-/**
- * Testing for API methods that have absolute paths.
- */
-@Api(name = "absolutepath", version = "v1")
-public class AbsoluteCommonPathEndpoint {
-  @ApiMethod(name = "create", path = "create")
-  public Foo createFoo() {
-    return null;
+@AutoValue
+public abstract class ApiMetricCostConfig {
+  public abstract String name();
+  public abstract int cost();
+
+  public static Builder builder() {
+    return new AutoValue_ApiMetricCostConfig.Builder();
   }
 
-  @ApiMethod(name = "absolutepath", path = "/absolutepath/v1/absolutepathmethod")
-  public void absolutePath() { }
+  @AutoValue.Builder
+  public static abstract class Builder {
+    public abstract Builder setName(String name);
+    public abstract Builder setCost(int cost);
+    public abstract ApiMetricCostConfig build();
+  }
 }

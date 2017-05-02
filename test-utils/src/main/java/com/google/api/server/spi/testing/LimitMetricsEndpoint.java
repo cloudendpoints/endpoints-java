@@ -16,18 +16,39 @@
 package com.google.api.server.spi.testing;
 
 import com.google.api.server.spi.config.Api;
+import com.google.api.server.spi.config.ApiLimitMetric;
 import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.ApiMetricCost;
 
 /**
  * Testing for API methods that have absolute paths.
  */
-@Api(name = "absolutepath", version = "v1")
-public class AbsoluteCommonPathEndpoint {
-  @ApiMethod(name = "create", path = "create")
+@Api(
+    name = "limits",
+    version = "v1",
+    limitDefinitions = {
+        @ApiLimitMetric(
+            name = "read",
+            displayName = "Read requests",
+            limit = 100),
+        @ApiLimitMetric(
+            name = "write",
+            limit = 10),
+    })
+public class LimitMetricsEndpoint {
+  @ApiMethod(
+      name = "create",
+      path = "create",
+      metricCosts = {@ApiMetricCost(name = "write", cost = 5)})
   public Foo createFoo() {
     return null;
   }
 
-  @ApiMethod(name = "absolutepath", path = "/absolutepath/v1/absolutepathmethod")
-  public void absolutePath() { }
+  @ApiMethod(
+      name = "custom",
+      metricCosts = {
+          @ApiMetricCost(name = "read", cost = 1),
+          @ApiMetricCost(name = "write", cost = 2)
+      })
+  public void customFoo() { }
 }

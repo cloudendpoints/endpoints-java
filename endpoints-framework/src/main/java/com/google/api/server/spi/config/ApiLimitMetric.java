@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.api.server.spi.testing;
-
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
+package com.google.api.server.spi.config;
 
 /**
- * Testing for API methods that have absolute paths.
+ * A rate limiting metric.
  */
-@Api(name = "absolutepath", version = "v1")
-public class AbsoluteCommonPathEndpoint {
-  @ApiMethod(name = "create", path = "create")
-  public Foo createFoo() {
-    return null;
-  }
+public @interface ApiLimitMetric {
+  /**
+   * A limit identifier, consisting of alphanumeric characters and hyphens.
+   */
+  String name();
 
-  @ApiMethod(name = "absolutepath", path = "/absolutepath/v1/absolutepathmethod")
-  public void absolutePath() { }
+  /**
+   * A human readable description of the metric, e.g. Bookstore Read API Requests per Minute.
+   */
+  String displayName() default "";
+
+  /**
+   * The default cost limit.
+   */
+  int limit();
 }
