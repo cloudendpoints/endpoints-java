@@ -16,12 +16,15 @@
 package com.google.api.server.spi.config.annotationreader;
 
 import com.google.api.server.spi.config.AnnotationBoolean;
+import com.google.api.server.spi.config.ApiMetricCost;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiIssuerAudienceConfig;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
+import com.google.api.server.spi.config.model.ApiMetricCostConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
+import com.google.common.collect.ImmutableList;
 
 import java.util.Arrays;
 
@@ -123,5 +126,18 @@ class ApiMethodAnnotationConfig {
     } else if (apiKeyRequired == AnnotationBoolean.FALSE) {
       config.setApiKeyRequired(false);
     }
+  }
+
+  public void setMetricCosts(ApiMetricCost[] metricCosts) {
+    ImmutableList.Builder<ApiMetricCostConfig> costs = ImmutableList.builder();
+    if (metricCosts != null && metricCosts.length > 0) {
+      for (ApiMetricCost cost : metricCosts) {
+        costs.add(ApiMetricCostConfig.builder()
+            .setName(cost.name())
+            .setCost(cost.cost())
+            .build());
+      }
+    }
+    config.setMetricCosts(costs.build());
   }
 }

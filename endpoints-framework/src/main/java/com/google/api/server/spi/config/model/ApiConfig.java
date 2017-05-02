@@ -84,6 +84,7 @@ public class ApiConfig {
   private final ApiNamespaceConfig namespaceConfig;
 
   private final ApiClassConfig apiClassConfig;
+  private List<ApiLimitMetricConfig> apiLimitMetrics;
 
   /**
    * Simple factory to create {@link ApiConfig} instances.
@@ -142,6 +143,7 @@ public class ApiConfig {
     this.authenticators = original.authenticators;
     this.peerAuthenticators = original.peerAuthenticators;
     this.apiKeyRequired = original.apiKeyRequired;
+    this.apiLimitMetrics = original.apiLimitMetrics;
     this.authConfig = new ApiAuthConfig(original.authConfig);
     this.cacheControlConfig = new ApiCacheControlConfig(original.cacheControlConfig);
     this.frontendLimitsConfig = new ApiFrontendLimitsConfig(original.frontendLimitsConfig);
@@ -193,6 +195,7 @@ public class ApiConfig {
         .addIfInconsistent("authenticators", authenticators, config.authenticators)
         .addIfInconsistent("peerAuthenticators", peerAuthenticators, config.peerAuthenticators)
         .addIfInconsistent("apiKeyRequired", apiKeyRequired, config.apiKeyRequired)
+        .addIfInconsistent("apiLimitMetrics", apiLimitMetrics, config.apiLimitMetrics)
         .addAll(authConfig.getConfigurationInconsistencies(config.authConfig))
         .addAll(cacheControlConfig.getConfigurationInconsistencies(config.cacheControlConfig))
         .addAll(frontendLimitsConfig.getConfigurationInconsistencies(config.frontendLimitsConfig))
@@ -207,7 +210,8 @@ public class ApiConfig {
         documentationLink, backendRoot, isAbstract, defaultVersion, discoverable, useDatastore,
         resource, authLevel, scopeExpression, audiences, clientIds, authenticators,
         peerAuthenticators, authConfig, cacheControlConfig, frontendLimitsConfig,
-        serializationConfig, apiClassConfig, issuers, issuerAudiences, apiKeyRequired);
+        serializationConfig, apiClassConfig, issuers, issuerAudiences, apiKeyRequired,
+        apiLimitMetrics);
   }
 
   /**
@@ -277,6 +281,7 @@ public class ApiConfig {
     authenticators = null;
     peerAuthenticators = null;
     apiKeyRequired = false;
+    apiLimitMetrics = ImmutableList.of();
   }
 
   public ApiKey getApiKey() {
@@ -498,5 +503,13 @@ public class ApiConfig {
 
   public ApiClassConfig getApiClassConfig() {
     return apiClassConfig;
+  }
+
+  public void setApiLimitMetrics(List<ApiLimitMetricConfig> apiLimitMetrics) {
+    this.apiLimitMetrics = apiLimitMetrics;
+  }
+
+  public List<ApiLimitMetricConfig> getApiLimitMetrics() {
+    return apiLimitMetrics;
   }
 }

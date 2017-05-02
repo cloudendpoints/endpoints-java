@@ -26,7 +26,9 @@ import com.google.api.server.spi.config.model.ApiIssuerAudienceConfig;
 import com.google.api.server.spi.config.model.ApiIssuerConfigs;
 import com.google.api.server.spi.config.model.ApiIssuerConfigs.IssuerConfig;
 import com.google.api.server.spi.config.model.ApiKey;
+import com.google.api.server.spi.config.model.ApiLimitMetricConfig;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
+import com.google.api.server.spi.config.model.ApiMetricCostConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.FieldType;
 import com.google.api.server.spi.config.model.Schema;
@@ -49,11 +51,13 @@ import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import io.swagger.models.Info;
 import io.swagger.models.Model;
@@ -91,6 +95,22 @@ import io.swagger.models.properties.StringProperty;
 public class SwaggerGenerator {
   private static final String API_KEY = "api_key";
   private static final String API_KEY_PARAM = "key";
+  private static final String MANAGEMENT_DEFINITIONS_KEY = "x-google-management";
+  private static final String LIMITS_KEY = "limits";
+  private static final String LIMIT_NAME_KEY = "name";
+  private static final String LIMIT_METRIC_KEY = "metric";
+  private static final String LIMIT_DISPLAY_NAME_KEY = "displayName";
+  private static final String LIMIT_DEFAULT_LIMIT_KEY = "values";
+  private static final String LIMIT_UNIT_KEY = "unit";
+  private static final String LIMIT_PER_MINUTE_PER_PROJECT = "1/min/{project}";
+  private static final String METRIC_NAME_KEY = "name";
+  private static final String METRIC_VALUE_TYPE_KEY = "valueType";
+  private static final String METRIC_VALUE_TYPE = "INT64";
+  private static final String METRIC_KIND_KEY = "metricKind";
+  private static final String METRIC_KIND = "GAUGE";
+  private static final String METRICS_KEY = "metrics";
+  private static final String QUOTA_KEY = "quota";
+
   private static final Converter<String, String> CONVERTER =
       CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL);
   private static final ImmutableMap<Type, String> TYPE_TO_STRING_MAP =
@@ -154,15 +174,18 @@ public class SwaggerGenerator {
     try {
       TypeLoader typeLoader = new TypeLoader(SwaggerGenerator.class.getClassLoader());
       SchemaRepository repo = new SchemaRepository(typeLoader);
-      ApiConfigValidator validator = new ApiConfigValidator(typeLoader, repo);
-      return writeSwagger(configs, writeInternal, context, repo, validator);
+      GenerationContext genCtx = new GenerationContext();
+      genCtx.validator = new ApiConfigValidator(typeLoader, repo);
+      genCtx.writeInternal = writeInternal;
+      genCtx.schemata = new SchemaRepository(typeLoader);
+      return writeSwagger(configs, context, genCtx);
     } catch (ClassNotFoundException e) {
       throw new IllegalStateException(e);
     }
   }
 
-  public Swagger writeSwagger(Iterable<ApiConfig> configs, boolean writeInternal,
-      SwaggerContext context, SchemaRepository repo, ApiConfigValidator validator)
+  private Swagger writeSwagger(Iterable<ApiConfig> configs, SwaggerContext context,
+      GenerationContext genCtx)
       throws ApiConfigException {
     ImmutableListMultimap<ApiKey, ? extends ApiConfig> configsByKey = FluentIterable.from(configs)
         .index(CONFIG_TO_ROOTLESS_KEY);
@@ -176,17 +199,44 @@ public class SwaggerGenerator {
             .title(context.hostname)
             .version(context.docVersion));
     for (ApiKey apiKey : configsByKey.keySet()) {
-      writeApi(apiKey, configsByKey.get(apiKey), swagger, context, writeInternal, repo, validator);
+      writeApi(apiKey, configsByKey.get(apiKey), swagger, genCtx);
     }
+    writeQuotaDefinitions(swagger, genCtx);
     return swagger;
   }
 
+  private void writeQuotaDefinitions(Swagger swagger, GenerationContext genCtx) {
+    if (!genCtx.limitMetrics.isEmpty()) {
+      Map<String, List<Map<String, Object>>> quotaDefinitions = new HashMap<>();
+      List<Map<String, Object>> limits = new ArrayList<>();
+      List<Map<String, Object>> metrics = new ArrayList<>();
+      for (ApiLimitMetricConfig limitMetric : genCtx.limitMetrics.values()) {
+        metrics.add(ImmutableMap.<String, Object>builder()
+            .put(METRIC_NAME_KEY, limitMetric.name())
+            .put(METRIC_VALUE_TYPE_KEY, METRIC_VALUE_TYPE)
+            .put(METRIC_KIND_KEY, METRIC_KIND)
+            .build());
+        ImmutableMap.Builder<String, Object> limitBuilder = ImmutableMap.<String, Object>builder()
+            .put(LIMIT_NAME_KEY, limitMetric.name())
+            .put(LIMIT_METRIC_KEY, limitMetric.name())
+            .put(LIMIT_DEFAULT_LIMIT_KEY, ImmutableMap.of("STANDARD", limitMetric.limit()))
+            .put(LIMIT_UNIT_KEY, LIMIT_PER_MINUTE_PER_PROJECT);
+        if (limitMetric.displayName() != null && !"".equals(limitMetric.displayName())) {
+          limitBuilder.put(LIMIT_DISPLAY_NAME_KEY, limitMetric.displayName());
+        }
+        limits.add(limitBuilder.build());
+      }
+      quotaDefinitions.put(LIMITS_KEY, limits);
+      swagger.setVendorExtension(MANAGEMENT_DEFINITIONS_KEY,
+          ImmutableMap.of(METRICS_KEY, metrics, QUOTA_KEY, quotaDefinitions));
+    }
+  }
+
   private void writeApi(ApiKey apiKey, ImmutableList<? extends ApiConfig> apiConfigs,
-      Swagger swagger, SwaggerContext context, boolean writeInternal, SchemaRepository repo,
-      ApiConfigValidator validator)
+      Swagger swagger, GenerationContext genCtx)
       throws ApiConfigException {
     // TODO: This may result in duplicate validations in the future if made available online
-    validator.validate(apiConfigs);
+    genCtx.validator.validate(apiConfigs);
     for (ApiConfig apiConfig : apiConfigs) {
       for (IssuerConfig issuerConfig : apiConfig.getIssuers().asMap().values()) {
         addNonConflictingSecurityDefinition(swagger, issuerConfig);
@@ -196,9 +246,12 @@ public class SwaggerGenerator {
         addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER);
         addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT);
       }
-      writeApiClass(apiConfig, swagger, context, writeInternal, repo);
+      for (ApiLimitMetricConfig limitMetric : apiConfig.getApiLimitMetrics()) {
+        addNonConflictingApiLimitMetric(genCtx.limitMetrics, limitMetric);
+      }
+      writeApiClass(apiConfig, swagger, genCtx);
     }
-    List<Schema> schemas = repo.getAllSchemaForApi(apiKey);
+    List<Schema> schemas = genCtx.schemata.getAllSchemaForApi(apiKey);
     if (!schemas.isEmpty()) {
       for (Schema schema : schemas) {
         swagger.addDefinition(schema.name(), convertToSwaggerSchema(schema));
@@ -206,22 +259,32 @@ public class SwaggerGenerator {
     }
   }
 
-  private void writeApiClass(ApiConfig apiConfig, Swagger swagger, SwaggerContext context,
-      boolean writeInternal, SchemaRepository repo) throws ApiConfigException {
+  private void addNonConflictingApiLimitMetric(
+      Map<String, ApiLimitMetricConfig> limitMetrics, ApiLimitMetricConfig limitMetric)
+      throws ApiConfigException {
+    if (limitMetric.equals(limitMetrics.get(limitMetric.name()))) {
+      throw new ApiConfigException(String.format(
+          "Multiple limit metric definitions found for metric %s. Metric definitions must have "
+              + "unique names for all APIs included in the OpenAPI document, or they must have "
+              + "identical definitions.", limitMetric.name()));
+    }
+    limitMetrics.put(limitMetric.name(), limitMetric);
+  }
+
+  private void writeApiClass(ApiConfig apiConfig, Swagger swagger,
+      GenerationContext genCtx) throws ApiConfigException {
     Map<EndpointMethod, ApiMethodConfig> methodConfigs = apiConfig.getApiClassConfig().getMethods();
     for (Map.Entry<EndpointMethod, ApiMethodConfig> methodConfig : methodConfigs.entrySet()) {
       if (!methodConfig.getValue().isIgnored()) {
-        EndpointMethod endpointMethod = methodConfig.getKey();
         ApiMethodConfig config = methodConfig.getValue();
-        writeApiMethod(
-            config, endpointMethod, apiConfig, swagger, context, writeInternal, repo);
+        writeApiMethod(config, apiConfig, swagger, genCtx);
       }
     }
   }
 
-  private void writeApiMethod(ApiMethodConfig methodConfig, EndpointMethod endpointMethod,
-      ApiConfig apiConfig, Swagger swagger, SwaggerContext context, boolean writeInternal,
-      SchemaRepository repo) throws ApiConfigException {
+  private void writeApiMethod(
+      ApiMethodConfig methodConfig, ApiConfig apiConfig, Swagger swagger, GenerationContext genCtx)
+      throws ApiConfigException {
     Path path = getOrCreatePath(swagger, methodConfig);
     Operation operation = new Operation();
     operation.setOperationId(getOperationId(apiConfig, methodConfig));
@@ -260,7 +323,7 @@ public class SwaggerGenerator {
           break;
         case RESOURCE:
           TypeToken<?> requestType = parameterConfig.getSchemaBaseType();
-          Schema schema = repo.getOrAdd(requestType, apiConfig);
+          Schema schema = genCtx.schemata.getOrAdd(requestType, apiConfig);
           BodyParameter bodyParameter = new BodyParameter();
           bodyParameter.setName("body");
           bodyParameter.setSchema(new RefModel(schema.name()));
@@ -276,11 +339,11 @@ public class SwaggerGenerator {
     if (methodConfig.hasResourceInResponse()) {
       TypeToken<?> returnType =
           ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), apiConfig);
-      Schema schema = repo.getOrAdd(returnType, apiConfig);
+      Schema schema = genCtx.schemata.getOrAdd(returnType, apiConfig);
       response.setSchema(new RefProperty(schema.name()));
     }
     operation.response(200, response);
-    writeAudiences(swagger, methodConfig, writeInternal, operation);
+    writeAudiences(swagger, methodConfig, genCtx.writeInternal, operation);
     if (methodConfig.isApiKeyRequired()) {
       operation.addSecurity(API_KEY, ImmutableList.<String>of());
       Map<String, SecuritySchemeDefinition> definitions = swagger.getSecurityDefinitions();
@@ -289,6 +352,7 @@ public class SwaggerGenerator {
       }
     }
     path.set(methodConfig.getHttpMethod().toLowerCase(), operation);
+    addDefinedMetricCosts(genCtx.limitMetrics, operation, methodConfig.getMetricCosts());
   }
 
   private void writeAudiences(Swagger swagger, ApiMethodConfig methodConfig, boolean writeInternal,
@@ -329,6 +393,22 @@ public class SwaggerGenerator {
     }
     if (writeInternal) {
       operation.setVendorExtension("x-security", xSecurity.build());
+    }
+  }
+
+  private void addDefinedMetricCosts(Map<String, ApiLimitMetricConfig> limitMetrics,
+      Operation operation, List<ApiMetricCostConfig> metricCosts) throws ApiConfigException {
+    if (!metricCosts.isEmpty()) {
+      Map<String, Integer> costs = new HashMap<>();
+      for (ApiMetricCostConfig cost : metricCosts) {
+        if (!limitMetrics.containsKey(cost.name())) {
+          throw new ApiConfigException(String.format(
+              "Could not add a metric cost for metric '%s'. The limit metric must be "
+                  + "defined at the API level.", cost.name()));
+        }
+        costs.put(cost.name(), cost.cost());
+      }
+      operation.setVendorExtension("x-google-quota", ImmutableMap.of("metricCosts", costs));
     }
   }
 
@@ -404,6 +484,42 @@ public class SwaggerGenerator {
     return values;
   }
 
+  private static ImmutableMap<String, List<String>> createAudiences(Iterable<String> audiences) {
+    return ImmutableMap.<String, List<String>>of("audiences", ImmutableList.copyOf(audiences));
+  }
+
+  private static SecuritySchemeDefinition toScheme(IssuerConfig issuerConfig) {
+    OAuth2Definition tokenDef = new OAuth2Definition().implicit("");
+    tokenDef.setVendorExtension("x-google-issuer", issuerConfig.getIssuer());
+    if (!com.google.common.base.Strings.isNullOrEmpty(issuerConfig.getJwksUri())) {
+      tokenDef.setVendorExtension("x-google-jwks_uri", issuerConfig.getJwksUri());
+    }
+    return tokenDef;
+  }
+
+  private static Map<String, SecuritySchemeDefinition> getOrCreateSecurityDefinitionMap(
+      Swagger swagger) {
+    Map<String, SecuritySchemeDefinition> securityDefinitions = swagger.getSecurityDefinitions();
+    if (securityDefinitions == null) {
+      securityDefinitions = new HashMap<>();
+      swagger.setSecurityDefinitions(securityDefinitions);
+    }
+    return securityDefinitions;
+  }
+
+  private static void addNonConflictingSecurityDefinition(
+      Swagger swagger, IssuerConfig issuerConfig) throws ApiConfigException {
+    Map<String, SecuritySchemeDefinition> securityDefinitions =
+        getOrCreateSecurityDefinitionMap(swagger);
+    SecuritySchemeDefinition existingDef = securityDefinitions.get(issuerConfig.getName());
+    SecuritySchemeDefinition newDef = toScheme(issuerConfig);
+    if (existingDef != null && !existingDef.equals(newDef)) {
+      throw new ApiConfigException(
+          "Multiple conflicting definitions found for issuer " + issuerConfig.getName());
+    }
+    swagger.securityDefinition(issuerConfig.getName(), newDef);
+  }
+
   public static class SwaggerContext {
     private Scheme scheme = Scheme.HTTPS;
     private String hostname = "myapi.appspot.com";
@@ -447,39 +563,10 @@ public class SwaggerGenerator {
     }
   }
 
-  private static ImmutableMap<String, List<String>> createAudiences(Iterable<String> audiences) {
-    return ImmutableMap.<String, List<String>>of("audiences", ImmutableList.copyOf(audiences));
-  }
-
-  private static SecuritySchemeDefinition toScheme(IssuerConfig issuerConfig) {
-    OAuth2Definition tokenDef = new OAuth2Definition().implicit("");
-    tokenDef.setVendorExtension("x-google-issuer", issuerConfig.getIssuer());
-    if (!com.google.common.base.Strings.isNullOrEmpty(issuerConfig.getJwksUri())) {
-      tokenDef.setVendorExtension("x-google-jwks_uri", issuerConfig.getJwksUri());
-    }
-    return tokenDef;
-  }
-
-  private static Map<String, SecuritySchemeDefinition> getOrCreateSecurityDefinitionMap(
-      Swagger swagger) {
-    Map<String, SecuritySchemeDefinition> securityDefinitions = swagger.getSecurityDefinitions();
-    if (securityDefinitions == null) {
-      securityDefinitions = new HashMap<>();
-      swagger.setSecurityDefinitions(securityDefinitions);
-    }
-    return securityDefinitions;
-  }
-
-  private static void addNonConflictingSecurityDefinition(
-      Swagger swagger, IssuerConfig issuerConfig) throws ApiConfigException {
-    Map<String, SecuritySchemeDefinition> securityDefinitions =
-        getOrCreateSecurityDefinitionMap(swagger);
-    SecuritySchemeDefinition existingDef = securityDefinitions.get(issuerConfig.getName());
-    SecuritySchemeDefinition newDef = toScheme(issuerConfig);
-    if (existingDef != null && !existingDef.equals(newDef)) {
-      throw new ApiConfigException(
-          "Multiple conflicting definitions found for issuer " + issuerConfig.getName());
-    }
-    swagger.securityDefinition(issuerConfig.getName(), newDef);
+  private static class GenerationContext {
+    private final Map<String, ApiLimitMetricConfig> limitMetrics = new TreeMap<>();
+    private ApiConfigValidator validator;
+    private boolean writeInternal;
+    private SchemaRepository schemata;
   }
 }

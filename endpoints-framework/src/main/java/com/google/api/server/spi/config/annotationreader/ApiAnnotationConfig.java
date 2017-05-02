@@ -16,14 +16,17 @@
 package com.google.api.server.spi.config.annotationreader;
 
 import com.google.api.server.spi.config.AnnotationBoolean;
+import com.google.api.server.spi.config.ApiLimitMetric;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiIssuerAudienceConfig;
 import com.google.api.server.spi.config.model.ApiIssuerConfigs;
+import com.google.api.server.spi.config.model.ApiLimitMetricConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 import java.util.Arrays;
 
@@ -185,5 +188,19 @@ class ApiAnnotationConfig {
     } else if (apiKeyRequired == AnnotationBoolean.FALSE) {
       config.setApiKeyRequired(false);
     }
+  }
+
+  public void setApiLimitMetrics(ApiLimitMetric[] apiLimitMetrics) {
+    ImmutableList.Builder<ApiLimitMetricConfig> metricConfigs = ImmutableList.builder();
+    if (apiLimitMetrics != null && apiLimitMetrics.length > 0) {
+      for (ApiLimitMetric metric : apiLimitMetrics) {
+        metricConfigs.add(ApiLimitMetricConfig.builder()
+            .setName(metric.name())
+            .setDisplayName(metric.displayName())
+            .setLimit(metric.limit())
+            .build());
+      }
+    }
+    config.setApiLimitMetrics(metricConfigs.build());
   }
 }

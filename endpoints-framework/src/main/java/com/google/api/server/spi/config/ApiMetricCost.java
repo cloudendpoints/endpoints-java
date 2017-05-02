@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.api.server.spi.testing;
-
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
+package com.google.api.server.spi.config;
 
 /**
- * Testing for API methods that have absolute paths.
+ * Metric cost definition for a method.
  */
-@Api(name = "absolutepath", version = "v1")
-public class AbsoluteCommonPathEndpoint {
-  @ApiMethod(name = "create", path = "create")
-  public Foo createFoo() {
-    return null;
-  }
+public @interface ApiMetricCost {
+  /**
+   * The metric name, which must be defined using {@link ApiLimitMetric}.
+   */
+  String name();
 
-  @ApiMethod(name = "absolutepath", path = "/absolutepath/v1/absolutepathmethod")
-  public void absolutePath() { }
+  /**
+   * The cost charged to the metric.
+   */
+  int cost();
 }

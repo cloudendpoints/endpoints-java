@@ -35,6 +35,7 @@ import com.google.api.server.spi.testing.AbsolutePathEndpoint;
 import com.google.api.server.spi.testing.ArrayEndpoint;
 import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
+import com.google.api.server.spi.testing.LimitMetricsEndpoint;
 import com.google.common.collect.ImmutableList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -154,6 +155,13 @@ public class SwaggerGeneratorTest {
     compareSwagger(expected, swagger);
   }
 
+  @Test
+  public void testWriteSwagger_LimitMetricsEndpoint() throws Exception {
+    Swagger swagger = getSwagger(LimitMetricsEndpoint.class, new SwaggerContext(), true);
+    Swagger expected = readExpectedAsSwagger("limit_metrics_endpoint.swagger");
+    compareSwagger(expected, swagger);
+  }
+
   private Swagger getSwagger(Class<?> serviceClass, SwaggerContext context, boolean internal)
       throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), serviceClass);
@@ -169,6 +177,8 @@ public class SwaggerGeneratorTest {
     System.out.println("Actual: " + mapper.writeValueAsString(actual));
     System.out.println("Expected: " + mapper.writeValueAsString(expected));
     assertThat(actual).isEqualTo(expected);
+    // TODO: Remove once Swagger models check this in equals
+    assertThat(actual.getVendorExtensions()).isEqualTo(expected.getVendorExtensions());
   }
 
   @Api(name = "thirdparty", version = "v1",

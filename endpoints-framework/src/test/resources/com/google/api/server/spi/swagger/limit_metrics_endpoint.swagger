@@ -1,0 +1,104 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "myapi.appspot.com"
+  },
+  "host": "myapi.appspot.com",
+  "basePath": "/_ah/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/limits/v1/create": {
+      "post": {
+        "operationId": "LimitsCreateFoo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Foo"
+            }
+          }
+        },
+        "x-google-quota": {
+          "metricCosts": {
+            "write": 5
+          }
+        }
+      }
+    },
+    "/limits/v1/customFoo": {
+      "post": {
+        "operationId": "LimitsCustomFoo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "x-google-quota": {
+          "metricCosts": {
+            "read": 1,
+            "write": 2
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Foo": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  },
+  "x-google-management": {
+    "metrics": [
+      {
+        "name": "read",
+        "valueType": "INT64",
+        "metricKind": "GAUGE"
+      },
+      {
+        "name": "write",
+        "valueType": "INT64",
+        "metricKind": "GAUGE"
+      }
+    ],
+    "quota": {
+      "limits": [
+        {
+          "name": "read",
+          "metric": "read",
+          "values": {
+            "STANDARD": 100
+          },
+          "displayName": "Read requests",
+          "unit": "1/min/{project}"
+        },
+        {
+          "name": "write",
+          "metric": "write",
+          "values": {
+            "STANDARD": 10
+          },
+          "unit": "1/min/{project}"
+        }
+      ]
+    }
+  }
+}

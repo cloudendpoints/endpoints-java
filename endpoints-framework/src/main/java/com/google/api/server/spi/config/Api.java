@@ -198,4 +198,9 @@ public @interface Api {
    * no effect unless used with endpoints-management-control-appengine.
    */
   AnnotationBoolean apiKeyRequired() default AnnotationBoolean.UNSPECIFIED;
+
+  /**
+   * Rate limiting metric definitions that are used in this API.
+   */
+  ApiLimitMetric[] limitDefinitions() default {};
 }

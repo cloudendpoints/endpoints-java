@@ -24,6 +24,7 @@ import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiParameterConfig.Classification;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Method;
@@ -44,6 +45,7 @@ import java.util.regex.Pattern;
  * @author Eric Orth
  */
 public class ApiMethodConfig {
+
   private enum RestMethod {
     LIST("list", "GET") {
       @Override
@@ -157,6 +159,7 @@ public class ApiMethodConfig {
   private boolean ignored = false;
   private Boolean apiKeyRequired;
   private TypeToken<?> returnType;
+  private List<ApiMetricCostConfig> metricCosts;
 
   private final TypeLoader typeLoader;
 
@@ -189,6 +192,7 @@ public class ApiMethodConfig {
     this.apiKeyRequired = original.apiKeyRequired;
     this.returnType = original.returnType;
     this.typeLoader = original.typeLoader;
+    this.metricCosts = original.metricCosts;
 
     // Parameter configs are mutable, so we need to do a deep copy.
     this.parameterConfigs = new ArrayList<>(original.parameterConfigs.size());
@@ -227,6 +231,7 @@ public class ApiMethodConfig {
     ignored = false;
     apiKeyRequired = null;
     returnType = endpointMethod.getReturnType();
+    metricCosts = ImmutableList.of();
   }
 
   private RestMethod getRestMethod(Method method) {
@@ -257,7 +262,8 @@ public class ApiMethodConfig {
           Objects.equals(typeLoader, config.typeLoader) &&
           ignored == config.ignored &&
           apiKeyRequired == config.apiKeyRequired &&
-          Objects.equals(returnType, config.returnType);
+          Objects.equals(returnType, config.returnType) &&
+          Objects.equals(metricCosts, config.metricCosts);
     } else {
       return false;
     }
@@ -267,7 +273,7 @@ public class ApiMethodConfig {
   public int hashCode() {
     return Objects.hash(endpointMethodName, parameterConfigs, name, path, httpMethod,
         scopeExpression, audiences, clientIds, authenticators, peerAuthenticators, typeLoader,
-        ignored, issuerAudiences, apiKeyRequired, returnType);
+        ignored, issuerAudiences, apiKeyRequired, returnType, metricCosts);
   }
 
   public ApiClassConfig getApiClassConfig() {
@@ -511,5 +517,13 @@ public class ApiMethodConfig {
   public boolean hasResourceInResponse() {
     Type returnType = getReturnType().getRawType();
     return returnType != Void.TYPE && returnType != Void.class;
+  }
+
+  public void setMetricCosts(List<ApiMetricCostConfig> metricCosts) {
+    this.metricCosts = metricCosts;
+  }
+
+  public List<ApiMetricCostConfig> getMetricCosts() {
+    return metricCosts;
   }
 }

@@ -24,6 +24,8 @@ import com.google.api.server.spi.config.ApiConfigException;
 import com.google.api.server.spi.config.ApiConfigSource;
 import com.google.api.server.spi.config.ApiIssuer;
 import com.google.api.server.spi.config.ApiIssuerAudience;
+import com.google.api.server.spi.config.ApiLimitMetric;
+import com.google.api.server.spi.config.ApiMetricCost;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.PeerAuthenticator;
@@ -208,6 +210,8 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
         .<Class<? extends PeerAuthenticator>[]>getAnnotationProperty(api, "peerAuthenticators"));
     config.setApiKeyRequiredIfSpecified(
         (AnnotationBoolean) this.getAnnotationProperty(api, "apiKeyRequired"));
+    config.setApiLimitMetrics(
+        (ApiLimitMetric[]) this.getAnnotationProperty(api, "limitDefinitions"));
   }
 
   private ApiIssuerConfigs getIssuerConfigs(Annotation annotation)
@@ -356,6 +360,8 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     config.setIgnoredIfSpecified((AnnotationBoolean) getAnnotationProperty(apiMethod, "ignored"));
     config.setApiKeyRequiredIfSpecified(
         (AnnotationBoolean) this.getAnnotationProperty(apiMethod, "apiKeyRequired"));
+    config.setMetricCosts(
+        (ApiMetricCost[]) getAnnotationProperty(apiMethod, "metricCosts"));
   }
 
   private void readMethodRequestParameters(EndpointMethod endpointMethod,
