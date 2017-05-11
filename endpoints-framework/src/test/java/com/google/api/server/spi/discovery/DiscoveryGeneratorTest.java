@@ -30,6 +30,7 @@ import com.google.api.server.spi.discovery.DiscoveryGenerator.DiscoveryContext;
 import com.google.api.server.spi.testing.AbsoluteCommonPathEndpoint;
 import com.google.api.server.spi.testing.AbsolutePathEndpoint;
 import com.google.api.server.spi.testing.ArrayEndpoint;
+import com.google.api.server.spi.testing.CustomScopesEndpoint;
 import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.EnumEndpointV2;
 import com.google.api.server.spi.testing.FooDescriptionEndpoint;
@@ -169,6 +170,13 @@ public class DiscoveryGeneratorTest {
     getDiscovery(new DiscoveryContext(), EnumEndpointV2.class);
     RestDescription doc = getDiscovery(new DiscoveryContext(), EnumEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("enum_endpoint.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_scopeDescriptions() throws Exception {
+    RestDescription doc = getDiscovery(context, CustomScopesEndpoint.class);
+    RestDescription expected = readExpectedAsDiscovery("custom_scopes.json");
     compareDiscovery(expected, doc);
   }
 

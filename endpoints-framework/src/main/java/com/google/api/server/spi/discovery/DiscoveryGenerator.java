@@ -49,6 +49,7 @@ import com.google.api.services.discovery.model.RestMethod.Response;
 import com.google.api.services.discovery.model.RestResource;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Function;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -59,15 +60,22 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+import com.google.common.io.Resources;
 import com.google.common.reflect.TypeToken;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Generates discovery documents without contacting the discovery generator service.
@@ -76,12 +84,6 @@ public class DiscoveryGenerator {
   private static final Splitter DOT_SPLITTER = Splitter.on('.');
   private static final ObjectMapper objectMapper = ObjectMapperUtil.createStandardObjectMapper();
   private static final RestDescription REST_SKELETON = new RestDescription()
-      .setAuth(new Auth()
-          .setOauth2(new Oauth2()
-              .setScopes(Maps.newHashMap(ImmutableMap.of(
-                  Constant.API_EMAIL_SCOPE,
-                  new ScopesElement()
-                      .setDescription("View your email address"))))))
       .setBatchPath("batch")
       .setDescription("This is an API")
       .setDiscoveryVersion("v1")
@@ -91,6 +93,20 @@ public class DiscoveryGenerator {
       .setKind("discovery#restDescription")
       .setParameters(createStandardParameters())
       .setProtocol("rest");
+  private static final Map<String, String> SCOPE_DESCRIPTIONS = loadScopeDescriptions();
+
+  private static Map<String, String> loadScopeDescriptions() {
+    try {
+      Properties properties = new Properties();
+      URL resourceFile = Resources.getResource("scopeDescriptions.properties");
+      InputStream inputStream = resourceFile.openStream();
+      properties.load(inputStream);
+      inputStream.close();
+      return Maps.fromProperties(properties);
+    } catch (IOException e) {
+      throw new IllegalStateException("Cannot load scope descriptions", e);
+    }
+  }
 
   private final TypeLoader typeLoader;
 
@@ -146,6 +162,10 @@ public class DiscoveryGenerator {
         .setRootUrl(context.getApiRoot() + "/")
         .setServicePath(servicePath)
         .setVersion(apiKey.getVersion());
+    //stores scopes for all ApiConfigs and ApiMethodConfig, sorted alphabetically
+    Set<String> allScopes = new TreeSet<>();
+    //userinfo.email should always be requested, as it is required for authentication
+    allScopes.add(Constant.API_EMAIL_SCOPE);
 
     for (ApiConfig config : apiConfigs) {
       // API descriptions should be identical across all configs, but the last one will take
@@ -174,12 +194,20 @@ public class DiscoveryGenerator {
       if (config.getCanonicalName() != null) {
         doc.setCanonicalName(config.getCanonicalName());
       }
+      allScopes.addAll(AuthScopeExpressions.encode(config.getScopeExpression()));
       for (ApiMethodConfig methodConfig : config.getApiClassConfig().getMethods().values()) {
         if (!methodConfig.isIgnored()) {
-          writeApiMethod(config, servicePath, doc, methodConfig, repo);
+          writeApiMethod(config, servicePath, doc, methodConfig, repo, allScopes);
         }
       }
     }
+
+    LinkedHashMap<String, ScopesElement> scopeElements = new LinkedHashMap<>();
+    for (String scope : allScopes) {
+      scopeElements.put(scope, new ScopesElement().setDescription(
+          MoreObjects.firstNonNull(SCOPE_DESCRIPTIONS.get(scope), scope)));
+    }
+    doc.setAuth(new Auth().setOauth2(new Oauth2().setScopes(scopeElements)));
 
     List<Schema> schemas = repo.getAllSchemaForApi(apiKey);
     if (!schemas.isEmpty()) {
@@ -193,16 +221,18 @@ public class DiscoveryGenerator {
   }
 
   private void writeApiMethod(ApiConfig config, String servicePath, RestDescription doc,
-      ApiMethodConfig methodConfig, SchemaRepository repo) {
+      ApiMethodConfig methodConfig, SchemaRepository repo, Set<String> allScopes) {
     List<String> parts = DOT_SPLITTER.splitToList(methodConfig.getFullMethodName());
     Map<String, RestMethod> methods = getMethodMapFromDoc(doc, parts);
     Map<String, JsonSchema> parameters = convertMethodParameters(methodConfig);
+    List<String> scopes = AuthScopeExpressions.encodeMutable(methodConfig.getScopeExpression());
     RestMethod method = new RestMethod()
         .setDescription(methodConfig.getDescription())
         .setHttpMethod(methodConfig.getHttpMethod())
         .setId(methodConfig.getFullMethodName())
         .setPath(methodConfig.getCanonicalPath().substring(servicePath.length()))
-        .setScopes(AuthScopeExpressions.encodeMutable(methodConfig.getScopeExpression()));
+        .setScopes(scopes);
+    allScopes.addAll(scopes);
     List<String> parameterOrder = computeParameterOrder(methodConfig);
     if (!parameterOrder.isEmpty()) {
       method.setParameterOrder(parameterOrder);
