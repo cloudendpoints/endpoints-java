@@ -20,6 +20,7 @@ import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.TypeLoader;
+import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiKey;
@@ -151,6 +152,9 @@ public class DiscoveryGenerator {
       if (config.getDescription() != null) {
         doc.setDescription(config.getDescription());
       }
+      if (config.getDocumentationLink() != null) {
+        doc.setDocumentationLink(config.getDocumentationLink());
+      }
       if (config.getTitle() != null) {
         doc.setTitle(config.getTitle());
       }
@@ -227,6 +231,9 @@ public class DiscoveryGenerator {
       }
       docSchema.setProperties(fields);
     }
+    if (schema.description() != null) {
+      docSchema.setDescription(schema.description());
+    }
     if (!schema.enumValues().isEmpty()) {
       docSchema.setEnum(new ArrayList<>(schema.enumValues()));
       docSchema.setEnumDescriptions(new ArrayList<>(schema.enumDescriptions()));
@@ -240,6 +247,7 @@ public class DiscoveryGenerator {
     }
     JsonSchema fieldSchema = new JsonSchema()
         .setType(f.type().getDiscoveryType())
+        .setDescription(f.description())
         .setFormat(f.type().getDiscoveryFormat());
     if (f.type() == FieldType.ARRAY) {
       fieldSchema.setItems(convertToDiscoverySchema(f.arrayItemSchema()));
@@ -325,7 +333,12 @@ public class DiscoveryGenerator {
       List<String> enumDescriptions = Lists.newArrayList();
       for (Object enumConstant : type.getRawType().getEnumConstants()) {
         enumValues.add(enumConstant.toString());
-        enumDescriptions.add("");  // not current supported in annotations
+        try {
+          final Description description = enumConstant.getClass().getField(((Enum) enumConstant).name()).getAnnotation(Description.class);
+          enumDescriptions.add(description == null ? "" : description.value());
+        } catch (NoSuchFieldException ex) {
+          enumDescriptions.add("");
+        }
       }
       schema.setEnum(enumValues);
       schema.setEnumDescriptions(enumDescriptions);
@@ -386,6 +399,7 @@ public class DiscoveryGenerator {
           .setDescription(doc.getDescription())
           .setDiscoveryLink("." + relativePath)
           .setDiscoveryRestUrl(context.getApiRoot() + "/discovery/v1" + relativePath)
+          .setDocumentationLink(doc.getDocumentationLink())
           .setIcons(new Icons()
               .setX16("http://www.google.com/images/icons/product/search-16.gif")
               .setX32("http://www.google.com/images/icons/product/search-32.gif"))

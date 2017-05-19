@@ -2,6 +2,7 @@ package com.google.api.server.spi.config.model;
 
 import com.google.api.client.util.Maps;
 import com.google.api.server.spi.TypeLoader;
+import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.ResourcePropertySchema;
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
@@ -154,8 +155,13 @@ public class SchemaRepository {
           .setName(Types.getSimpleName(type, config.getSerializationConfig()))
           .setType("string");
       for (Object enumConstant : type.getRawType().getEnumConstants()) {
-        builder.addEnumValue(enumConstant.toString());
-        builder.addEnumDescription("");
+        builder.addEnumValue(((Enum) enumConstant).name());
+        try {
+          final Description description = enumConstant.getClass().getField(((Enum) enumConstant).name()).getAnnotation(Description.class);
+          builder.addEnumDescription(description == null ? "" : description.value());
+        } catch (NoSuchFieldException ex) {
+          builder.addEnumDescription("");
+        }
       }
       schema = builder.build();
       typesForConfig.put(type, schema);
@@ -189,12 +195,24 @@ public class SchemaRepository {
     Schema.Builder builder = Schema.builder()
         .setName(Types.getSimpleName(type, config.getSerializationConfig()))
         .setType("object");
+    final Description description = type.getRawType().getAnnotation(Description.class);
+    if (description != null) {
+      builder.setDescription(description.value());
+    }
     ResourceSchema schema = resourceSchemaProvider.getResourceSchema(type, config);
     for (Entry<String, ResourcePropertySchema> entry : schema.getProperties().entrySet()) {
       String propertyName = entry.getKey();
       TypeToken<?> propertyType = entry.getValue().getType();
       if (propertyType != null) {
         Field.Builder fieldBuilder = Field.builder().setName(propertyName);
+        try {
+          Description propertyDescription = type.getRawType().getField(propertyName).getAnnotation(Description.class);
+          if (propertyDescription != null) {
+            fieldBuilder.setDescription(propertyDescription.value());
+          }
+        } catch (NoSuchFieldException e) {
+          // ignore
+        }
         fillInFieldInformation(fieldBuilder, propertyType, typesForConfig, config);
         builder.addField(propertyName, fieldBuilder.build());
       }
