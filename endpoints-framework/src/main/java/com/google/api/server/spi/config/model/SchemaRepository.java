@@ -195,10 +195,6 @@ public class SchemaRepository {
     Schema.Builder builder = Schema.builder()
         .setName(Types.getSimpleName(type, config.getSerializationConfig()))
         .setType("object");
-    final Description description = type.getRawType().getAnnotation(Description.class);
-    if (description != null) {
-      builder.setDescription(description.value());
-    }
     ResourceSchema schema = resourceSchemaProvider.getResourceSchema(type, config);
     for (Entry<String, ResourcePropertySchema> entry : schema.getProperties().entrySet()) {
       String propertyName = entry.getKey();
