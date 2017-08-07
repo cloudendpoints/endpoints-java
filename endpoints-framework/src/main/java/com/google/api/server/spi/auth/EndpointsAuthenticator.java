@@ -38,7 +38,7 @@ public class EndpointsAuthenticator implements Authenticator {
 
   public EndpointsAuthenticator() {
     this.jwtAuthenticator = new GoogleJwtAuthenticator();
-    this.appEngineAuthenticator = new GoogleAppEngineAuthenticator();
+    this.appEngineAuthenticator = EnvUtil.isRunningOnAppEngine() ? new GoogleAppEngineAuthenticator() : null;
     this.oauth2Authenticator = new GoogleOAuth2Authenticator();
   }
 
