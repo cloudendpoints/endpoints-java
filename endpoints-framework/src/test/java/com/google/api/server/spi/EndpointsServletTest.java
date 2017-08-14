@@ -137,8 +137,7 @@ public class EndpointsServletTest {
     servlet.service(req, resp);
 
     assertThat(resp.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
-    assertThat(resp.getContentAsString()).contains("/_ah/api");
-    assertThat(resp.getContentAsString()).contains("https://apis.google.com/js/googleapis.proxy.js");
+    assertThat(resp.getContentAsString()).contains("googleapis.server.init()");
   }
 
   @Test

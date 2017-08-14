@@ -51,6 +51,6 @@ public class ApiProxyHandlerTest {
 
     handler.handle(context);
 
-    assertThat(response.getContentAsString()).contains(servletPath);
+    assertThat(response.getContentAsString()).contains("googleapis.server.init()");
   }
 }
