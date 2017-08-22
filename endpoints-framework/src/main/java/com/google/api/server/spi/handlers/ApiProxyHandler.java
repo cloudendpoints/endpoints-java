@@ -25,17 +25,12 @@ import java.io.IOException;
  * Serves the API proxy source with the correct API path.
  */
 public class ApiProxyHandler implements DispatcherHandler<EndpointsContext> {
-  public static final String DEFAULT_API_PATH = "/_ah/api";
-
   private volatile String cachedProxyHtml;
 
   @Override
   public void handle(EndpointsContext context) throws IOException {
     if (cachedProxyHtml == null) {
-      String defaultProxyHtml = IoUtil.readResourceFile(ApiProxyHandler.class, "proxy.html");
-      String apiPath = context.getRequest().getServletPath();
-      cachedProxyHtml = DEFAULT_API_PATH.equals(apiPath) ? defaultProxyHtml
-          : defaultProxyHtml.replace(DEFAULT_API_PATH, apiPath);
+      cachedProxyHtml = IoUtil.readResourceFile(ApiProxyHandler.class, "proxy.html");
     }
     context.getResponse().setContentType("text/html");
     // This is a nonstandard value, but it seems sometimes X-Frame-Options can be injected by
