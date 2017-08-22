@@ -42,12 +42,14 @@ public class PathDispatcher<ContextT extends DispatcherContext> {
   public boolean dispatch(String httpMethod, String path, ContextT context) throws IOException {
     Preconditions.checkNotNull(httpMethod, "httpMethod");
     Preconditions.checkNotNull(path, "path");
-    Result<DispatcherHandler<ContextT>> result =
-        trie.resolve(HttpMethod.valueOf(httpMethod.toUpperCase()), path);
-    if (result != null) {
-      context.setRawPathParameters(result.getRawParameters());
-      result.getResult().handle(context);
-      return true;
+    HttpMethod method = HttpMethod.fromString(httpMethod);
+    if (method != null) {
+      Result<DispatcherHandler<ContextT>> result = trie.resolve(method, path);
+      if (result != null) {
+        context.setRawPathParameters(result.getRawParameters());
+        result.getResult().handle(context);
+        return true;
+      }
     }
     return false;
   }
