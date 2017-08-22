@@ -121,4 +121,10 @@ public class PathDispatcherTest {
       // expected
     }
   }
+
+  @Test
+  public void methodNotKnown() throws IOException {
+    PathDispatcher<DispatcherContext> dispatcher = PathDispatcher.builder().build();
+    assertThat(dispatcher.dispatch("INVALID", "test/one/two/3", context)).isFalse();
+  }
 }

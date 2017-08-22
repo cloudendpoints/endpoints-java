@@ -15,6 +15,9 @@
  */
 package com.google.api.server.spi.dispatcher;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+
 /**
  * Possible HTTP methods for use in the dispatcher.
  */
@@ -23,5 +26,22 @@ enum HttpMethod {
   POST,
   PUT,
   DELETE,
-  PATCH
+  PATCH;
+
+  private static final ImmutableMap<String, HttpMethod> STRING_TO_ENUM =
+      ImmutableMap.<String, HttpMethod>builder()
+          .put("GET", GET)
+          .put("POST", POST)
+          .put("PUT", PUT)
+          .put("DELETE", DELETE)
+          .put("PATCH", PATCH)
+          .build();
+
+  /**
+   * Returns an {@link HttpMethod} corresponding to a string value, or null if it doesn't exist.
+   */
+  public static HttpMethod fromString(String method) {
+    Preconditions.checkNotNull(method, "method");
+    return STRING_TO_ENUM.get(method.toUpperCase());
+  }
 }
