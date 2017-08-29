@@ -27,16 +27,7 @@
         },
         "security": [
           {
-            "auth0": []
-          }
-        ],
-        "x-security": [
-          {
-            "auth0": {
-              "audiences": [
-                "auth0audmethod"
-              ]
-            }
+            "auth0-6fa4a909": []
           }
         ]
       }
@@ -52,16 +43,7 @@
         },
         "security": [
           {
-            "google_id_token": []
-          }
-        ],
-        "x-security": [
-          {
-            "google_id_token": {
-              "audiences": [
-                "googleaud"
-              ]
-            }
+            "google_id_token-57e345d7": []
           }
         ]
       }
@@ -77,48 +59,36 @@
         },
         "security": [
           {
-            "auth0": []
-          }
-        ],
-        "x-security": [
-          {
-            "auth0": {
-              "audiences": [
-                "auth0audapi"
-              ]
-            }
+            "auth0-a05d2f2": []
           }
         ]
       }
     }
   },
   "securityDefinitions": {
-    "auth0": {
+    "auth0-6fa4a909": {
       "type": "oauth2",
       "authorizationUrl": "",
       "flow": "implicit",
       "x-google-issuer": "https://test.auth0.com/authorize",
-      "x-google-jwks_uri": "https://test.auth0.com/.wellknown/jwks.json"
+      "x-google-jwks_uri": "https://test.auth0.com/.wellknown/jwks.json",
+      "x-google-audiences": "auth0audmethod"
     },
-    "nojwks": {
-      "type": "oauth2",
-      "authorizationUrl": "",
-      "flow": "implicit",
-      "x-google-issuer": "https://nojwks.com"
-    },
-    "google_id_token": {
+    "google_id_token-57e345d7": {
       "type": "oauth2",
       "authorizationUrl": "",
       "flow": "implicit",
       "x-google-issuer": "accounts.google.com",
-      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
+      "x-google-audiences": "googleaud"
     },
-    "google_id_token_https": {
+    "auth0-a05d2f2": {
       "type": "oauth2",
       "authorizationUrl": "",
       "flow": "implicit",
-      "x-google-issuer": "https://accounts.google.com",
-      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
+      "x-google-issuer": "https://test.auth0.com/authorize",
+      "x-google-jwks_uri": "https://test.auth0.com/.wellknown/jwks.json",
+      "x-google-audiences": "auth0audapi"
     }
   }
 }

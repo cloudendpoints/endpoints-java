@@ -34,6 +34,10 @@ public class ApiIssuerConfigs {
     return issuerConfigs.containsKey(issuer);
   }
 
+  public IssuerConfig getIssuer(String issuer) {
+    return issuerConfigs.get(issuer);
+  }
+
   public boolean isSpecified() {
     return !this.equals(UNSPECIFIED);
   }

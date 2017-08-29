@@ -40,10 +40,12 @@ import com.google.api.server.spi.types.SimpleDate;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
@@ -93,6 +95,7 @@ import io.swagger.models.properties.StringProperty;
  * Generates a {@link Swagger} object representing a set of {@link ApiConfig} objects.
  */
 public class SwaggerGenerator {
+  private static final Joiner COMMA_JOINER = Joiner.on(',');
   private static final String API_KEY = "api_key";
   private static final String API_KEY_PARAM = "key";
   private static final String MANAGEMENT_DEFINITIONS_KEY = "x-google-management";
@@ -238,14 +241,6 @@ public class SwaggerGenerator {
     // TODO: This may result in duplicate validations in the future if made available online
     genCtx.validator.validate(apiConfigs);
     for (ApiConfig apiConfig : apiConfigs) {
-      for (IssuerConfig issuerConfig : apiConfig.getIssuers().asMap().values()) {
-        addNonConflictingSecurityDefinition(swagger, issuerConfig);
-      }
-      List<String> legacyAudiences = apiConfig.getApiClassConfig().getAudiences();
-      if (legacyAudiences != null && !legacyAudiences.isEmpty()) {
-        addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER);
-        addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT);
-      }
       for (ApiLimitMetricConfig limitMetric : apiConfig.getApiLimitMetrics()) {
         addNonConflictingApiLimitMetric(genCtx.limitMetrics, limitMetric);
       }
@@ -343,7 +338,7 @@ public class SwaggerGenerator {
       response.setSchema(new RefProperty(schema.name()));
     }
     operation.response(200, response);
-    writeAudiences(swagger, methodConfig, genCtx.writeInternal, operation);
+    writeAuthConfig(swagger, methodConfig, operation);
     if (methodConfig.isApiKeyRequired()) {
       operation.addSecurity(API_KEY, ImmutableList.<String>of());
       Map<String, SecuritySchemeDefinition> definitions = swagger.getSecurityDefinitions();
@@ -355,8 +350,8 @@ public class SwaggerGenerator {
     addDefinedMetricCosts(genCtx.limitMetrics, operation, methodConfig.getMetricCosts());
   }
 
-  private void writeAudiences(Swagger swagger, ApiMethodConfig methodConfig, boolean writeInternal,
-      Operation operation) throws ApiConfigException {
+  private void writeAuthConfig(Swagger swagger, ApiMethodConfig methodConfig, Operation operation)
+      throws ApiConfigException {
     ApiIssuerAudienceConfig issuerAudiences = methodConfig.getIssuerAudiences();
     boolean issuerAudiencesIsEmpty = !issuerAudiences.isSpecified() || issuerAudiences.isEmpty();
     List<String> legacyAudiences = methodConfig.getAudiences();
@@ -364,35 +359,22 @@ public class SwaggerGenerator {
     if (issuerAudiencesIsEmpty && legacyAudiencesIsEmpty) {
       return;
     }
-    ImmutableMap<String, Collection<String>> audiences = issuerAudiences.asMap();
-    // For reversability purposes, we can't use helper data structures here. When Swagger reads
-    // the document back in, it uses primitive data structures.
-    ImmutableList.Builder<ImmutableMap<String, ImmutableMap<String, List<String>>>> xSecurity =
-        ImmutableList.builder();
     if (!issuerAudiencesIsEmpty) {
-      for (Map.Entry<String, Collection<String>> entry : audiences.entrySet()) {
-        operation.addSecurity(entry.getKey(), ImmutableList.<String>of());
-        if (writeInternal) {
-          xSecurity.add(ImmutableMap.of(entry.getKey(), createAudiences(entry.getValue())));
-        }
+      for (String issuer : issuerAudiences.getIssuerNames()) {
+        ImmutableSet<String> audiences = issuerAudiences.getAudiences(issuer);
+        IssuerConfig issuerConfig = methodConfig.getApiConfig().getIssuers().getIssuer(issuer);
+        String fullIssuer = addNonConflictingSecurityDefinition(swagger, issuerConfig, audiences);
+        operation.addSecurity(fullIssuer, ImmutableList.<String>of());
       }
     }
     if (!legacyAudiencesIsEmpty) {
-      addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER);
-      addNonConflictingSecurityDefinition(swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT);
-      operation.addSecurity(Constant.GOOGLE_ID_TOKEN_NAME, ImmutableList.<String>of());
-      operation.addSecurity(Constant.GOOGLE_ID_TOKEN_NAME_HTTPS, ImmutableList.<String>of());
-      if (writeInternal) {
-        ImmutableMap<String, List<String>> legacySwaggerAudiences =
-            createAudiences(legacyAudiences);
-        xSecurity.add(
-            ImmutableMap.of(Constant.GOOGLE_ID_TOKEN_NAME, legacySwaggerAudiences));
-        xSecurity.add(
-            ImmutableMap.of(Constant.GOOGLE_ID_TOKEN_NAME_HTTPS, legacySwaggerAudiences));
-      }
-    }
-    if (writeInternal) {
-      operation.setVendorExtension("x-security", xSecurity.build());
+      ImmutableSet<String> legacyAudienceSet = ImmutableSet.copyOf(legacyAudiences);
+      String fullIssuer = addNonConflictingSecurityDefinition(
+          swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER, legacyAudienceSet);
+      String fullAltIssuer = addNonConflictingSecurityDefinition(
+          swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT, legacyAudienceSet);
+      operation.addSecurity(fullIssuer, ImmutableList.<String>of());
+      operation.addSecurity(fullAltIssuer, ImmutableList.<String>of());
     }
   }
 
@@ -484,16 +466,14 @@ public class SwaggerGenerator {
     return values;
   }
 
-  private static ImmutableMap<String, List<String>> createAudiences(Iterable<String> audiences) {
-    return ImmutableMap.<String, List<String>>of("audiences", ImmutableList.copyOf(audiences));
-  }
-
-  private static SecuritySchemeDefinition toScheme(IssuerConfig issuerConfig) {
+  private static SecuritySchemeDefinition toScheme(
+      IssuerConfig issuerConfig, ImmutableSet<String> audiences) {
     OAuth2Definition tokenDef = new OAuth2Definition().implicit("");
     tokenDef.setVendorExtension("x-google-issuer", issuerConfig.getIssuer());
     if (!com.google.common.base.Strings.isNullOrEmpty(issuerConfig.getJwksUri())) {
       tokenDef.setVendorExtension("x-google-jwks_uri", issuerConfig.getJwksUri());
     }
+    tokenDef.setVendorExtension("x-google-audiences", COMMA_JOINER.join(audiences));
     return tokenDef;
   }
 
@@ -507,17 +487,20 @@ public class SwaggerGenerator {
     return securityDefinitions;
   }
 
-  private static void addNonConflictingSecurityDefinition(
-      Swagger swagger, IssuerConfig issuerConfig) throws ApiConfigException {
+  private static String addNonConflictingSecurityDefinition(
+      Swagger swagger, IssuerConfig issuerConfig, ImmutableSet<String> audiences)
+      throws ApiConfigException {
     Map<String, SecuritySchemeDefinition> securityDefinitions =
         getOrCreateSecurityDefinitionMap(swagger);
+    String issuerPlusHash = String.format("%s-%x", issuerConfig.getName(), audiences.hashCode());
     SecuritySchemeDefinition existingDef = securityDefinitions.get(issuerConfig.getName());
-    SecuritySchemeDefinition newDef = toScheme(issuerConfig);
+    SecuritySchemeDefinition newDef = toScheme(issuerConfig, audiences);
     if (existingDef != null && !existingDef.equals(newDef)) {
       throw new ApiConfigException(
           "Multiple conflicting definitions found for issuer " + issuerConfig.getName());
     }
-    swagger.securityDefinition(issuerConfig.getName(), newDef);
+    swagger.securityDefinition(issuerPlusHash, newDef);
+    return issuerPlusHash;
   }
 
   public static class SwaggerContext {
