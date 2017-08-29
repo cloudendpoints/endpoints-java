@@ -2,8 +2,7 @@ package com.google.api.server.spi.config.model;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -31,7 +30,7 @@ public class ApiIssuerAudienceConfigTest {
     ApiIssuerAudienceConfig config = ApiIssuerAudienceConfig.builder()
         .addIssuerAudiences("issuer", "aud1", "aud2")
         .build();
-    assertThat(config.asMap()).containsExactly("issuer", ImmutableList.of("aud1", "aud2"));
+    assertThat(config.asMap()).containsExactly("issuer", ImmutableSet.of("aud1", "aud2"));
   }
 
   @Test

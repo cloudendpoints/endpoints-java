@@ -18,6 +18,8 @@ package com.google.api.server.spi.config.model;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -31,7 +33,7 @@ public class ApiIssuerAudienceConfig {
       .addIssuerAudiences(UNSPECIFIED_NAME, UNSPECIFIED_AUDIENCE)
       .build();
   public static final ApiIssuerAudienceConfig EMPTY = builder().build();
-  private final ImmutableListMultimap<String, String> issuerAudiences;
+  private final ImmutableSetMultimap<String, String> issuerAudiences;
 
   private ApiIssuerAudienceConfig(ApiIssuerAudienceConfig.Builder builder) {
     this.issuerAudiences = builder.issuerAudiences.build();
@@ -53,6 +55,14 @@ public class ApiIssuerAudienceConfig {
     return issuerAudiences.containsKey(issuer);
   }
 
+  public ImmutableSet<String> getIssuerNames() {
+    return issuerAudiences.keySet();
+  }
+
+  public ImmutableSet<String> getAudiences(String issuer) {
+    return issuerAudiences.get(issuer);
+  }
+
   @Override
   public boolean equals(Object o) {
     return o != null && o instanceof ApiIssuerAudienceConfig
@@ -69,8 +79,8 @@ public class ApiIssuerAudienceConfig {
   }
 
   public static class Builder {
-    private final ImmutableListMultimap.Builder<String, String> issuerAudiences =
-        ImmutableListMultimap.builder();
+    private final ImmutableSetMultimap.Builder<String, String> issuerAudiences =
+        ImmutableSetMultimap.builder();
 
     public Builder addIssuerAudiences(String issuer, String... audiences) {
       issuerAudiences.putAll(issuer, audiences);

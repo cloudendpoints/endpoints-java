@@ -39,26 +39,10 @@
         },
         "security": [
           {
-            "google_id_token": []
+            "google_id_token-3a26ea04": []
           },
           {
-            "google_id_token_https": []
-          }
-        ],
-        "x-security": [
-          {
-            "google_id_token": {
-              "audiences": [
-                "audience"
-              ]
-            }
-          },
-          {
-            "google_id_token_https": {
-              "audiences": [
-                "audience"
-              ]
-            }
+            "google_id_token_https-3a26ea04": []
           }
         ]
       },
@@ -75,26 +59,10 @@
         },
         "security": [
           {
-            "google_id_token": []
+            "google_id_token-3a26ea04": []
           },
           {
-            "google_id_token_https": []
-          }
-        ],
-        "x-security": [
-          {
-            "google_id_token": {
-              "audiences": [
-                "audience"
-              ]
-            }
-          },
-          {
-            "google_id_token_https": {
-              "audiences": [
-                "audience"
-              ]
-            }
+            "google_id_token_https-3a26ea04": []
           }
         ]
       }
@@ -122,26 +90,10 @@
         },
         "security": [
           {
-            "google_id_token": []
+            "google_id_token-3a26ea04": []
           },
           {
-            "google_id_token_https": []
-          }
-        ],
-        "x-security": [
-          {
-            "google_id_token": {
-              "audiences": [
-                "audience"
-              ]
-            }
-          },
-          {
-            "google_id_token_https": {
-              "audiences": [
-                "audience"
-              ]
-            }
+            "google_id_token_https-3a26ea04": []
           }
         ]
       },
@@ -157,8 +109,8 @@
             "type": "string"
           },
           {
-            "name": "body",
             "in": "body",
+            "name": "body",
             "required": false,
             "schema": {
               "$ref": "#/definitions/Foo"
@@ -175,26 +127,10 @@
         },
         "security": [
           {
-            "google_id_token": []
+            "google_id_token-3a26ea04": []
           },
           {
-            "google_id_token_https": []
-          }
-        ],
-        "x-security": [
-          {
-            "google_id_token": {
-              "audiences": [
-                "audience"
-              ]
-            }
-          },
-          {
-            "google_id_token_https": {
-              "audiences": [
-                "audience"
-              ]
-            }
+            "google_id_token_https-3a26ea04": []
           }
         ]
       },
@@ -210,8 +146,8 @@
             "type": "string"
           },
           {
-            "name": "body",
             "in": "body",
+            "name": "body",
             "required": false,
             "schema": {
               "$ref": "#/definitions/Foo"
@@ -228,26 +164,10 @@
         },
         "security": [
           {
-            "google_id_token": []
+            "google_id_token-3a26ea04": []
           },
           {
-            "google_id_token_https": []
-          }
-        ],
-        "x-security": [
-          {
-            "google_id_token": {
-              "audiences": [
-                "audience"
-              ]
-            }
-          },
-          {
-            "google_id_token_https": {
-              "audiences": [
-                "audience"
-              ]
-            }
+            "google_id_token_https-3a26ea04": []
           }
         ]
       },
@@ -273,45 +193,31 @@
         },
         "security": [
           {
-            "google_id_token": []
+            "google_id_token-3a26ea04": []
           },
           {
-            "google_id_token_https": []
-          }
-        ],
-        "x-security": [
-          {
-            "google_id_token": {
-              "audiences": [
-                "audience"
-              ]
-            }
-          },
-          {
-            "google_id_token_https": {
-              "audiences": [
-                "audience"
-              ]
-            }
+            "google_id_token_https-3a26ea04": []
           }
         ]
       }
     }
   },
   "securityDefinitions": {
-    "google_id_token_https": {
-      "type": "oauth2",
-      "authorizationUrl": "",
-      "flow": "implicit",
-      "x-google-issuer": "https://accounts.google.com",
-      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
-    },
-    "google_id_token": {
+    "google_id_token-3a26ea04": {
       "type": "oauth2",
       "authorizationUrl": "",
       "flow": "implicit",
       "x-google-issuer": "accounts.google.com",
-      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs"
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
+      "x-google-audiences": "audience"
+    },
+    "google_id_token_https-3a26ea04": {
+      "type": "oauth2",
+      "authorizationUrl": "",
+      "flow": "implicit",
+      "x-google-issuer": "https://accounts.google.com",
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
+      "x-google-audiences": "audience"
     }
   },
   "definitions": {
