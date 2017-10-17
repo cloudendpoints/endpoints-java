@@ -25,15 +25,20 @@
       "id": "multipleparam.param",
       "parameterOrder": [
         "parent",
+        "query",
         "child"
       ],
       "parameters": {
-        "child": {
+        "parent": {
           "location": "path",
           "required": true,
           "type": "string"
         },
-        "parent": {
+        "query": {
+          "location": "query",
+          "type": "string"
+        },
+        "child": {
           "location": "path",
           "required": true,
           "type": "string"
