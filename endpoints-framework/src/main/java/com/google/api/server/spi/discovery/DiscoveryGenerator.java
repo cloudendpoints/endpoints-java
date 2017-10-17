@@ -195,10 +195,8 @@ public class DiscoveryGenerator {
         .setId(methodConfig.getFullMethodName())
         .setPath(methodConfig.getCanonicalPath().substring(servicePath.length()))
         .setScopes(AuthScopeExpressions.encodeMutable(methodConfig.getScopeExpression()));
-    if (!methodConfig.getPathParameters().isEmpty()) {
-      method.setParameterOrder(Lists.newArrayList(parameters.keySet()));
-    }
     if (!parameters.isEmpty()) {
+      method.setParameterOrder(Lists.newArrayList(parameters.keySet()));
       method.setParameters(parameters);
     }
     ApiParameterConfig requestParamConfig = getAndCheckMethodRequestResource(methodConfig);

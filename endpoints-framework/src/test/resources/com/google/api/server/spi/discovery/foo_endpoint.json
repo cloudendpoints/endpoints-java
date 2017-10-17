@@ -159,6 +159,9 @@
           "description": "list desc",
           "httpMethod": "GET",
           "id": "foo.foo.list",
+          "parameterOrder": [
+            "n"
+          ],
           "parameters": {
             "n": {
               "format": "int32",
