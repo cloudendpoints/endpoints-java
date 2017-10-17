@@ -1,6 +1,8 @@
 language: java
 jdk:
   - openjdk7
+install:
+ - JAVA_HOME=$(jdk_switcher home openjdk8) ./gradlew classes testClasses
 after_success:
   - ./gradlew jacocoTestReport
   - bash <(curl -s https://codecov.io/bash)
