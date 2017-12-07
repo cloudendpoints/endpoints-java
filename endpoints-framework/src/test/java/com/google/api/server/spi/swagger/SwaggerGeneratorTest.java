@@ -211,6 +211,10 @@ public class SwaggerGeneratorTest {
   }
 
   @Api(name = "apikeys", version = "v1",
+      issuers = {
+          @ApiIssuer(name = "auth0", issuer = "https://test.auth0.com/authorize",
+              jwksUri = "https://test.auth0.com/.wellknown/jwks.json")
+      },
       apiKeyRequired = AnnotationBoolean.TRUE)
   private static class ApiKeysEndpoint {
     @ApiMethod(apiKeyRequired = AnnotationBoolean.FALSE)
@@ -218,5 +222,11 @@ public class SwaggerGeneratorTest {
 
     @ApiMethod
     public void inheritApiKeySetting() { }
+
+    @ApiMethod(
+        issuerAudiences = {
+            @ApiIssuerAudience(name = "auth0", audiences = "auth0audmethod")
+        })
+    public void apiKeyWithAuth() { }
   }
 }

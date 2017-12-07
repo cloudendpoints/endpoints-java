@@ -16,6 +16,23 @@
     "application/json"
   ],
   "paths": {
+    "/apikeys/v1/apiKeyWithAuth": {
+      "post": {
+        "operationId": "ApikeysApiKeyWithAuth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "auth0-6fa4a909": [],
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/apikeys/v1/inheritApiKeySetting": {
       "post": {
         "operationId": "ApikeysInheritApiKeySetting",
@@ -45,6 +62,14 @@
     }
   },
   "securityDefinitions": {
+    "auth0-6fa4a909": {
+      "type": "oauth2",
+      "authorizationUrl": "",
+      "flow": "implicit",
+      "x-google-issuer": "https://test.auth0.com/authorize",
+      "x-google-jwks_uri": "https://test.auth0.com/.wellknown/jwks.json",
+      "x-google-audiences": "auth0audmethod"
+    },
     "api_key": {
       "type": "apiKey",
       "name": "key",
