@@ -340,7 +340,17 @@ public class SwaggerGenerator {
     operation.response(200, response);
     writeAuthConfig(swagger, methodConfig, operation);
     if (methodConfig.isApiKeyRequired()) {
-      operation.addSecurity(API_KEY, ImmutableList.<String>of());
+      List<Map<String, List<String>>> security = operation.getSecurity();
+      // Loop through each existing security requirement for this method, which is currently just a
+      // JWT config id, and add an API key requirement to it. If there are currently no new
+      // security requirements, add a new one for just the API key.
+      if (security != null) {
+        for (Map<String, List<String>> securityEntry : security) {
+          securityEntry.put(API_KEY, ImmutableList.<String>of());
+        }
+      } else {
+        operation.addSecurity(API_KEY, ImmutableList.<String>of());
+      }
       Map<String, SecuritySchemeDefinition> definitions = swagger.getSecurityDefinitions();
       if (definitions == null || !definitions.containsKey(API_KEY)) {
         swagger.securityDefinition(API_KEY, new ApiKeyAuthDefinition(API_KEY_PARAM, In.QUERY));
