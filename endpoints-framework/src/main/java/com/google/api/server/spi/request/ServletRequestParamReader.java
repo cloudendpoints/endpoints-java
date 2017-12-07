@@ -20,11 +20,14 @@ import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.IoUtil;
 import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.auth.common.User;
+import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.annotationreader.AnnotationUtil;
+import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.api.server.spi.config.model.StandardParameters;
 import com.google.api.server.spi.response.BadRequestException;
+import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.api.server.spi.types.DateAndTime;
 import com.google.api.server.spi.types.SimpleDate;
 import com.google.appengine.api.datastore.Blob;
@@ -135,6 +138,10 @@ public class ServletRequestParamReader extends AbstractParamReader {
       if (User.class.isAssignableFrom(clazz)) {
         // User type parameter requires no Named annotation (ignored if present)
         User user = getUser();
+        if (user == null && methodConfig != null
+            && methodConfig.getAuthLevel() == AuthLevel.REQUIRED) {
+          throw new UnauthorizedException("Valid user credentials are required.");
+        }
         if (user == null || clazz.isAssignableFrom(user.getClass())) {
           params[i] = user;
           logger.log(Level.FINE, "deserialize: User injected into param[{0}]", i);
@@ -146,7 +153,12 @@ public class ServletRequestParamReader extends AbstractParamReader {
         }
       } else if (APPENGINE_USER_CLASS_NAME.equals(clazz.getName())) {
         // User type parameter requires no Named annotation (ignored if present)
-        params[i] = getAppEngineUser();
+        com.google.appengine.api.users.User appEngineUser = getAppEngineUser();
+        if (appEngineUser == null && methodConfig != null
+            && methodConfig.getAuthLevel() == AuthLevel.REQUIRED) {
+          throw new UnauthorizedException("Valid user credentials are required.");
+        }
+        params[i] = appEngineUser;
         logger.log(Level.FINE, "deserialize: App Engine User injected into param[{0}]", i);
       } else if (clazz == HttpServletRequest.class) {
         // HttpServletRequest type parameter requires no Named annotation (ignored if present)
@@ -279,11 +291,17 @@ public class ServletRequestParamReader extends AbstractParamReader {
   protected final HttpServletRequest servletRequest;
   private final ServletContext servletContext;
   protected final ObjectReader objectReader;
+  protected final ApiMethodConfig methodConfig;
 
-  public ServletRequestParamReader(EndpointMethod method, HttpServletRequest servletRequest,
-      ServletContext servletContext, ApiSerializationConfig serializationConfig) {
+  public ServletRequestParamReader(
+      EndpointMethod method,
+      HttpServletRequest servletRequest,
+      ServletContext servletContext,
+      ApiSerializationConfig serializationConfig,
+      ApiMethodConfig methodConfig) {
     super(method);
 
+    this.methodConfig = methodConfig;
     this.servletRequest = servletRequest;
     this.servletContext = servletContext;
 

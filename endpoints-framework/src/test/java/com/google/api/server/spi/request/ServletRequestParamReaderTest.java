@@ -25,8 +25,11 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.auth.common.User;
+import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
+import com.google.api.server.spi.config.model.ApiMethodConfig;
+import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.api.server.spi.testing.TestEndpoint.Request;
 import com.google.api.server.spi.types.DateAndTime;
@@ -39,6 +42,7 @@ import com.google.common.reflect.TypeToken;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
@@ -640,7 +644,7 @@ public class ServletRequestParamReaderTest {
     final TestUser user = new TestUser("test");
     Method method = TestUserEndpoint.class.getDeclaredMethod("user", TestUser.class);
     ParamReader reader = new ServletRequestParamReader(
-        EndpointMethod.create(method.getDeclaringClass(), method), request, context, null) {
+        EndpointMethod.create(method.getDeclaringClass(), method), request, context, null, null) {
       @Override
       User getUser() {
         return user;
@@ -768,19 +772,75 @@ public class ServletRequestParamReaderTest {
     assertEquals(true, params[0]);
   }
 
+  @Test
+  public void testUserInjectionThrowsExceptionIfRequired() throws Exception {
+    @SuppressWarnings("unused")
+    class TestUser {
+      @SuppressWarnings("unused")
+      public void getUser(User user) { }
+    }
+    ApiMethodConfig methodConfig = Mockito.mock(ApiMethodConfig.class);
+    when(methodConfig.getAuthLevel()).thenReturn(AuthLevel.REQUIRED);
+    methodConfig.setAuthLevel(AuthLevel.REQUIRED);
+    try {
+      Method method = TestUser.class.getDeclaredMethod("getUser", User.class);
+      readParameters(
+          "{}", EndpointMethod.create(method.getDeclaringClass(), method),
+          methodConfig,
+          null,
+          null);
+      fail("expected unauthorized method exception");
+    } catch (UnauthorizedException ex) {
+      // expected
+    }
+  }
+
+  @Test
+  public void testAppEngineUserInjectionThrowsExceptionIfRequired() throws Exception {
+    @SuppressWarnings("unused")
+    class TestUser {
+      @SuppressWarnings("unused")
+      public void getUser(com.google.appengine.api.users.User user) { }
+    }
+    ApiMethodConfig methodConfig = Mockito.mock(ApiMethodConfig.class);
+    when(methodConfig.getAuthLevel()).thenReturn(AuthLevel.REQUIRED);
+    methodConfig.setAuthLevel(AuthLevel.REQUIRED);
+    try {
+      Method method = TestUser.class
+          .getDeclaredMethod("getUser", com.google.appengine.api.users.User.class);
+      readParameters(
+          "{}",
+          EndpointMethod.create(method.getDeclaringClass(), method),
+          methodConfig,
+          null,
+          null);
+      fail("expected unauthorized method exception");
+    } catch (UnauthorizedException ex) {
+      // expected
+    }
+  }
+
   private Object[] readParameters(String input, Method method) throws Exception {
     return readParameters(input, EndpointMethod.create(method.getDeclaringClass(), method));
   }
 
   private Object[] readParameters(final String input, EndpointMethod method) throws Exception {
-    ParamReader reader = new ServletRequestParamReader(method, request, context, null) {
+    return readParameters(input, method, null, USER, APP_ENGINE_USER);
+  }
+
+  private Object[] readParameters(final String input, EndpointMethod method,
+      ApiMethodConfig methodConfig, final User user,
+      final com.google.appengine.api.users.User appEngineUser)
+      throws Exception {
+    ParamReader reader = new ServletRequestParamReader(
+        method, request, context, null, methodConfig) {
       @Override
       User getUser() {
-        return USER;
+        return user;
       }
       @Override
       com.google.appengine.api.users.User getAppEngineUser() {
-        return APP_ENGINE_USER;
+        return appEngineUser;
       }
     };
     return readParameters(input, reader);
