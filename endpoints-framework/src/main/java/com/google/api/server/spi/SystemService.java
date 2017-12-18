@@ -366,7 +366,7 @@ public class SystemService {
         resultWriter.writeError(new UnauthorizedException(cause));
       } else if (cause.getCause() != null && cause.getCause() instanceof ServiceException) {
         ServiceException serviceException = (ServiceException) cause.getCause();
-        level = getLoggingLevel(serviceException);
+        level = serviceException.getLogLevel();
         resultWriter.writeError(serviceException);
       } else {
         level = Level.SEVERE;
@@ -374,8 +374,7 @@ public class SystemService {
       }
       logger.log(level, "exception occurred while calling backend method", cause);
     } catch (ServiceException e) {
-      Level level = getLoggingLevel(e);
-      logger.log(level, "exception occurred while calling backend method", e);
+      logger.log(e.getLogLevel(), "exception occurred while calling backend method", e);
       resultWriter.writeError(e);
     }
   }
@@ -399,10 +398,6 @@ public class SystemService {
     for (String api : initialConfigsByApi.keySet()) {
       validator.validate(initialConfigsByApi.get(api));
     }
-  }
-
-  private static Level getLoggingLevel(ServiceException e) {
-    return e.getStatusCode() >= 500 ? Level.SEVERE : Level.INFO;
   }
 
   private static boolean isOAuthRequestException(Class<?> clazz) {

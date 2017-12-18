@@ -16,6 +16,7 @@
 package com.google.api.server.spi;
 
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Generic service exception that, in addition to a status message, has a status code, and
@@ -26,6 +27,7 @@ public class ServiceException extends Exception {
   protected final int statusCode;
   protected final String reason;
   protected final String domain;
+  protected Level logLevel;
 
   public ServiceException(int statusCode, String statusMessage) {
     super(statusMessage);
@@ -98,5 +100,18 @@ public class ServiceException extends Exception {
 
   public Map<String, String> getHeaders() {
     return null;
+  }
+
+  public Level getLogLevel() {
+    return logLevel == null ? getDefaultLoggingLevel(statusCode) : logLevel;
+  }
+
+  private static Level getDefaultLoggingLevel(int statusCode) {
+    return statusCode >= 500 ? Level.SEVERE : Level.INFO;
+  }
+
+  public static <T extends ServiceException> T withLogLevel(T exception, Level level) {
+    exception.logLevel = level;
+    return exception;
   }
 }
