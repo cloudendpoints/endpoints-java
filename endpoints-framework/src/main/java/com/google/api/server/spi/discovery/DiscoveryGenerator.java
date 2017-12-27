@@ -154,6 +154,9 @@ public class DiscoveryGenerator {
       if (config.getTitle() != null) {
         doc.setTitle(config.getTitle());
       }
+      if (config.getDocumentationLink() != null) {
+        doc.setDocumentationLink(config.getDocumentationLink());
+      }
       if (config.getNamespaceConfig() != null) {
         ApiNamespaceConfig namespaceConfig = config.getNamespaceConfig();
         if (!Strings.isEmptyOrWhitespace(namespaceConfig.getOwnerName())) {
@@ -392,7 +395,8 @@ public class DiscoveryGenerator {
           .setName(doc.getName())
           .setPreferred(preferred.contains(entry.getKey()))
           .setTitle(doc.getTitle())
-          .setVersion(doc.getVersion()));
+          .setVersion(doc.getVersion())
+          .setDocumentationLink(doc.getDocumentationLink()));
     }
     return directory.setItems(items);
   }

@@ -13,6 +13,7 @@
   "batchPath": "batch",
   "description": "Just Foo Things",
   "discoveryVersion": "v1",
+  "documentationLink": "https://example.com",
   "icons": {
     "x16": "http://www.google.com/images/icons/product/search-16.gif",
     "x32": "http://www.google.com/images/icons/product/search-32.gif"
