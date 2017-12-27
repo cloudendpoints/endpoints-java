@@ -27,7 +27,8 @@ import com.google.api.server.spi.response.CollectionResponse;
     version = "v1",
     audiences = {"audience"},
     title = "The Foo API",
-    description = "Just Foo Things")
+    description = "Just Foo Things",
+    documentationLink = "https://example.com")
 public class FooEndpoint {
   @ApiMethod(name = "foo.create", description = "create desc", path = "foos/{id}",
       httpMethod = HttpMethod.PUT)
