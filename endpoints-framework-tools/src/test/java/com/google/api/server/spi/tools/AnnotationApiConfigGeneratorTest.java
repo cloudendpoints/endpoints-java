@@ -2529,6 +2529,18 @@ public class AnnotationApiConfigGeneratorTest {
   }
 
   @Test
+  public void testIcons() throws Exception {
+    @Api(name = "myapi", iconX16 = "http://go/iconX16", iconX32 = "http://go/iconX32")
+    class ApiWithIcons {
+    }
+    String apiConfigSource = g.generateConfig(ApiWithIcons.class).get("myapi-v1.api");
+    ObjectNode root = objectMapper.readValue(apiConfigSource, ObjectNode.class);
+    assertEquals("myapi", root.path("name").asText());
+    assertEquals("http://go/iconX16", root.path("icons").path("x16").asText());
+    assertEquals("http://go/iconX32", root.path("icons").path("x32").asText());
+  }
+
+  @Test
   public void testGenericParameterTypes() throws Exception {
     @Api
     final class Test <T> {

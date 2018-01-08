@@ -73,6 +73,16 @@ public @interface Api {
   String documentationLink() default "";
 
   /**
+   * A link to a 16x16 icon representing the API.
+   */
+  String iconX16() default "";
+
+  /**
+   * A link to a 32x32 icon representing the API.
+   */
+  String iconX32() default "";
+
+  /**
    * Backend root URL, e.g. "https://example.appspot.com/_ah/spi". This is the root of all backend
    * method calls. This will default to "https://yourapp.appspot.com/_ah/spi". Non-secure http URLs
    * will be automatically converted to use https.

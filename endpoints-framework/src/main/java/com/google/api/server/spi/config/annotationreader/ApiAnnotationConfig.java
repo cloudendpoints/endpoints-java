@@ -89,6 +89,18 @@ class ApiAnnotationConfig {
     }
   }
 
+  public void setIconX16IfNotEmpty(String iconX16) {
+    if (!Strings.isNullOrEmpty(iconX16)) {
+      config.setIconX16(iconX16);
+    }
+  }
+
+  public void setIconX32IfNotEmpty(String iconX32) {
+    if (!Strings.isNullOrEmpty(iconX32)) {
+      config.setIconX32(iconX32);
+    }
+  }
+
   public void setBackendRootIfNotEmpty(String backendRoot) {
     if (!Strings.isNullOrEmpty(backendRoot)) {
       config.setBackendRoot(backendRoot);

@@ -171,6 +171,12 @@ public class JsonConfigWriter implements ApiConfigWriter {
     if (config.getDocumentationLink() != null) {
       root.put("documentation", config.getDocumentationLink());
     }
+    if (config.getIconX16() != null || config.getIconX32() != null) {
+      ObjectNode icons = objectMapper.createObjectNode();
+      icons.put("x16", config.getIconX16());
+      icons.put("x32", config.getIconX32());
+      root.set("icons", icons);
+    }
     root.put("defaultVersion", config.getIsDefaultVersion());
     ArrayNode discovery = objectMapper.createArrayNode();
     discovery.add(config.getIsDiscoverable() ? "PUBLIC" : "OFF");
