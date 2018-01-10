@@ -22,7 +22,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "com.google.appengine:gradle-appengine-plugin:${appengineVersion}"
+    classpath "com.google.appengine:gradle-appengine-plugin:${gradleAppenginePluginVersion}"
   }
 }
 
