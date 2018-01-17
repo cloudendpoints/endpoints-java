@@ -20,6 +20,10 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Annotation for configuring bean properties for API resources.
+ * <p>
+ * This annotation can be used on all parts of the definition of a property: the field, the
+ * accessor (getter), or the mutator (setter). However, it should only be used on one of the three;
+ * behavior for multiple annotations on one property is not defined.
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiResourceProperty {
