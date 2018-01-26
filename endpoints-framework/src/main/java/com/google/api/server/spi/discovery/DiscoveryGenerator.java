@@ -225,6 +225,7 @@ public class DiscoveryGenerator {
       }
       docSchema.setProperties(fields);
     }
+    docSchema.setDescription(schema.description());
     if (!schema.enumValues().isEmpty()) {
       docSchema.setEnum(new ArrayList<>(schema.enumValues()));
       docSchema.setEnumDescriptions(new ArrayList<>(schema.enumDescriptions()));
@@ -238,6 +239,7 @@ public class DiscoveryGenerator {
     }
     JsonSchema fieldSchema = new JsonSchema()
         .setType(f.type().getDiscoveryType())
+        .setDescription(f.description())
         .setFormat(f.type().getDiscoveryFormat());
     if (f.type() == FieldType.ARRAY) {
       fieldSchema.setItems(convertToDiscoverySchema(f.arrayItemSchema()));
