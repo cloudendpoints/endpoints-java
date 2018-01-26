@@ -29,6 +29,7 @@ import java.util.Objects;
  */
 public class ResourcePropertySchema {
   private final TypeToken<?> type;
+  private String description;
 
   private ResourcePropertySchema(TypeToken<?> type) {
     this.type = type;
@@ -48,6 +49,14 @@ public class ResourcePropertySchema {
     return type;
   }
 
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+  
   /**
    * Returns a default resource property schema for a given type.
    *

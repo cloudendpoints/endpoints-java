@@ -30,6 +30,12 @@ public @interface ApiResourceProperty {
   String name() default "";
 
   /**
+   * The description that the property represented by the annotated getter, setter, or field should appear
+   * as in the API.
+   */
+  String description() default "";
+
+  /**
    * Whether or not the property represented by the annotated getter, setter or field should be
    * ignored for the API.
    */
