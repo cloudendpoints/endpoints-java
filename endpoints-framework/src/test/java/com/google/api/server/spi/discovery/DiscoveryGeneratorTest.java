@@ -32,6 +32,7 @@ import com.google.api.server.spi.testing.AbsolutePathEndpoint;
 import com.google.api.server.spi.testing.ArrayEndpoint;
 import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.EnumEndpointV2;
+import com.google.api.server.spi.testing.FooDescriptionEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.MultipleParameterEndpoint;
 import com.google.api.server.spi.testing.NamespaceEndpoint;
@@ -149,6 +150,13 @@ public class DiscoveryGeneratorTest {
   public void testWriteDiscovery_AbsoluteCommonPathEndpoint() throws Exception {
     RestDescription doc = getDiscovery(context, AbsoluteCommonPathEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("absolute_common_path_endpoint.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_FooEndpointWithDescription() throws Exception {
+    RestDescription doc = getDiscovery(context, FooDescriptionEndpoint.class);
+    RestDescription expected = readExpectedAsDiscovery("foo_with_description_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
