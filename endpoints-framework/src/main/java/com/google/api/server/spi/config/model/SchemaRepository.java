@@ -154,7 +154,7 @@ public class SchemaRepository {
           .setName(Types.getSimpleName(type, config.getSerializationConfig()))
           .setType("string");
       for (Object enumConstant : type.getRawType().getEnumConstants()) {
-        builder.addEnumValue(enumConstant.toString());
+        builder.addEnumValue(((Enum) enumConstant).name());
         builder.addEnumDescription("");
       }
       schema = builder.build();
