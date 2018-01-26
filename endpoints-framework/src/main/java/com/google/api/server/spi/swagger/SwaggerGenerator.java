@@ -15,7 +15,6 @@
  */
 package com.google.api.server.spi.swagger;
 
-import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.TypeLoader;
@@ -148,20 +147,6 @@ public class SwaggerGenerator {
           .put(SimpleDate.class, "date")
           .put(DateAndTime.class, "date-time")
           .put(Date.class, "date-time")
-          .build();
-  private static final ImmutableMap<FieldType, Property> FIELD_TYPE_TO_PROPERTY_MAP =
-      ImmutableMap.<FieldType, Property>builder()
-          .put(FieldType.BOOLEAN, new BooleanProperty())
-          .put(FieldType.BYTE_STRING, new ByteArrayProperty())
-          .put(FieldType.DATE, new DateProperty())
-          .put(FieldType.DATE_TIME, new DateTimeProperty())
-          .put(FieldType.DOUBLE, new DoubleProperty())
-          .put(FieldType.FLOAT, new FloatProperty())
-          .put(FieldType.INT8, new IntegerProperty())
-          .put(FieldType.INT16, new IntegerProperty())
-          .put(FieldType.INT32, new IntegerProperty())
-          .put(FieldType.INT64, new LongProperty())
-          .put(FieldType.STRING, new StringProperty())
           .build();
 
   private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
@@ -420,15 +405,47 @@ public class SwaggerGenerator {
   }
 
   private Property convertToSwaggerProperty(Field f) {
-    Property p = FIELD_TYPE_TO_PROPERTY_MAP.get(f.type());
-    if (p != null) {
-      return p;
-    } else if (f.type() == FieldType.OBJECT || f.type() == FieldType.ENUM) {
-      return new RefProperty(f.schemaReference().get().name());
-    } else if (f.type() == FieldType.ARRAY) {
-      return new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
+    Property p = createProperty(f);
+    if (p == null) {
+      if (f.type() == FieldType.OBJECT || f.type() == FieldType.ENUM) {
+        p = new RefProperty(f.schemaReference().get().name());
+      } else if (f.type() == FieldType.ARRAY) {
+        p = new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
+      } else {
+        throw new IllegalArgumentException("could not convert field " + f);
+      }
     }
-    throw new IllegalArgumentException("could not convert field " + f);
+    p.description(f.description());
+    return p;
+  }
+
+  private Property createProperty(Field f) {
+    switch (f.type()) {
+      case BOOLEAN:
+        return new BooleanProperty();
+      case BYTE_STRING:
+        return new ByteArrayProperty();
+      case DATE:
+        return new DateProperty();
+      case DATE_TIME:
+        return new DateTimeProperty();
+      case DOUBLE:
+        return new DoubleProperty();
+      case FLOAT:
+        return new FloatProperty();
+      case INT8:
+        return new IntegerProperty();
+      case INT16:
+        return new IntegerProperty();
+      case INT32:
+        return new IntegerProperty();
+      case INT64:
+        return new LongProperty();
+      case STRING:
+        return new StringProperty();
+      default:
+        return null;
+    }
   }
 
   private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig) {

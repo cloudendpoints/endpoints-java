@@ -34,6 +34,7 @@ import com.google.api.server.spi.testing.AbsoluteCommonPathEndpoint;
 import com.google.api.server.spi.testing.AbsolutePathEndpoint;
 import com.google.api.server.spi.testing.ArrayEndpoint;
 import com.google.api.server.spi.testing.EnumEndpoint;
+import com.google.api.server.spi.testing.FooDescriptionEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.LimitMetricsEndpoint;
 import com.google.common.collect.ImmutableList;
@@ -159,6 +160,14 @@ public class SwaggerGeneratorTest {
   public void testWriteSwagger_LimitMetricsEndpoint() throws Exception {
     Swagger swagger = getSwagger(LimitMetricsEndpoint.class, new SwaggerContext(), true);
     Swagger expected = readExpectedAsSwagger("limit_metrics_endpoint.swagger");
+    compareSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_FooEndpointWithDescription() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooDescriptionEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), false, context);
+    Swagger expected = readExpectedAsSwagger("foo_with_description_endpoint.swagger");
     compareSwagger(expected, swagger);
   }
 
