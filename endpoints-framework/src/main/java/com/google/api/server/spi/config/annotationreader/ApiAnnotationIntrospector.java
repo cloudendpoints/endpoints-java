@@ -91,6 +91,15 @@ public class ApiAnnotationIntrospector extends NopAnnotationIntrospector {
   }
 
   @Override
+  public String findPropertyDescription(Annotated a) {
+    ApiResourceProperty apiDesc = a.getAnnotation(ApiResourceProperty.class);
+    if (apiDesc != null && apiDesc.ignored() != AnnotationBoolean.TRUE) {
+      return apiDesc.description();
+    }
+    return null;
+  }
+
+  @Override
   public JsonSerializer<?> findSerializer(Annotated method) {
     return getJsonSerializer(findSerializerInstance(method));
   }
