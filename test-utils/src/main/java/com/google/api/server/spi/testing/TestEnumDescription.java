@@ -13,21 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.api.server.spi.config;
+package com.google.api.server.spi.testing;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.google.api.server.spi.config.Description;
 
-/**
- * Annotation to specify the description of an API parameter.
- */
-@Target({ElementType.PARAMETER, ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Description {
-  /**
-   * The parameter description.
-   */
-  String value() default "";
+public enum TestEnumDescription {
+  @Description("description of value1")
+  VALUE1,
+  @Description("description of value2")
+  VALUE2
 }

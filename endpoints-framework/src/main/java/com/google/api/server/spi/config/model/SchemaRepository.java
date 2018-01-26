@@ -2,6 +2,7 @@ package com.google.api.server.spi.config.model;
 
 import com.google.api.client.util.Maps;
 import com.google.api.server.spi.TypeLoader;
+import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.ResourcePropertySchema;
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
@@ -155,7 +156,12 @@ public class SchemaRepository {
           .setType("string");
       for (Object enumConstant : type.getRawType().getEnumConstants()) {
         builder.addEnumValue(((Enum) enumConstant).name());
-        builder.addEnumDescription("");
+        try {
+          final Description description = enumConstant.getClass().getField(((Enum) enumConstant).name()).getAnnotation(Description.class);
+          builder.addEnumDescription(description == null ? "" : description.value());
+        } catch (NoSuchFieldException e) {
+          builder.addEnumDescription("");
+        }
       }
       schema = builder.build();
       typesForConfig.put(type, schema);
