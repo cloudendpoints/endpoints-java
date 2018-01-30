@@ -148,6 +148,20 @@ public class SwaggerGenerator {
           .put(DateAndTime.class, "date-time")
           .put(Date.class, "date-time")
           .build();
+  private static final ImmutableMap<FieldType, Class<? extends Property>> FIELD_TYPE_TO_PROPERTY_CLASS_MAP =
+      ImmutableMap.<FieldType, Class<? extends Property>>builder()
+          .put(FieldType.BOOLEAN, BooleanProperty.class)
+          .put(FieldType.BYTE_STRING, ByteArrayProperty.class)
+          .put(FieldType.DATE, DateProperty.class)
+          .put(FieldType.DATE_TIME, DateTimeProperty.class)
+          .put(FieldType.DOUBLE, DoubleProperty.class)
+          .put(FieldType.FLOAT, FloatProperty.class)
+          .put(FieldType.INT8, IntegerProperty.class)
+          .put(FieldType.INT16, IntegerProperty.class)
+          .put(FieldType.INT32, IntegerProperty.class)
+          .put(FieldType.INT64, LongProperty.class)
+          .put(FieldType.STRING, StringProperty.class)
+          .build();
 
   private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
       new Function<ApiConfig, ApiKey>() {
@@ -405,47 +419,26 @@ public class SwaggerGenerator {
   }
 
   private Property convertToSwaggerProperty(Field f) {
-    Property p = createProperty(f);
-    if (p == null) {
+    Property p = null;
+    Class<? extends Property> propertyClass = FIELD_TYPE_TO_PROPERTY_CLASS_MAP.get(f.type());
+    if (propertyClass != null) {
+      try {
+        p = propertyClass.newInstance();
+      } catch (InstantiationException | IllegalAccessException e) {
+        //cannot happen, as Property subclasses are guaranteed to have a default constructor
+      }
+    } else {
       if (f.type() == FieldType.OBJECT || f.type() == FieldType.ENUM) {
         p = new RefProperty(f.schemaReference().get().name());
       } else if (f.type() == FieldType.ARRAY) {
         p = new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
-      } else {
-        throw new IllegalArgumentException("could not convert field " + f);
       }
+    }
+    if (p == null) {
+      throw new IllegalArgumentException("could not convert field " + f);
     }
     p.description(f.description());
     return p;
-  }
-
-  private Property createProperty(Field f) {
-    switch (f.type()) {
-      case BOOLEAN:
-        return new BooleanProperty();
-      case BYTE_STRING:
-        return new ByteArrayProperty();
-      case DATE:
-        return new DateProperty();
-      case DATE_TIME:
-        return new DateTimeProperty();
-      case DOUBLE:
-        return new DoubleProperty();
-      case FLOAT:
-        return new FloatProperty();
-      case INT8:
-        return new IntegerProperty();
-      case INT16:
-        return new IntegerProperty();
-      case INT32:
-        return new IntegerProperty();
-      case INT64:
-        return new LongProperty();
-      case STRING:
-        return new StringProperty();
-      default:
-        return null;
-    }
   }
 
   private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig) {
