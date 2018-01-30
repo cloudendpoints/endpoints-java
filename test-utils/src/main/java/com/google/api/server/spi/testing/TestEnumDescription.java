@@ -21,5 +21,7 @@ public enum TestEnumDescription {
   @Description("description of value1")
   VALUE1,
   @Description("description of value2")
-  VALUE2
+  VALUE2;
+
+  public String notAConstant;
 }

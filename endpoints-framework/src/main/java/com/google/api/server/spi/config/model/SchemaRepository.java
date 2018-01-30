@@ -152,15 +152,13 @@ public class SchemaRepository {
       return MAP_SCHEMA;
     } else if (Types.isEnumType(type)) {
       Schema.Builder builder = Schema.builder()
-          .setName(Types.getSimpleName(type, config.getSerializationConfig()))
-          .setType("string");
-      for (Object enumConstant : type.getRawType().getEnumConstants()) {
-        builder.addEnumValue(((Enum) enumConstant).name());
-        try {
-          final Description description = enumConstant.getClass().getField(((Enum) enumConstant).name()).getAnnotation(Description.class);
+              .setName(Types.getSimpleName(type, config.getSerializationConfig()))
+              .setType("string");
+      for (java.lang.reflect.Field field : type.getRawType().getFields()) {
+        if (field.isEnumConstant()) {
+          builder.addEnumValue(field.getName());
+          Description description = field.getAnnotation(Description.class);
           builder.addEnumDescription(description == null ? "" : description.value());
-        } catch (NoSuchFieldException e) {
-          builder.addEnumDescription("");
         }
       }
       schema = builder.build();
