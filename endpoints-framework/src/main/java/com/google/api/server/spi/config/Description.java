@@ -21,7 +21,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to specify the description of an API parameter.
+ * Annotation to specify the description of an API parameter or enum constants.
+ * The description will be ignored if the annotation is used on resource fields.
  */
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
