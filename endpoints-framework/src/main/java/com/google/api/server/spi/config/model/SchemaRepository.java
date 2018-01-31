@@ -204,7 +204,7 @@ public class SchemaRepository {
   }
 
   private void fillInFieldInformation(Field.Builder builder, TypeToken<?> fieldType,
-                                      String description, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
+      String description, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
     FieldType ft = FieldType.fromType(fieldType);
     builder.setType(ft);
     builder.setDescription(description);
@@ -216,7 +216,9 @@ public class SchemaRepository {
       fillInFieldInformation(
           arrayItemBuilder,
           ApiAnnotationIntrospector.getSchemaType(Types.getArrayItemType(fieldType), config),
-          null, typesForConfig, config);
+          null,
+          typesForConfig,
+          config);
       builder.setArrayItemSchema(arrayItemBuilder.build());
     }
   }
