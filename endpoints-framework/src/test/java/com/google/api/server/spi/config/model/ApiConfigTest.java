@@ -159,6 +159,8 @@ public class ApiConfigTest {
     apiConfig.setTitle("title");
     apiConfig.setDescription("desc");
     apiConfig.setDocumentationLink("link");
+    apiConfig.setIconX16("iconX16");
+    apiConfig.setIconX32("iconX32");
     apiConfig.setBackendRoot("backend");
     apiConfig.setIsAbstract(true);
     apiConfig.setIsDefaultVersion(true);

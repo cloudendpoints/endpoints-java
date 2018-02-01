@@ -188,6 +188,8 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     config.setTitleIfNotEmpty((String) getAnnotationProperty(api, "title"));
     config.setDescriptionIfNotEmpty((String) getAnnotationProperty(api, "description"));
     config.setDocumentationLinkIfNotEmpty((String) getAnnotationProperty(api, "documentationLink"));
+    config.setIconX16IfNotEmpty((String) getAnnotationProperty(api, "iconX16"));
+    config.setIconX32IfNotEmpty((String) getAnnotationProperty(api, "iconX32"));
     config.setIsDefaultVersionIfSpecified(
         (AnnotationBoolean) getAnnotationProperty(api, "defaultVersion"));
     config.setIsDiscoverableIfSpecified(

@@ -59,6 +59,8 @@ public class ApiConfig {
   private String title;
   private String description;
   private String documentationLink;
+  private String iconX16;
+  private String iconX32;
   private String backendRoot;
   private boolean isAbstract;
   private boolean defaultVersion;
@@ -128,6 +130,8 @@ public class ApiConfig {
     this.title = original.title;
     this.description = original.description;
     this.documentationLink = original.documentationLink;
+    this.iconX16 = original.iconX16;
+    this.iconX32 = original.iconX32;
     this.backendRoot = original.backendRoot;
     this.isAbstract = original.isAbstract;
     this.defaultVersion = original.defaultVersion;
@@ -180,6 +184,8 @@ public class ApiConfig {
         .addIfInconsistent("title", title, config.title)
         .addIfInconsistent("description", description, config.description)
         .addIfInconsistent("documentationLink", documentationLink, config.documentationLink)
+        .addIfInconsistent("iconX16", iconX16, config.iconX16)
+        .addIfInconsistent("iconX32", iconX32, config.iconX32)
         .addIfInconsistent("backendRoot", backendRoot, config.backendRoot)
         .addIfInconsistent("isAbstract", isAbstract, config.isAbstract)
         .addIfInconsistent("defaultVersion", defaultVersion, config.defaultVersion)
@@ -207,8 +213,8 @@ public class ApiConfig {
   @Override
   public int hashCode() {
     return Objects.hash(typeLoader, root, name, canonicalName, version, title, description,
-        documentationLink, backendRoot, isAbstract, defaultVersion, discoverable, useDatastore,
-        resource, authLevel, scopeExpression, audiences, clientIds, authenticators,
+        documentationLink, iconX16, iconX32, backendRoot, isAbstract, defaultVersion, discoverable,
+        useDatastore, resource, authLevel, scopeExpression, audiences, clientIds, authenticators,
         peerAuthenticators, authConfig, cacheControlConfig, frontendLimitsConfig,
         serializationConfig, apiClassConfig, issuers, issuerAudiences, apiKeyRequired,
         apiLimitMetrics);
@@ -342,6 +348,22 @@ public class ApiConfig {
 
   public String getDocumentationLink() {
     return documentationLink;
+  }
+
+  public void setIconX16(String iconX16) {
+    this.iconX16 = iconX16;
+  }
+
+  public String getIconX16() {
+    return iconX16;
+  }
+
+  public void setIconX32(String iconX32) {
+    this.iconX32 = iconX32;
+  }
+
+  public String getIconX32() {
+    return iconX32;
   }
 
   public void setBackendRoot(String backendRoot) {
