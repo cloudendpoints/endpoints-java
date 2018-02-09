@@ -238,7 +238,9 @@ public class DiscoveryGenerator {
 
   private JsonSchema convertToDiscoverySchema(Field f) {
     if (f.schemaReference() != null) {
-      return new JsonSchema().set$ref(f.schemaReference().get().name());
+      return new JsonSchema()
+          .setDescription(f.description())
+          .set$ref(f.schemaReference().get().name());
     }
     JsonSchema fieldSchema = new JsonSchema()
         .setType(f.type().getDiscoveryType())

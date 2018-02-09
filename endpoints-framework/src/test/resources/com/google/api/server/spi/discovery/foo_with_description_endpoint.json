@@ -229,7 +229,8 @@
       "id": "FooDescription",
       "properties": {
         "choice": {
-          "$ref":"TestEnumDescription"
+          "$ref": "TestEnumDescription",
+          "description": "description of choice"
         },
         "name": {
           "description":"description of name",
