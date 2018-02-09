@@ -73,6 +73,13 @@ public abstract class ResourceSchemaProviderTest {
   }
 
   @Test
+  public void testDescribedProperty() {
+    ResourceSchema schema = getResourceSchema(DescribedPropertyBean.class);
+    assertEquals("description of foo", schema.getProperties().get("foo").getDescription());
+    assertEquals("description of bar", schema.getProperties().get("bar").getDescription());
+  }
+
+  @Test
   public void testMissingPropertyType() {
     ResourceSchema schema = getResourceSchema(MissingPropertyTypeBean.class);
     assertThat(schema.getProperties().keySet()).containsExactly("bar");
@@ -179,6 +186,15 @@ public abstract class ResourceSchemaProviderTest {
   private static class RenamedPropertyBean {
     @ApiResourceProperty(name = "bar")
     public String getFoo() {
+      return null;
+    }
+  }
+
+  private static class DescribedPropertyBean {
+    @ApiResourceProperty(description = "description of foo")
+    private String foo;
+    @ApiResourceProperty(description = "description of bar")
+    public String getBar() {
       return null;
     }
   }

@@ -16,6 +16,7 @@ public abstract class Schema {
   /** The name of the schema. */
   public abstract String name();
   public abstract String type();
+  @Nullable public abstract String description();
 
   /** A map from field names to fields for the schema. */
   public abstract ImmutableSortedMap<String, Field> fields();
@@ -44,6 +45,7 @@ public abstract class Schema {
 
     public abstract Builder setName(String name);
     public abstract Builder setType(String type);
+    @Nullable public abstract Builder setDescription(String description);
     public abstract Builder setFields(ImmutableSortedMap<String, Field> fields);
     public Builder addField(String name, Field field) {
       fieldsBuilder.put(name, field);
@@ -76,6 +78,8 @@ public abstract class Schema {
     /** The type classification of the field. */
     public abstract FieldType type();
 
+    @Nullable public abstract String description();
+
     /**
      * If {@link #type()} is {@link FieldType#OBJECT}, a reference to the schema type that the field
      * refers to.
@@ -97,6 +101,7 @@ public abstract class Schema {
     public abstract static class Builder {
       public abstract Builder setName(String name);
       public abstract Builder setType(FieldType type);
+      @Nullable public abstract Builder setDescription(String description);
       public abstract Builder setSchemaReference(SchemaReference ref);
       public abstract Builder setArrayItemSchema(Field schema);
       public abstract Field build();

@@ -80,7 +80,6 @@ dependencies {
     // leading to test failures.
     transitive = false
   }
-  compile group: 'javax.servlet', name: 'servlet-api', version: servletVersion
   compile group: 'com.google.guava', name: 'guava', version: guavaVersion
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
@@ -101,6 +100,7 @@ dependencies {
   compile group: 'io.swagger', name: 'swagger-core', version: swaggerVersion
   compile group: 'org.slf4j', name: 'slf4j-nop', version: slf4jVersion
 
+  compileOnly group: 'javax.servlet', name: 'servlet-api', version: servletVersion
   compileOnly "com.google.auto.value:auto-value:1.2"
   apt "com.google.auto.value:auto-value:1.2"
 

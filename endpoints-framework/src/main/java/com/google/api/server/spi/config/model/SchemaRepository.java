@@ -129,7 +129,7 @@ public class SchemaRepository {
       throw new IllegalArgumentException("Can't add a primitive type as a resource");
     } else if (arrayItemType != null) {
       Field.Builder arrayItemSchema = Field.builder().setName(ARRAY_UNUSED_MSG);
-      fillInFieldInformation(arrayItemSchema, arrayItemType, typesForConfig, config);
+      fillInFieldInformation(arrayItemSchema, arrayItemType, null, typesForConfig, config);
       schema = Schema.builder()
           .setName(Types.getSimpleName(type, config.getSerializationConfig()))
           .setType("object")
@@ -196,10 +196,11 @@ public class SchemaRepository {
     ResourceSchema schema = resourceSchemaProvider.getResourceSchema(type, config);
     for (Entry<String, ResourcePropertySchema> entry : schema.getProperties().entrySet()) {
       String propertyName = entry.getKey();
-      TypeToken<?> propertyType = entry.getValue().getType();
+      ResourcePropertySchema propertySchema = entry.getValue();
+      TypeToken<?> propertyType = propertySchema.getType();
       if (propertyType != null) {
         Field.Builder fieldBuilder = Field.builder().setName(propertyName);
-        fillInFieldInformation(fieldBuilder, propertyType, typesForConfig, config);
+        fillInFieldInformation(fieldBuilder, propertyType, propertySchema.getDescription(), typesForConfig, config);
         builder.addField(propertyName, fieldBuilder.build());
       }
     }
@@ -207,9 +208,10 @@ public class SchemaRepository {
   }
 
   private void fillInFieldInformation(Field.Builder builder, TypeToken<?> fieldType,
-      Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
+      String description, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
     FieldType ft = FieldType.fromType(fieldType);
     builder.setType(ft);
+    builder.setDescription(description);
     if (ft == FieldType.OBJECT || ft == FieldType.ENUM) {
       getOrCreateTypeForConfig(fieldType, typesForConfig, config);
       builder.setSchemaReference(SchemaReference.create(this, config, fieldType));
@@ -218,6 +220,7 @@ public class SchemaRepository {
       fillInFieldInformation(
           arrayItemBuilder,
           ApiAnnotationIntrospector.getSchemaType(Types.getArrayItemType(fieldType), config),
+          null,
           typesForConfig,
           config);
       builder.setArrayItemSchema(arrayItemBuilder.build());

@@ -15,7 +15,6 @@
  */
 package com.google.api.server.spi.swagger;
 
-import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.TypeLoader;
@@ -149,19 +148,19 @@ public class SwaggerGenerator {
           .put(DateAndTime.class, "date-time")
           .put(Date.class, "date-time")
           .build();
-  private static final ImmutableMap<FieldType, Property> FIELD_TYPE_TO_PROPERTY_MAP =
-      ImmutableMap.<FieldType, Property>builder()
-          .put(FieldType.BOOLEAN, new BooleanProperty())
-          .put(FieldType.BYTE_STRING, new ByteArrayProperty())
-          .put(FieldType.DATE, new DateProperty())
-          .put(FieldType.DATE_TIME, new DateTimeProperty())
-          .put(FieldType.DOUBLE, new DoubleProperty())
-          .put(FieldType.FLOAT, new FloatProperty())
-          .put(FieldType.INT8, new IntegerProperty())
-          .put(FieldType.INT16, new IntegerProperty())
-          .put(FieldType.INT32, new IntegerProperty())
-          .put(FieldType.INT64, new LongProperty())
-          .put(FieldType.STRING, new StringProperty())
+  private static final ImmutableMap<FieldType, Class<? extends Property>> FIELD_TYPE_TO_PROPERTY_CLASS_MAP =
+      ImmutableMap.<FieldType, Class<? extends Property>>builder()
+          .put(FieldType.BOOLEAN, BooleanProperty.class)
+          .put(FieldType.BYTE_STRING, ByteArrayProperty.class)
+          .put(FieldType.DATE, DateProperty.class)
+          .put(FieldType.DATE_TIME, DateTimeProperty.class)
+          .put(FieldType.DOUBLE, DoubleProperty.class)
+          .put(FieldType.FLOAT, FloatProperty.class)
+          .put(FieldType.INT8, IntegerProperty.class)
+          .put(FieldType.INT16, IntegerProperty.class)
+          .put(FieldType.INT32, IntegerProperty.class)
+          .put(FieldType.INT64, LongProperty.class)
+          .put(FieldType.STRING, StringProperty.class)
           .build();
 
   private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
@@ -420,15 +419,26 @@ public class SwaggerGenerator {
   }
 
   private Property convertToSwaggerProperty(Field f) {
-    Property p = FIELD_TYPE_TO_PROPERTY_MAP.get(f.type());
-    if (p != null) {
-      return p;
-    } else if (f.type() == FieldType.OBJECT || f.type() == FieldType.ENUM) {
-      return new RefProperty(f.schemaReference().get().name());
-    } else if (f.type() == FieldType.ARRAY) {
-      return new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
+    Property p = null;
+    Class<? extends Property> propertyClass = FIELD_TYPE_TO_PROPERTY_CLASS_MAP.get(f.type());
+    if (propertyClass != null) {
+      try {
+        p = propertyClass.newInstance();
+      } catch (InstantiationException | IllegalAccessException e) {
+        //cannot happen, as Property subclasses are guaranteed to have a default constructor
+      }
+    } else {
+      if (f.type() == FieldType.OBJECT || f.type() == FieldType.ENUM) {
+        p = new RefProperty(f.schemaReference().get().name());
+      } else if (f.type() == FieldType.ARRAY) {
+        p = new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
+      }
     }
-    throw new IllegalArgumentException("could not convert field " + f);
+    if (p == null) {
+      throw new IllegalArgumentException("could not convert field " + f);
+    }
+    p.description(f.description());
+    return p;
   }
 
   private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig) {

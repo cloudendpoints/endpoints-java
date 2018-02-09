@@ -154,6 +154,13 @@ public class DiscoveryGeneratorTest {
   }
 
   @Test
+  public void testWriteDiscovery_FooEndpointWithDescription() throws Exception {
+    RestDescription doc = getDiscovery(context, FooDescriptionEndpoint.class);
+    RestDescription expected = readExpectedAsDiscovery("foo_with_description_endpoint.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
   public void testWriteDiscovery_multipleApisWithSharedSchema() throws Exception {
     // Read in an API that uses a resource with fields that have their own schema, then read in
     // another API that uses the same resource. The discovery for the second API should contain
@@ -161,13 +168,6 @@ public class DiscoveryGeneratorTest {
     getDiscovery(new DiscoveryContext(), EnumEndpointV2.class);
     RestDescription doc = getDiscovery(new DiscoveryContext(), EnumEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("enum_endpoint.json");
-    compareDiscovery(expected, doc);
-  }
-
-  @Test
-  public void testWriteDiscovery_FooEndpointWithDescription() throws Exception {
-    RestDescription doc = getDiscovery(context, FooDescriptionEndpoint.class);
-    RestDescription expected = readExpectedAsDiscovery("foo_with_description_endpoint.json");
     compareDiscovery(expected, doc);
   }
 

@@ -71,7 +71,9 @@ public class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvide
           continue;
         }
         if (propertyType != null) {
-          schemaBuilder.addProperty(name, ResourcePropertySchema.of(propertyType));
+          ResourcePropertySchema propertySchema = ResourcePropertySchema.of(propertyType);
+          propertySchema.setDescription(definition.getMetadata().getDescription());
+          schemaBuilder.addProperty(name, propertySchema);
         } else {
           logger.warning("No type found for property '" + name + "' on class '" + type + "'.");
         }

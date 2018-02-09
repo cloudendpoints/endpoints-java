@@ -83,11 +83,19 @@ public class ApiAnnotationIntrospector extends NopAnnotationIntrospector {
 
   @Override
   public PropertyName findNameForDeserialization(Annotated a) {
-    ApiResourceProperty apiName = a.getAnnotation(ApiResourceProperty.class);
-    if (apiName != null && apiName.ignored() != AnnotationBoolean.TRUE) {
-      return PropertyName.construct(apiName.name());
-    }
-    return null;
+    ApiResourceProperty annotation = findAnnotation(a);
+    return annotation != null ? PropertyName.construct(annotation.name()) : null;
+  }
+
+  @Override
+  public String findPropertyDescription(Annotated a) {
+    ApiResourceProperty annotation = findAnnotation(a);
+    return annotation != null ? annotation.description() : null;
+  }
+
+  private ApiResourceProperty findAnnotation(Annotated a) {
+    ApiResourceProperty annotation = a.getAnnotation(ApiResourceProperty.class);
+    return annotation != null && annotation.ignored() != AnnotationBoolean.TRUE ? annotation : null;
   }
 
   @Override

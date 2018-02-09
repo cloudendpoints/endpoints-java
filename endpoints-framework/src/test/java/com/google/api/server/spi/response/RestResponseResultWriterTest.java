@@ -47,7 +47,8 @@ public class RestResponseResultWriterTest {
   @Test
   public void writeError_402() throws Exception {
     doWriteErrorTest(402 /* exceptionCode */, 404 /* expectedCompatCode */,
-        "unsupportedProtocol" /* compatReason */, "paymentRequired" /* reason */);
+        "unsupportedProtocol" /* compatReason */, "paymentRequired" /* reason */,
+        "error" /* message */);
   }
 
   @Test
@@ -68,19 +69,21 @@ public class RestResponseResultWriterTest {
   @Test
   public void writeError_406() throws Exception {
     doWriteErrorTest(406 /* exceptionCode */, 404 /* expectedCompatCode */,
-        "unsupportedProtocol" /* compatReason */, "notAcceptable" /* reason */);
+        "unsupportedProtocol" /* compatReason */, "notAcceptable" /* reason */,
+        "error" /* message */);
   }
 
   @Test
   public void writeError_407() throws Exception {
     doWriteErrorTest(407 /* exceptionCode */, 404 /* expectedCompatCode */,
-        "unsupportedProtocol" /* compatReason */, "proxyAuthentication" /* reason */);
+        "unsupportedProtocol" /* compatReason */, "proxyAuthentication" /* reason */,
+        "error" /* message */);
   }
 
   @Test
   public void writeError_408() throws Exception {
     doWriteErrorTest(408 /* exceptionCode */, 503 /* expectedCompatCode */,
-        "backendError" /* compatReason */, "requestTimeout" /* reason */);
+        "backendError" /* compatReason */, "requestTimeout" /* reason */, "error" /* message */);
   }
 
   @Test
@@ -96,7 +99,8 @@ public class RestResponseResultWriterTest {
   @Test
   public void writeError_411() throws Exception {
     doWriteErrorTest(411 /* exceptionCode */, 404 /* expectedCompatCode */,
-        "unsupportedProtocol" /* compatReason */, "lengthRequired" /* reason */);
+        "unsupportedProtocol" /* compatReason */, "lengthRequired" /* reason */,
+        "error" /* message */);
   }
 
   @Test
@@ -112,25 +116,25 @@ public class RestResponseResultWriterTest {
   @Test
   public void writeError_414() throws Exception {
     doWriteErrorTest(414 /* exceptionCode */, 404 /* expectedCompatCode */,
-        "unsupportedProtocol" /* compatReason */, "uriTooLong" /* reason */);
+        "unsupportedProtocol" /* compatReason */, "uriTooLong" /* reason */, "error" /* message */);
   }
 
   @Test
   public void writeError_415() throws Exception {
     doWriteErrorTest(415 /* exceptionCode */, 404 /* expectedCompatCode */,
-        "unsupportedProtocol" /* compatReason */, "unsupportedMediaType");
+        "unsupportedProtocol" /* compatReason */, "unsupportedMediaType", "error" /* message */);
   }
 
   @Test
   public void writeError_416() throws Exception {
     doWriteErrorTest(416 /* exceptionCode */, 404 /* expectedCompatCode */,
-        "unsupportedProtocol" /* compatReason */, "rangeNotSatisfiable");
+        "unsupportedProtocol" /* compatReason */, "rangeNotSatisfiable", "error" /* message */);
   }
 
   @Test
   public void writeError_417() throws Exception {
     doWriteErrorTest(417 /* exceptionCode */, 404 /* expectedCompatCode */,
-        "unsupportedProtocol" /* compatReason */, "expectationFailed");
+        "unsupportedProtocol" /* compatReason */, "expectationFailed", "error" /* message */);
   }
 
   @Test
@@ -141,13 +145,19 @@ public class RestResponseResultWriterTest {
     }
   }
 
+  @Test
+  public void writeError_nullMessage() throws Exception {
+    doWriteErrorTest(500 /* exceptionCode */, 503 /* expectedCompatCode */,
+        "backendError" /* compatReason */, "backendError" /* reason */, null);
+  }
+
   /**
    * Tests that an error is translated according to Lily if specified, and the code is left alone
    * if compatibility mode is off. Both cases test for the correct error structure in the response.
    */
   private void doWriteErrorTest(int exceptionCode, int expectedCompatCode, String reason)
       throws Exception {
-    doWriteErrorTest(exceptionCode, expectedCompatCode, reason, reason);
+    doWriteErrorTest(exceptionCode, expectedCompatCode, reason, reason, "error");
   }
 
   /**
@@ -155,26 +165,34 @@ public class RestResponseResultWriterTest {
    * if compatibility mode is off. Both cases test for the correct error structure in the response.
    */
   private void doWriteErrorTest(int exceptionCode, int expectedCompatCode, String compatReason,
-      String reason) throws Exception {
-    writeError(exceptionCode, expectedCompatCode, compatReason, true);
-    writeError(exceptionCode, exceptionCode, reason, false);
+      String reason, String message) throws Exception {
+    writeError(exceptionCode, expectedCompatCode, compatReason, message, true);
+    writeError(exceptionCode, exceptionCode, reason, message, false);
   }
 
-  private void writeError(int exceptionCode, int expectedCode, String reason,
+  private void writeError(int exceptionCode, int expectedCode, String reason, String message,
       boolean enableExceptionCompatibility) throws Exception {
     MockHttpServletResponse response = new MockHttpServletResponse();
     RestResponseResultWriter writer = new RestResponseResultWriter(
         response, null, true /* prettyPrint */, enableExceptionCompatibility);
-    writer.writeError(new ServiceException(exceptionCode, "error"));
+    writer.writeError(new ServiceException(exceptionCode, message));
     ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
     ObjectNode content = mapper.readValue(response.getContentAsString(), ObjectNode.class);
     JsonNode outerError = content.path("error");
     assertThat(outerError.path("code").asInt()).isEqualTo(expectedCode);
-    assertThat(outerError.path("message").asText()).isEqualTo("error");
+    if (message == null) {
+      assertThat(outerError.path("message").isNull()).isTrue();
+    } else {
+      assertThat(outerError.path("message").asText()).isEqualTo(message);
+    }
     JsonNode innerError = outerError.path("errors").path(0);
     assertThat(innerError.path("domain").asText()).isEqualTo("global");
     assertThat(innerError.path("reason").asText()).isEqualTo(reason);
-    assertThat(innerError.path("message").asText()).isEqualTo("error");
+    if (message == null) {
+      assertThat(innerError.path("message").isNull()).isTrue();
+    } else {
+      assertThat(innerError.path("message").asText()).isEqualTo(message);
+    }
   }
 
   @Test

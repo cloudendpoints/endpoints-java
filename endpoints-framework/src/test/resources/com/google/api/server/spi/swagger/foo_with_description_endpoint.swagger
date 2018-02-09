@@ -1,0 +1,261 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "swagger-test.appspot.com"
+  },
+  "host": "swagger-test.appspot.com",
+  "basePath": "/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/foo/v1/foos": {
+      "get": {
+        "description": "list desc",
+        "operationId": "FooListFoos",
+        "parameters": [
+          {
+            "name": "n",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_FooDescription"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": []
+          },
+          {
+            "google_id_token_https-3a26ea04": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "FooToplevel",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_FooDescription"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": []
+          },
+          {
+            "google_id_token_https-3a26ea04": []
+          }
+        ]
+      }
+    },
+    "/foo/v1/foos/{id}": {
+      "get": {
+        "description": "get desc",
+        "operationId": "FooGetFoo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id desc",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/FooDescription"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": []
+          },
+          {
+            "google_id_token_https-3a26ea04": []
+          }
+        ]
+      },
+      "post": {
+        "description": "update desc",
+        "operationId": "FooUpdateFoo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id desc",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/FooDescription"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/FooDescription"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": []
+          },
+          {
+            "google_id_token_https-3a26ea04": []
+          }
+        ]
+      },
+      "put": {
+        "description": "create desc",
+        "operationId": "FooCreateFoo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id desc",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/FooDescription"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/FooDescription"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": []
+          },
+          {
+            "google_id_token_https-3a26ea04": []
+          }
+        ]
+      },
+      "delete": {
+        "description": "delete desc",
+        "operationId": "FooDeleteFoo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id desc",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/FooDescription"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": []
+          },
+          {
+            "google_id_token_https-3a26ea04": []
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "google_id_token-3a26ea04": {
+      "type": "oauth2",
+      "authorizationUrl": "",
+      "flow": "implicit",
+      "x-google-issuer": "accounts.google.com",
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
+      "x-google-audiences": "audience"
+    },
+    "google_id_token_https-3a26ea04": {
+      "type": "oauth2",
+      "authorizationUrl": "",
+      "flow": "implicit",
+      "x-google-issuer": "https://accounts.google.com",
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
+      "x-google-audiences": "audience"
+    }
+  },
+  "definitions": {
+    "CollectionResponse_FooDescription": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FooDescription"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "TestEnumDescription": {
+      "enum": [
+        "VALUE1",
+        "VALUE2"
+      ]
+    },
+    "FooDescription": {
+      "properties": {
+        "choice": {
+          "description": "description of choice",
+          "$ref": "#/definitions/TestEnumDescription"
+        },
+        "name": {
+          "description": "description of name",
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int32",
+          "description": "description of value"
+        }
+      }
+    }
+  }
+}

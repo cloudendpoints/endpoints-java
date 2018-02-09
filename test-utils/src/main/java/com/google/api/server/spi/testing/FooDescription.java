@@ -15,25 +15,24 @@
  */
 package com.google.api.server.spi.testing;
 
-import com.google.api.server.spi.config.Description;
+import com.google.api.server.spi.config.ApiResourceProperty;
 
 /**
  * Test resource type with descriptions.
  */
 public class FooDescription {
 
-  @Description("description of name")
+  @ApiResourceProperty(description = "description of name")
   private String name;
-  @Description("description of value")
   private int value;
   private String hidden;
-  @Description("description of choice")
   private TestEnumDescription choice;
 
   public String getName() {
     return name;
   }
 
+  @ApiResourceProperty(description = "description of value")
   public int getValue() {
     return value;
   }

@@ -6,8 +6,8 @@
       "discoveryLink": "./apis/myapi/v1/rest",
       "discoveryRestUrl": "https://myapi.appspot.com/_ah/api/discovery/v1/apis/myapi/v1/rest",
       "icons": {
-        "x16": "http://www.google.com/images/icons/product/search-16.gif",
-        "x32": "http://www.google.com/images/icons/product/search-32.gif"
+        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
       },
       "id": "myapi:v1",
       "kind": "discovery#directoryItem",
@@ -20,8 +20,8 @@
       "discoveryLink": "./apis/enum/v1/rest",
       "discoveryRestUrl": "https://myapi.appspot.com/_ah/api/discovery/v1/apis/enum/v1/rest",
       "icons": {
-        "x16": "http://www.google.com/images/icons/product/search-16.gif",
-        "x32": "http://www.google.com/images/icons/product/search-32.gif"
+        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
       },
       "id": "enum:v1",
       "kind": "discovery#directoryItem",
