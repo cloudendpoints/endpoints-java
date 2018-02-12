@@ -26,6 +26,8 @@ public class FooDescription {
   private String name;
   private int value;
   private String hidden;
+  @ApiResourceProperty(description = "description of choice")
+  private TestEnumDescription choice;
 
   public String getName() {
     return name;
@@ -42,5 +44,9 @@ public class FooDescription {
 
   private void setHidden(String hidden) {
     this.hidden = hidden;
+  }
+
+  public TestEnumDescription getChoice() {
+    return choice;
   }
 }

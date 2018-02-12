@@ -234,8 +234,18 @@
         }
       }
     },
+    "TestEnumDescription": {
+      "enum": [
+        "VALUE1",
+        "VALUE2"
+      ]
+    },
     "FooDescription": {
       "properties": {
+        "choice": {
+          "description": "description of choice",
+          "$ref": "#/definitions/TestEnumDescription"
+        },
         "name": {
           "description": "description of name",
           "type": "string"

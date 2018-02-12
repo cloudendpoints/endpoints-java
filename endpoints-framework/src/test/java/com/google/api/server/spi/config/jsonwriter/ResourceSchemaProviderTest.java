@@ -31,6 +31,7 @@ import com.google.api.server.spi.config.ResourceTransformer;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.testing.DefaultValueSerializer;
 import com.google.api.server.spi.testing.TestEndpoint;
+import com.google.api.server.spi.testing.TestEnum;
 import com.google.common.reflect.TypeToken;
 
 import org.junit.Before;
@@ -77,6 +78,7 @@ public abstract class ResourceSchemaProviderTest {
     ResourceSchema schema = getResourceSchema(DescribedPropertyBean.class);
     assertEquals("description of foo", schema.getProperties().get("foo").getDescription());
     assertEquals("description of bar", schema.getProperties().get("bar").getDescription());
+    assertEquals("description of choice", schema.getProperties().get("choice").getDescription());
   }
 
   @Test
@@ -197,6 +199,8 @@ public abstract class ResourceSchemaProviderTest {
     public String getBar() {
       return null;
     }
+    @ApiResourceProperty(description = "description of choice")
+    public TestEnum choice;
   }
 
   /**
