@@ -152,8 +152,8 @@ public class SchemaRepository {
       return MAP_SCHEMA;
     } else if (Types.isEnumType(type)) {
       Schema.Builder builder = Schema.builder()
-              .setName(Types.getSimpleName(type, config.getSerializationConfig()))
-              .setType("string");
+          .setName(Types.getSimpleName(type, config.getSerializationConfig()))
+          .setType("string");
       for (java.lang.reflect.Field field : type.getRawType().getFields()) {
         if (field.isEnumConstant()) {
           builder.addEnumValue(field.getName());
