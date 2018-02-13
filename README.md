@@ -37,7 +37,7 @@ the dependency with the `endpoints-framework` artifact from the
 
 In Gradle, the new dependency looks like this:
 
-    compile group: 'com.google.endpoints', name: 'endpoints-framework', version: '2.0.10'
+    compile group: 'com.google.endpoints', name: 'endpoints-framework', version: '2.0.11'
 
 You also need to update your `web.xml`. Simply replace all instances of
 `SystemServiceServlet` with `EndpointsServlet` and replace `/_ah/spi/*` with
