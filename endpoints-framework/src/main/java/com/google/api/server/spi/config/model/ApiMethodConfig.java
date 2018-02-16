@@ -26,12 +26,11 @@ import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.reflect.TypeToken;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -499,7 +498,7 @@ public class ApiMethodConfig {
     Pattern pathPattern = java.util.regex.Pattern.compile("\\{([^\\}]*)\\}");
     Matcher pathMatcher = pathPattern.matcher(path);
 
-    Collection<String> pathParameters = new HashSet<>();
+    Collection<String> pathParameters = new LinkedHashSet<>();
     while (pathMatcher.find()) {
       pathParameters.add(pathMatcher.group(1));
     }
