@@ -222,7 +222,6 @@ public class DiscoveryGenerator {
   private List<String> computeParameterOrder(ApiMethodConfig methodConfig) {
     ImmutableSortedSet.Builder<String> queryParamBuilder = ImmutableSortedSet.naturalOrder();
     Collection<String> pathParameters = methodConfig.getPathParameters();
-    List<String> order = new ArrayList<>(pathParameters);
     for (ApiParameterConfig parameterConfig : methodConfig.getParameterConfigs()) {
       if (parameterConfig.getClassification() == Classification.API_PARAMETER
           && !pathParameters.contains(parameterConfig.getName())
@@ -230,6 +229,7 @@ public class DiscoveryGenerator {
         queryParamBuilder.add(parameterConfig.getName());
       }
     }
+    List<String> order = new ArrayList<>(pathParameters);
     order.addAll(queryParamBuilder.build());
     return order;
   }
