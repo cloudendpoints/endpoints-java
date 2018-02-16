@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.discovery;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.Preconditions;
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.ObjectMapperUtil;
@@ -52,22 +53,20 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.reflect.TypeToken;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.TreeMap;
-
-import io.swagger.models.Scheme;
 
 /**
  * Generates discovery documents without contacting the discovery generator service.
@@ -198,8 +197,11 @@ public class DiscoveryGenerator {
         .setId(methodConfig.getFullMethodName())
         .setPath(methodConfig.getCanonicalPath().substring(servicePath.length()))
         .setScopes(AuthScopeExpressions.encodeMutable(methodConfig.getScopeExpression()));
+    List<String> parameterOrder = computeParameterOrder(methodConfig);
+    if (!parameterOrder.isEmpty()) {
+      method.setParameterOrder(parameterOrder);
+    }
     if (!parameters.isEmpty()) {
-      method.setParameterOrder(Lists.newArrayList(parameters.keySet()));
       method.setParameters(parameters);
     }
     ApiParameterConfig requestParamConfig = getAndCheckMethodRequestResource(methodConfig);
@@ -215,6 +217,21 @@ public class DiscoveryGenerator {
       method.setResponse(new Response().set$ref(schema.name()));
     }
     methods.put(parts.get(parts.size() - 1), method);
+  }
+
+  private List<String> computeParameterOrder(ApiMethodConfig methodConfig) {
+    ImmutableSortedSet.Builder<String> queryParamBuilder = ImmutableSortedSet.naturalOrder();
+    Collection<String> pathParameters = methodConfig.getPathParameters();
+    List<String> order = new ArrayList<>(pathParameters);
+    for (ApiParameterConfig parameterConfig : methodConfig.getParameterConfigs()) {
+      if (parameterConfig.getClassification() == Classification.API_PARAMETER
+          && !pathParameters.contains(parameterConfig.getName())
+          && !parameterConfig.getNullable()) {
+        queryParamBuilder.add(parameterConfig.getName());
+      }
+    }
+    order.addAll(queryParamBuilder.build());
+    return order;
   }
 
   private JsonSchema convertToDiscoverySchema(Schema schema) {
@@ -305,17 +322,21 @@ public class DiscoveryGenerator {
 
   private Map<String, JsonSchema> convertMethodParameters(ApiMethodConfig methodConfig) {
     Map<String, JsonSchema> parameters = Maps.newLinkedHashMap();
+    Collection<String> pathParameters = methodConfig.getPathParameters();
     for (ApiParameterConfig parameterConfig : methodConfig.getParameterConfigs()) {
       if (parameterConfig.getClassification() == Classification.API_PARAMETER) {
         parameters.put(
-            parameterConfig.getName(), convertMethodParameter(methodConfig, parameterConfig));
+            parameterConfig.getName(),
+            convertMethodParameter(
+                parameterConfig,
+                pathParameters.contains(parameterConfig.getName())));
       }
     }
     return parameters;
   }
 
   private JsonSchema convertMethodParameter(
-      ApiMethodConfig methodConfig, ApiParameterConfig parameterConfig) {
+      ApiParameterConfig parameterConfig, boolean isPathParameter) {
     JsonSchema schema = new JsonSchema();
     TypeToken<?> type;
     if (parameterConfig.isRepeated()) {
@@ -357,7 +378,7 @@ public class DiscoveryGenerator {
       schema.setDefault(defaultValue);
     }
 
-    if (methodConfig.getPathParameters().contains(parameterConfig.getName())) {
+    if (isPathParameter) {
       schema.setLocation("path");
     } else {
       schema.setLocation("query");

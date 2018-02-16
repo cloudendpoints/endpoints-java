@@ -14,5 +14,7 @@ public class MultipleParameterEndpoint {
   public void param(
       @Named("parent") String parent,
       @Named("query") @Nullable String query,
-      @Named("child") String child) { }
+      @Named("child") String child,
+      @Named("queryb") String queryB,
+      @Named("querya") String queryA) { }
 }
