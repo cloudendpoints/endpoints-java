@@ -35,6 +35,7 @@ import com.google.api.server.spi.types.SimpleDate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,6 +62,7 @@ public class RestServletRequestParamReaderTest {
   private EndpointMethod endpointMethod;
   private MockHttpServletRequest request;
   private ApiSerializationConfig serializationConfig;
+  private ApiConfig apiConfig;
   private ApiMethodConfig methodConfig;
 
   @Before
@@ -72,13 +74,12 @@ public class RestServletRequestParamReaderTest {
     ServiceContext serviceContext = ServiceContext.create();
     serializationConfig = new ApiSerializationConfig();
     TypeLoader typeLoader = new TypeLoader();
-    ApiConfig config = (new ApiConfig.Factory()).create(serviceContext, typeLoader,
-        TestApi.class);
+    apiConfig = new ApiConfig.Factory().create(serviceContext, typeLoader, TestApi.class);
     ApiConfigAnnotationReader annotationReader = new ApiConfigAnnotationReader();
-    annotationReader.loadEndpointClass(serviceContext, TestApi.class, config);
+    annotationReader.loadEndpointClass(serviceContext, TestApi.class, apiConfig);
     annotationReader.loadEndpointMethods(serviceContext, TestApi.class,
-        config.getApiClassConfig().getMethods());
-    methodConfig = config.getApiClassConfig().getMethods().get(endpointMethod);
+        apiConfig.getApiClassConfig().getMethods());
+    methodConfig = apiConfig.getApiClassConfig().getMethods().get(endpointMethod);
   }
 
   @Test
@@ -186,6 +187,20 @@ public class RestServletRequestParamReaderTest {
         .inOrder();
   }
 
+  @Test
+  public void arrayPathParam() throws Exception {
+    endpointMethod = EndpointMethod.create(TestApi.class,
+        TestApi.class.getMethod("testArrayPathParam", ArrayList.class));
+    methodConfig = apiConfig.getApiClassConfig().getMethods().get(endpointMethod);
+    RestServletRequestParamReader reader = createReader(ImmutableMap.of("values", "4,3,2,1"));
+
+    Object[] params = reader.read();
+
+    assertThat(params).hasLength(endpointMethod.getParameterClasses().length);
+    assertThat(params).asList()
+        .containsExactly(ImmutableList.of("4", "3", "2", "1"));
+  }
+
   private RestServletRequestParamReader createReader(Map<String, String> rawPathParameters) {
     return new RestServletRequestParamReader(endpointMethod, request, null,
         serializationConfig, methodConfig, rawPathParameters);
@@ -212,6 +227,13 @@ public class RestServletRequestParamReaderTest {
     public void test(@Named("path") long path, @Named("dates") List<SimpleDate> dates,
         @Named("defaultvalue") @DefaultValue("2015-01-01") SimpleDate defaultValue,
         TestResource resource) {
+    }
+
+    @ApiMethod(
+        name = "testArrayPathParam",
+        httpMethod = HttpMethod.GET,
+        path = "testArrayPathParam/{values}")
+    public void testArrayPathParam(@Named("values") ArrayList<String> values) {
     }
   }
 
