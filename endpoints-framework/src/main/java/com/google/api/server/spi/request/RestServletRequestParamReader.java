@@ -23,6 +23,7 @@ import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.api.server.spi.response.BadRequestException;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,6 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +50,10 @@ import javax.servlet.http.HttpServletRequest;
  * by stuffing path and query parameters into the main request body.
  */
 public class RestServletRequestParamReader extends ServletRequestParamReader {
+
   private static final Logger logger = Logger
       .getLogger(RestServletRequestParamReader.class.getName());
+  private static final Splitter COMPOSITE_PATH_SPLITTER = Splitter.on(',');
 
   private final Map<String, String> rawPathParameters;
   private final Map<String, ApiParameterConfig> parameterConfigMap;
@@ -99,11 +103,10 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
           Class<?> parameterClass = parameterMap.get(parameterName);
           ApiParameterConfig parameterConfig = parameterConfigMap.get(parameterName);
           if (parameterClass != null && parameterConfig.isRepeated()) {
-            ArrayNode values = (ArrayNode) objectReader.createArrayNode();
+            ArrayNode values = body.putArray(parameterName);
             for (String value : servletRequest.getParameterValues(parameterName)) {
               values.add(value);
             }
-            body.set(parameterName, values);
           } else {
             body.put(parameterName, servletRequest.getParameterValues(parameterName)[0]);
           }
@@ -113,7 +116,14 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
         String parameterName = entry.getKey();
         Class<?> parameterClass = parameterMap.get(parameterName);
         if (parameterClass != null && !body.has(parameterName)) {
-          body.put(parameterName, entry.getValue());
+          if (parameterConfigMap.get(parameterName).isRepeated()) {
+            ArrayNode values = body.putArray(parameterName);
+            for (String value : COMPOSITE_PATH_SPLITTER.split(entry.getValue())) {
+              values.add(value);
+            }
+          } else {
+            body.put(parameterName, entry.getValue());
+          }
         }
       }
       for (Entry<String, ApiParameterConfig> entry : parameterConfigMap.entrySet()) {
