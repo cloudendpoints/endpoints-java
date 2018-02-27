@@ -168,6 +168,9 @@ public class DiscoveryGenerator {
           doc.setPackagePath(namespaceConfig.getPackagePath());
         }
       }
+      if (config.getCanonicalName() != null) {
+        doc.setCanonicalName(config.getCanonicalName());
+      }
       for (ApiMethodConfig methodConfig : config.getApiClassConfig().getMethods().values()) {
         if (!methodConfig.isIgnored()) {
           writeApiMethod(config, servicePath, doc, methodConfig, repo);

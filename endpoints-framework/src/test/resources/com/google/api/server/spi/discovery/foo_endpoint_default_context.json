@@ -11,6 +11,7 @@
   "basePath": "/_ah/api/foo/v1/",
   "baseUrl": "https://myapi.appspot.com/_ah/api/foo/v1/",
   "batchPath": "batch",
+  "canonicalName": "CanonicalName",
   "description": "Just Foo Things",
   "discoveryVersion": "v1",
   "documentationLink": "https://example.com",
