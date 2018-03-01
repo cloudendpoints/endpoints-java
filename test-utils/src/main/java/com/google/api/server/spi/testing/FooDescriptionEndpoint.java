@@ -20,6 +20,7 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.response.CollectionResponse;
 
 @Api(
@@ -51,7 +52,7 @@ public class FooDescriptionEndpoint {
   }
   @ApiMethod(name = "foo.list", description = "list desc", path = "foos",
       httpMethod = HttpMethod.GET)
-  public CollectionResponse<FooDescription> listFoos(@Named("n") Integer n) {
+  public CollectionResponse<FooDescription> listFoos(@Named("n") Integer n, @Nullable @Named("enum") @Description("enum desc") TestEnumDescription testEnum) {
     return null;
   }
   @ApiMethod(name = "toplevel", path = "foos", httpMethod = HttpMethod.POST)

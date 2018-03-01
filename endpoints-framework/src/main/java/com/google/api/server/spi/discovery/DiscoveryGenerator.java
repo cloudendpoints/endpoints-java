@@ -21,6 +21,7 @@ import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.TypeLoader;
+import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiKey;
@@ -349,9 +350,12 @@ public class DiscoveryGenerator {
     if (parameterConfig.isEnum()) {
       List<String> enumValues = Lists.newArrayList();
       List<String> enumDescriptions = Lists.newArrayList();
-      for (Object enumConstant : type.getRawType().getEnumConstants()) {
-        enumValues.add(enumConstant.toString());
-        enumDescriptions.add("");  // not current supported in annotations
+      for (java.lang.reflect.Field field : type.getRawType().getFields()) {
+        if (field.isEnumConstant()) {
+          enumValues.add(field.getName());
+          Description description = field.getAnnotation(Description.class);
+          enumDescriptions.add(description == null ? "" : description.value());
+        }
       }
       schema.setEnum(enumValues);
       schema.setEnumDescriptions(enumDescriptions);
