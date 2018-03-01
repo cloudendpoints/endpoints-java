@@ -168,6 +168,19 @@
               "location": "query",
               "required": true,
               "type": "integer"
+            },
+            "enum": {
+              "description": "enum desc",
+              "enum": [
+                "VALUE1",
+                "VALUE2"
+              ],
+              "enumDescriptions": [
+                "description of value1",
+                "description of value2"
+              ],
+              "location": "query",
+              "type": "string"
             }
           },
           "path": "foos",
