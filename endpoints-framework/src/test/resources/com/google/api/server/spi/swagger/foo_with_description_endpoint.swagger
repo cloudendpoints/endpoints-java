@@ -27,6 +27,17 @@
             "required": true,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "enum",
+            "in": "query",
+            "description": "enum desc",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "VALUE1",
+              "VALUE2"
+            ]
           }
         ],
         "responses": {
