@@ -15,6 +15,8 @@
  */
 package com.google.api.server.spi.discovery;
 
+import static com.google.api.server.spi.config.model.SchemaRepository.SUPPORT_GENERIC_MAP_TYPES_FLAG;
+import static com.google.api.server.spi.config.model.SchemaRepository.WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -112,10 +114,24 @@ public class DiscoveryGeneratorTest {
   }
 
   @Test
-  public void testWriteDiscovery_MapEndpoint() throws Exception {
+  public void testWriteDiscovery_MapEndpoint_Old() throws Exception {
     RestDescription doc = getDiscovery(new DiscoveryContext(), MapEndpoint.class);
-    RestDescription expected = readExpectedAsDiscovery("map_endpoint.json");
+    RestDescription expected = readExpectedAsDiscovery("map_endpoint_old.json");
     compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_MapEndpoint_New() throws Exception {
+    System.setProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG, "true");
+    System.setProperty(WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG, "true");
+    try {
+      RestDescription doc = getDiscovery(new DiscoveryContext(), MapEndpoint.class);
+      RestDescription expected = readExpectedAsDiscovery("map_endpoint_new.json");
+      compareDiscovery(expected, doc);
+    } finally {
+      System.clearProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG);
+      System.clearProperty(WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG);
+    }
   }
 
   @Test

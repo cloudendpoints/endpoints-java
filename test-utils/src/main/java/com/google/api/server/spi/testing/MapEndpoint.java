@@ -43,15 +43,6 @@ public class MapEndpoint {
     return null;
   }
 
-  public Map<String, String[]> getStringArrayMap() {
-    return null;
-  }
-
-  @ApiMethod(path = "getStringCollectionMap")
-  public Map<String, Collection<String>> getStringCollectionMap() {
-    return null;
-  }
-
   public Map<String, Foo> getFooMap() {
     return null;
   }
@@ -64,6 +55,10 @@ public class MapEndpoint {
     return null;
   }
 
+  public Map<StringValue, String> getStringValueKeyMap() {
+    return null;
+  }
+
   @ApiMethod(path = "getMapOfStrings")
   public MapContainer getMapOfStrings() {
     return null;
@@ -72,6 +67,21 @@ public class MapEndpoint {
   public static class MapContainer {
     @ApiResourceProperty(description = "A map of string values")
     public Map<String, StringValue> stringMap;
+  }
+
+  //Map types below are still generating JsonMap schema for now
+
+  public Map<TestEnum, String> getEnumyMap() {
+    return null;
+  }
+
+  public Map<String, String[]> getStringArrayMap() {
+    return null;
+  }
+
+  @ApiMethod(path = "getStringCollectionMap")
+  public Map<String, Collection<String>> getStringCollectionMap() {
+    return null;
   }
 
 }

@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.swagger;
 
+import static com.google.api.server.spi.config.model.SchemaRepository.SUPPORT_GENERIC_MAP_TYPES_FLAG;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.server.spi.Constant;
@@ -109,10 +110,22 @@ public class SwaggerGeneratorTest {
   }
 
   @Test
-  public void testWriteSwagger_MapEndpoint() throws Exception {
+  public void testWriteSwagger_MapEndpoint_Old() throws Exception {
     Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
-    Swagger expected = readExpectedAsSwagger("map_endpoint.swagger");
+    Swagger expected = readExpectedAsSwagger("map_endpoint_old.swagger");
     compareSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_MapEndpoint_New() throws Exception {
+    System.setProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG, "true");
+    try {
+      Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+      Swagger expected = readExpectedAsSwagger("map_endpoint_new.swagger");
+      compareSwagger(expected, swagger);
+    } finally {
+      System.clearProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG);
+    }
   }
 
   @Test

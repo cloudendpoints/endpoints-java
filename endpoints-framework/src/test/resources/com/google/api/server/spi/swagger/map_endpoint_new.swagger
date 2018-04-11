@@ -38,7 +38,7 @@
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_String_StringCollection"
+              "$ref": "#/definitions/JsonMap"
             }
           }
         }
@@ -122,7 +122,35 @@
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_String_StringCollection"
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_stringvalue_string": {
+      "get": {
+        "operationId": "MyapiGetStringValueKeyMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Map_StringValue_String"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_testenum_string": {
+      "get": {
+        "operationId": "MyapiGetEnumyMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
             }
           }
         }
@@ -151,16 +179,16 @@
         "format": "int32"
       }
     },
-    "Map_String_Map_String_Foo": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Map_String_Foo"
-      }
-    },
     "Map_String_Baz": {
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/Baz"
+      }
+    },
+    "Map_String_Map_String_Foo": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Map_String_Foo"
       }
     },
     "Foo": {
@@ -172,6 +200,12 @@
           "type": "integer",
           "format": "int32"
         }
+      }
+    },
+    "Map_StringValue_String": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
       }
     },
     "Map_String_String": {
@@ -193,15 +227,7 @@
         }
       }
     },
-    "Map_String_StringCollection": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      }
-    },
+    "JsonMap": {},
     "Map_String_StringValue": {
       "type": "object",
       "additionalProperties": {
@@ -220,6 +246,9 @@
         "bazMap": {
           "$ref": "#/definitions/Map_String_Baz"
         },
+        "enumyMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
         "fooMap": {
           "$ref": "#/definitions/Map_String_Foo"
         },
@@ -236,13 +265,16 @@
           "$ref": "#/definitions/MapEndpoint"
         },
         "stringArrayMap": {
-          "$ref": "#/definitions/Map_String_StringCollection"
+          "$ref": "#/definitions/JsonMap"
         },
         "stringCollectionMap": {
-          "$ref": "#/definitions/Map_String_StringCollection"
+          "$ref": "#/definitions/JsonMap"
         },
         "stringMap": {
           "$ref": "#/definitions/Map_String_String"
+        },
+        "stringValueKeyMap": {
+          "$ref": "#/definitions/Map_StringValue_String"
         }
       }
     },

@@ -90,7 +90,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -1921,7 +1920,7 @@ public class AnnotationApiConfigGeneratorTest {
     public void foo(R param) {}
   }
 
-  @Test @Ignore
+  @Test
   public void testRequestDoesContainMap() throws Exception {
     checkRequestIsNotEmpty(new SimpleFoo<Map<ServletContext, User>>() {}.getClass());
   }

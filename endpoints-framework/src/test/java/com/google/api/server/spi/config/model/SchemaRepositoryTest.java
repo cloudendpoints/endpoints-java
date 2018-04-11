@@ -1,5 +1,7 @@
 package com.google.api.server.spi.config.model;
 
+import static com.google.api.server.spi.config.model.SchemaRepository.MAP_UNUSED_MSG;
+import static com.google.api.server.spi.config.model.SchemaRepository.SUPPORT_GENERIC_MAP_TYPES_FLAG;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -21,7 +23,6 @@ import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
@@ -78,11 +79,22 @@ public class SchemaRepositoryTest {
         .isEqualTo(SchemaRepository.ANY_SCHEMA);
   }
 
-  @Test @Ignore
+  @Test
   public void getOrAdd_jsonMap() throws Exception {
-    ApiMethodConfig methodConfig = getMethodConfig("getJsonMap");
+    ApiMethodConfig methodConfig = getMethodConfig("getMap");
     assertThat(repo.getOrAdd(methodConfig.getReturnType(), config))
         .isEqualTo(SchemaRepository.MAP_SCHEMA);
+  }
+
+  @Test
+  public void getOrAdd_mapType() throws Exception {
+    System.setProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG, "true");
+    try {
+      ApiMethodConfig methodConfig = getMethodConfig("getMap");
+      checkMapSchema(repo.getOrAdd(methodConfig.getReturnType(), config));
+    } finally {
+      System.clearProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG);
+    }
   }
 
   @Test
@@ -186,7 +198,7 @@ public class SchemaRepositoryTest {
       return null;
     }
 
-    public Map<String, Object> getJsonMap() {
+    public Map<String, TestEnum> getMap() {
       return null;
     }
 
@@ -304,4 +316,17 @@ public class SchemaRepositoryTest {
             .build())
         .build());
   }
+
+  private void checkMapSchema(Schema schema) {
+    assertThat(schema).isEqualTo(Schema.builder()
+            .setName("Map_String_TestEnum")
+            .setType("object")
+            .setMapValueSchema(Field.builder()
+                    .setName(MAP_UNUSED_MSG)
+                    .setType(FieldType.ENUM)
+                    .setSchemaReference(SchemaReference.create(repo, config, TypeToken.of(TestEnum.class)))
+            .build())
+            .build());
+  }
+
 }

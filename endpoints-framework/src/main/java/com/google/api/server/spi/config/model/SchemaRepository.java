@@ -1,7 +1,6 @@
 package com.google.api.server.spi.config.model;
 
 import com.google.api.client.util.Maps;
-import com.google.api.client.util.Preconditions;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.ResourcePropertySchema;
@@ -47,6 +46,9 @@ public class SchemaRepository {
   static final String ARRAY_UNUSED_MSG = "unused for array items";
   @VisibleForTesting
   static final String MAP_UNUSED_MSG = "unused for map values";
+  @VisibleForTesting
+  public static final String SUPPORT_GENERIC_MAP_TYPES_FLAG = "endpoints.supportGenericMapTypes";
+  public static final String WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG = "endpoints.warnAboutUnsupportedMapTypes";
 
   private final Multimap<ApiKey, Schema> schemaByApiKeys = LinkedHashMultimap.create();
   private final Map<ApiSerializationConfig, Map<TypeToken<?>, Schema>> types = Maps.newHashMap();
@@ -152,8 +154,23 @@ public class SchemaRepository {
       return ANY_SCHEMA;
     } else if (Types.isMapType(type)) {
       schema = MAP_SCHEMA;
-      if ( type.getType() instanceof ParameterizedType) { //TODO enable this on a flag (as not backward compatible)
-        schema = createTypedMapSchema(type, typesForConfig, config);
+      if (isFlagEnabled(SUPPORT_GENERIC_MAP_TYPES_FLAG) && type.getType() instanceof ParameterizedType) {
+        TypeToken<?> keyTypeParameter = Types.getTypeParameter(type, 0);
+        TypeToken<?> resolvedKeyTypeToken =  ApiAnnotationIntrospector.getSchemaType(keyTypeParameter, config);
+        FieldType keyType = FieldType.fromType(resolvedKeyTypeToken);
+        FieldType valueType = FieldType.fromType(Types.getTypeParameter(type, 1));
+        if (keyType == FieldType.STRING //TODO should we support string-like keys? ENUM, DATE, DATE_DATE_TIME
+                && valueType != FieldType.ARRAY) { //Cloud client lib generator does not handle array-like map values
+          schema = createMapSchema(type, typesForConfig, config);
+        }
+        if (isFlagEnabled(WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG)) {
+          if (keyType != FieldType.STRING) {
+            System.err.println("Type " + type + " not supported as key type is not String, will use JsonMap");
+          }
+          if (valueType == FieldType.ARRAY) {
+            System.err.println("Type " + type + " not supported as value type is array-like, will use JsonMap");
+          }
+        }
       }
       typesForConfig.put(type, schema);
       schemaByApiKeys.put(key, schema);
@@ -181,6 +198,12 @@ public class SchemaRepository {
     }
   }
 
+  //TODO is this the right way to enable such flags?
+  private boolean isFlagEnabled(String flag) {
+    return Boolean.parseBoolean(System.getenv(flag))
+            || Boolean.parseBoolean(System.getProperty(flag));
+  }
+
   private void addSchemaToApi(ApiKey key, Schema schema) {
     if (schemaByApiKeys.containsEntry(key, schema)) {
       return;
@@ -194,13 +217,14 @@ public class SchemaRepository {
         addSchemaToApi(key, f.schemaReference().get());
       }
     }
+    Field mapValueSchema = schema.mapValueSchema();
+    if (mapValueSchema != null && mapValueSchema.schemaReference() != null)  {
+      addSchemaToApi(key, mapValueSchema.schemaReference().get());
+    }
   }
 
-  private Schema createTypedMapSchema(
+  private Schema createMapSchema(
           TypeToken<?> type, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
-    TypeToken<?> keyType = Types.getTypeParameter(type, 0);
-    Preconditions.checkState(keyType.getType() == String.class,
-            "Only String-keyed Maps are supported");
     TypeToken<?> valueType = ApiAnnotationIntrospector.getSchemaType(Types.getTypeParameter(type, 1), config);
     Schema.Builder builder = Schema.builder()
             .setName(Types.getSimpleName(type, config.getSerializationConfig()))
