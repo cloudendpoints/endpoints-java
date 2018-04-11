@@ -1,0 +1,256 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "myapi.appspot.com"
+  },
+  "host": "myapi.appspot.com",
+  "basePath": "/_ah/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/myapi/v1/getMapOfStrings": {
+      "get": {
+        "operationId": "MyapiGetMapOfStrings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/MapContainer"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/getStringCollectionMap": {
+      "get": {
+        "operationId": "MyapiGetStringCollectionMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Map_String_StringCollection"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_baz": {
+      "get": {
+        "operationId": "MyapiGetBazMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Map_String_Baz"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_foo": {
+      "get": {
+        "operationId": "MyapiGetFooMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Map_String_Foo"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_integer": {
+      "get": {
+        "operationId": "MyapiGetIntMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Map_String_Integer"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_map_string_foo": {
+      "get": {
+        "operationId": "MyapiGetFooMap2",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Map_String_Map_String_Foo"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_string": {
+      "get": {
+        "operationId": "MyapiGetStringMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Map_String_String"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_stringcollection": {
+      "get": {
+        "operationId": "MyapiGetStringArrayMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Map_String_StringCollection"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/mapendpoint": {
+      "get": {
+        "operationId": "MyapiGetMapService",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/MapEndpoint"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Map_String_Integer": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "format": "int32"
+      }
+    },
+    "Map_String_Map_String_Foo": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Map_String_Foo"
+      }
+    },
+    "Map_String_Baz": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Baz"
+      }
+    },
+    "Foo": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "Map_String_String": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "Baz": {
+      "properties": {
+        "foo": {
+          "$ref": "#/definitions/Foo"
+        },
+        "foos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Foo"
+          }
+        }
+      }
+    },
+    "Map_String_StringCollection": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "Map_String_StringValue": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "MapContainer": {
+      "properties": {
+        "stringMap": {
+          "$ref": "#/definitions/Map_String_StringValue"
+        }
+      }
+    },
+    "MapEndpoint": {
+      "properties": {
+        "bazMap": {
+          "$ref": "#/definitions/Map_String_Baz"
+        },
+        "fooMap": {
+          "$ref": "#/definitions/Map_String_Foo"
+        },
+        "fooMap2": {
+          "$ref": "#/definitions/Map_String_Map_String_Foo"
+        },
+        "intMap": {
+          "$ref": "#/definitions/Map_String_Integer"
+        },
+        "mapOfStrings": {
+          "$ref": "#/definitions/MapContainer"
+        },
+        "mapService": {
+          "$ref": "#/definitions/MapEndpoint"
+        },
+        "stringArrayMap": {
+          "$ref": "#/definitions/Map_String_StringCollection"
+        },
+        "stringCollectionMap": {
+          "$ref": "#/definitions/Map_String_StringCollection"
+        },
+        "stringMap": {
+          "$ref": "#/definitions/Map_String_String"
+        }
+      }
+    },
+    "Map_String_Foo": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Foo"
+      }
+    }
+  }
+}

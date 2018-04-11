@@ -412,6 +412,9 @@ public class SwaggerGenerator {
       }
       docSchema.setProperties(fields);
     }
+    if (schema.mapValueSchema() != null) {
+      docSchema.setAdditionalProperties(convertToSwaggerProperty(schema.mapValueSchema()));
+    }
     if (!schema.enumValues().isEmpty()) {
       docSchema.setType("string");
       docSchema._enum(schema.enumValues());
@@ -438,7 +441,10 @@ public class SwaggerGenerator {
     if (p == null) {
       throw new IllegalArgumentException("could not convert field " + f);
     }
-    p.description(f.description());
+    //the spec explicitly disallows description on $ref
+    if (!(p instanceof RefProperty)) {
+      p.description(f.description());
+    }
     return p;
   }
 

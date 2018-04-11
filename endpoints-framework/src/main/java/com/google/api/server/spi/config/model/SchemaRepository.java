@@ -1,6 +1,7 @@
 package com.google.api.server.spi.config.model;
 
 import com.google.api.client.util.Maps;
+import com.google.api.client.util.Preconditions;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.ResourcePropertySchema;
@@ -16,6 +17,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeToken;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,6 +45,8 @@ public class SchemaRepository {
 
   @VisibleForTesting
   static final String ARRAY_UNUSED_MSG = "unused for array items";
+  @VisibleForTesting
+  static final String MAP_UNUSED_MSG = "unused for map values";
 
   private final Multimap<ApiKey, Schema> schemaByApiKeys = LinkedHashMultimap.create();
   private final Map<ApiSerializationConfig, Map<TypeToken<?>, Schema>> types = Maps.newHashMap();
@@ -147,9 +151,13 @@ public class SchemaRepository {
       schemaByApiKeys.put(key, ANY_SCHEMA);
       return ANY_SCHEMA;
     } else if (Types.isMapType(type)) {
-      typesForConfig.put(type, MAP_SCHEMA);
-      schemaByApiKeys.put(key, MAP_SCHEMA);
-      return MAP_SCHEMA;
+      schema = MAP_SCHEMA;
+      if ( type.getType() instanceof ParameterizedType) { //TODO enable this on a flag (as not backward compatible)
+        schema = createTypedMapSchema(type, typesForConfig, config);
+      }
+      typesForConfig.put(type, schema);
+      schemaByApiKeys.put(key, schema);
+      return schema;
     } else if (Types.isEnumType(type)) {
       Schema.Builder builder = Schema.builder()
           .setName(Types.getSimpleName(type, config.getSerializationConfig()))
@@ -186,6 +194,20 @@ public class SchemaRepository {
         addSchemaToApi(key, f.schemaReference().get());
       }
     }
+  }
+
+  private Schema createTypedMapSchema(
+          TypeToken<?> type, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
+    TypeToken<?> keyType = Types.getTypeParameter(type, 0);
+    Preconditions.checkState(keyType.getType() == String.class,
+            "Only String-keyed Maps are supported");
+    TypeToken<?> valueType = ApiAnnotationIntrospector.getSchemaType(Types.getTypeParameter(type, 1), config);
+    Schema.Builder builder = Schema.builder()
+            .setName(Types.getSimpleName(type, config.getSerializationConfig()))
+            .setType("object");
+    Field.Builder fieldBuilder = Field.builder().setName(MAP_UNUSED_MSG);
+    fillInFieldInformation(fieldBuilder, valueType, null, typesForConfig, config);
+    return builder.setMapValueSchema(fieldBuilder.build()).build();
   }
 
   private Schema createBeanSchema(

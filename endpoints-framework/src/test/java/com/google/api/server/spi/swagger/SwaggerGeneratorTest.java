@@ -37,6 +37,7 @@ import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.FooDescriptionEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.LimitMetricsEndpoint;
+import com.google.api.server.spi.testing.MapEndpoint;
 import com.google.common.collect.ImmutableList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -104,6 +105,13 @@ public class SwaggerGeneratorTest {
   public void testWriteSwagger_ArrayEndpoint() throws Exception {
     Swagger swagger = getSwagger(ArrayEndpoint.class, new SwaggerContext(), true);
     Swagger expected = readExpectedAsSwagger("array_endpoint.swagger");
+    compareSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_MapEndpoint() throws Exception {
+    Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+    Swagger expected = readExpectedAsSwagger("map_endpoint.swagger");
     compareSwagger(expected, swagger);
   }
 

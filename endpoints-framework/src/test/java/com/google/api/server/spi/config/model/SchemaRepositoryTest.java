@@ -21,6 +21,7 @@ import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
@@ -77,7 +78,7 @@ public class SchemaRepositoryTest {
         .isEqualTo(SchemaRepository.ANY_SCHEMA);
   }
 
-  @Test
+  @Test @Ignore
   public void getOrAdd_jsonMap() throws Exception {
     ApiMethodConfig methodConfig = getMethodConfig("getJsonMap");
     assertThat(repo.getOrAdd(methodConfig.getReturnType(), config))

@@ -1,0 +1,303 @@
+{
+  "auth": {
+    "oauth2": {
+      "scopes": {
+        "https://www.googleapis.com/auth/userinfo.email": {
+          "description": "View your email address"
+        }
+      }
+    }
+  },
+  "basePath": "/_ah/api/myapi/v1/",
+  "baseUrl": "https://myapi.appspot.com/_ah/api/myapi/v1/",
+  "batchPath": "batch",
+  "description": "This is an API",
+  "discoveryVersion": "v1",
+  "icons": {
+    "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+    "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+  },
+  "id": "myapi:v1",
+  "kind": "discovery#restDescription",
+  "name": "myapi",
+  "parameters": {
+    "alt": {
+      "default": "json",
+      "description": "Data format for the response.",
+      "enum": [
+        "json"
+      ],
+      "enumDescriptions": [
+        "Responses with Content-Type of application/json"
+      ],
+      "location": "query",
+      "type": "string"
+    },
+    "fields": {
+      "description": "Selector specifying which fields to include in a partial response.",
+      "location": "query",
+      "type": "string"
+    },
+    "key": {
+      "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+      "location": "query",
+      "type": "string"
+    },
+    "oauth_token": {
+      "description": "OAuth 2.0 token for the current user.",
+      "location": "query",
+      "type": "string"
+    },
+    "prettyPrint": {
+      "default": "true",
+      "description": "Returns response with indentations and line breaks.",
+      "location": "query",
+      "type": "boolean"
+    },
+    "quotaUser": {
+      "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters. Overrides userIp if both are provided.",
+      "location": "query",
+      "type": "string"
+    },
+    "userIp": {
+      "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
+      "location": "query",
+      "type": "string"
+    }
+  },
+  "protocol": "rest",
+  "resources": {
+    "mapEndpoint": {
+      "methods": {
+        "getBazMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getBazMap",
+          "path": "map_string_baz",
+          "response": {
+            "$ref": "Map_String_Baz"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getFooMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getFooMap",
+          "path": "map_string_foo",
+          "response": {
+            "$ref": "Map_String_Foo"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getFooMap2": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getFooMap2",
+          "path": "map_string_map_string_foo",
+          "response": {
+            "$ref": "Map_String_Map_String_Foo"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getIntMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getIntMap",
+          "path": "map_string_integer",
+          "response": {
+            "$ref": "Map_String_Integer"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getMapOfStrings": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getMapOfStrings",
+          "path": "getMapOfStrings",
+          "response": {
+            "$ref": "MapContainer"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getMapService": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getMapService",
+          "path": "mapendpoint",
+          "response": {
+            "$ref": "MapEndpoint"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getStringArrayMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getStringArrayMap",
+          "path": "map_string_stringcollection",
+          "response": {
+            "$ref": "Map_String_StringCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getStringCollectionMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getStringCollectionMap",
+          "path": "getStringCollectionMap",
+          "response": {
+            "$ref": "Map_String_StringCollection"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getStringMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getStringMap",
+          "path": "map_string_string",
+          "response": {
+            "$ref": "Map_String_String"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        }
+      }
+    }
+  },
+  "rootUrl": "https://myapi.appspot.com/_ah/api/",
+  "schemas": {
+    "Baz": {
+      "id": "Baz",
+      "properties": {
+        "foo": {
+          "$ref": "Foo"
+        },
+        "foos": {
+          "items": {
+            "$ref": "Foo"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "Foo": {
+      "id": "Foo",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "MapContainer": {
+      "id": "MapContainer",
+      "properties": {
+        "stringMap": {
+          "$ref": "Map_String_StringValue",
+          "description": "A map of string values"
+        }
+      },
+      "type": "object"
+    },
+    "MapEndpoint": {
+      "id": "MapEndpoint",
+      "properties": {
+        "bazMap": {
+          "$ref": "Map_String_Baz"
+        },
+        "fooMap": {
+          "$ref": "Map_String_Foo"
+        },
+        "fooMap2": {
+          "$ref": "Map_String_Map_String_Foo"
+        },
+        "intMap": {
+          "$ref": "Map_String_Integer"
+        },
+        "mapOfStrings": {
+          "$ref": "MapContainer"
+        },
+        "mapService": {
+          "$ref": "MapEndpoint"
+        },
+        "stringArrayMap": {
+          "$ref": "Map_String_StringCollection"
+        },
+        "stringCollectionMap": {
+          "$ref": "Map_String_StringCollection"
+        },
+        "stringMap": {
+          "$ref": "Map_String_String"
+        }
+      },
+      "type": "object"
+    },
+    "Map_String_Baz": {
+      "additionalProperties": {
+        "$ref": "Baz"
+      },
+      "id": "Map_String_Baz",
+      "type": "object"
+    },
+    "Map_String_Foo": {
+      "additionalProperties": {
+        "$ref": "Foo"
+      },
+      "id": "Map_String_Foo",
+      "type": "object"
+    },
+    "Map_String_Integer": {
+      "additionalProperties": {
+        "format": "int32",
+        "type": "integer"
+      },
+      "id": "Map_String_Integer",
+      "type": "object"
+    },
+    "Map_String_Map_String_Foo": {
+      "additionalProperties": {
+        "$ref": "Map_String_Foo"
+      },
+      "id": "Map_String_Map_String_Foo",
+      "type": "object"
+    },
+    "Map_String_String": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "id": "Map_String_String",
+      "type": "object"
+    },
+    "Map_String_StringCollection": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "id": "Map_String_StringCollection",
+      "type": "object"
+    },
+    "Map_String_StringValue": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "id": "Map_String_StringValue",
+      "type": "object"
+    }
+  },
+  "servicePath": "myapi/v1/",
+  "version": "v1"
+}

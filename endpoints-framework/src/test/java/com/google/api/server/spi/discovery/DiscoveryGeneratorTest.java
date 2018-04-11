@@ -35,6 +35,7 @@ import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.EnumEndpointV2;
 import com.google.api.server.spi.testing.FooDescriptionEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
+import com.google.api.server.spi.testing.MapEndpoint;
 import com.google.api.server.spi.testing.MultipleParameterEndpoint;
 import com.google.api.server.spi.testing.NamespaceEndpoint;
 import com.google.api.server.spi.testing.NonDiscoverableEndpoint;
@@ -107,6 +108,13 @@ public class DiscoveryGeneratorTest {
   public void testWriteDiscovery_ArrayEndpoint() throws Exception {
     RestDescription doc = getDiscovery(new DiscoveryContext(), ArrayEndpoint.class);
     RestDescription expected = readExpectedAsDiscovery("array_endpoint.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_MapEndpoint() throws Exception {
+    RestDescription doc = getDiscovery(new DiscoveryContext(), MapEndpoint.class);
+    RestDescription expected = readExpectedAsDiscovery("map_endpoint.json");
     compareDiscovery(expected, doc);
   }
 

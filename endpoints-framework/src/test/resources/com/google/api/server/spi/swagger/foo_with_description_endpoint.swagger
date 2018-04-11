@@ -255,12 +255,11 @@
     "FooDescription": {
       "properties": {
         "choice": {
-          "description": "description of choice",
           "$ref": "#/definitions/TestEnumDescription"
         },
         "name": {
-          "description": "description of name",
-          "type": "string"
+          "type": "string",
+          "description": "description of name"
         },
         "value": {
           "type": "integer",
