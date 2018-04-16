@@ -20,6 +20,7 @@ import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.Singleton;
 import com.google.api.server.spi.request.Attribute;
+import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.common.annotations.VisibleForTesting;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +52,7 @@ public class EndpointsAuthenticator implements Authenticator {
   }
 
   @Override
-  public User authenticate(HttpServletRequest request) {
+  public User authenticate(HttpServletRequest request) throws ServiceUnavailableException {
     Attribute attr = Attribute.from(request);
     User user = jwtAuthenticator.authenticate(request);
     if (user == null) {

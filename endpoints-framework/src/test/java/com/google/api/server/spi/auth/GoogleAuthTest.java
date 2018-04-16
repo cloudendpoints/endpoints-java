@@ -31,6 +31,7 @@ import com.google.api.client.testing.http.MockHttpTransport;
 import com.google.api.client.testing.http.MockLowLevelHttpRequest;
 import com.google.api.client.testing.http.MockLowLevelHttpResponse;
 import com.google.api.server.spi.auth.GoogleAuth.TokenInfo;
+import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
@@ -166,7 +167,23 @@ public class GoogleAuthTest {
     assertNull(GoogleAuth.parseTokenInfo(request));
   }
 
+  @Test
+  public void testParseTokenInfo_with400() throws Exception {
+    HttpRequest request = constructHttpRequest("{\"error_description\": \"Invalid Value\"}", 400);
+    assertNull(GoogleAuth.parseTokenInfo(request));
+  }
+
+  @Test(expected = ServiceUnavailableException.class)
+  public void testParseTokenInfo_with500() throws Exception {
+    HttpRequest request = constructHttpRequest("{\"error_description\": \"Backend Error\"}", 500);
+    GoogleAuth.parseTokenInfo(request);
+  }
+
   private HttpRequest constructHttpRequest(final String content) throws IOException {
+    return constructHttpRequest(content, 200);
+  }
+
+  private HttpRequest constructHttpRequest(final String content, final int statusCode) throws IOException {
     HttpTransport transport = new MockHttpTransport() {
       @Override
       public LowLevelHttpRequest buildRequest(String method, String url) throws IOException {
@@ -176,12 +193,14 @@ public class GoogleAuthTest {
             MockLowLevelHttpResponse result = new MockLowLevelHttpResponse();
             result.setContentType("application/json");
             result.setContent(content);
+            result.setStatusCode(statusCode);
             return result;
           }
         };
       }
     };
-    return transport.createRequestFactory().buildGetRequest(new GenericUrl("https://google.com"))
-        .setParser(new JsonObjectParser(new JacksonFactory()));
+    HttpRequest httpRequest = transport.createRequestFactory().buildGetRequest(new GenericUrl("https://google.com")).setParser(new JsonObjectParser(new JacksonFactory()));
+    GoogleAuth.configureErrorHandling(httpRequest);
+    return httpRequest;
   }
 }

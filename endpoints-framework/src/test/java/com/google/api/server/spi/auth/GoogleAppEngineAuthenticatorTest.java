@@ -24,6 +24,7 @@ import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.request.Attribute;
+import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.oauth.OAuthService;
 import com.google.appengine.api.users.UserService;
@@ -87,7 +88,7 @@ public class GoogleAppEngineAuthenticatorTest {
   }
 
   @Test
-  public void testGetOAuth2UserNonOAuth2() {
+  public void testGetOAuth2UserNonOAuth2() throws ServiceUnavailableException {
     initializeRequest("Bearer badToken");
     assertNull(authenticator.getOAuth2User(request, config));
 
@@ -152,7 +153,7 @@ public class GoogleAppEngineAuthenticatorTest {
   }
 
   @Test
-  public void testGetOAuth2UserAppEngineDevClientIdNotAllowed() {
+  public void testGetOAuth2UserAppEngineDevClientIdNotAllowed() throws ServiceUnavailableException {
     System.setProperty(EnvUtil.ENV_APPENGINE_RUNTIME, "Developement");
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret(SCOPES));
     when(config.getClientIds()).thenReturn(ImmutableList.of("clientId2"));
@@ -160,19 +161,19 @@ public class GoogleAppEngineAuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticateNonAppEngine() {
+  public void testAuthenticateNonAppEngine() throws ServiceUnavailableException {
     System.clearProperty(EnvUtil.ENV_APPENGINE_RUNTIME);
     assertNull(authenticator.authenticate(request));
   }
 
   @Test
-  public void testAuthenticateSkipTokenAuth() {
+  public void testAuthenticateSkipTokenAuth() throws ServiceUnavailableException {
     attr.set(Attribute.SKIP_TOKEN_AUTH, true);
     assertNull(authenticator.authenticate(request));
   }
 
   @Test
-  public void testAuthenticateOAuth2Fail() {
+  public void testAuthenticateOAuth2Fail() throws ServiceUnavailableException {
     authenticator = new GoogleAppEngineAuthenticator(oauthService, userService) {
       @Override
       com.google.appengine.api.users.User getOAuth2User(HttpServletRequest request,
@@ -189,7 +190,7 @@ public class GoogleAppEngineAuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticateOAuth2() {
+  public void testAuthenticateOAuth2() throws ServiceUnavailableException {
     authenticator = new GoogleAppEngineAuthenticator(oauthService, userService) {
       @Override
       com.google.appengine.api.users.User getOAuth2User(HttpServletRequest request,
@@ -202,7 +203,7 @@ public class GoogleAppEngineAuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticateSkipTokenAuthCookieAuthFail() {
+  public void testAuthenticateSkipTokenAuthCookieAuthFail() throws ServiceUnavailableException {
     attr.set(Attribute.SKIP_TOKEN_AUTH, true);
     authenticator = new GoogleAppEngineAuthenticator(oauthService, userService) {
       @Override
@@ -215,7 +216,7 @@ public class GoogleAppEngineAuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticateSkipTokenAuthCookieAuth() {
+  public void testAuthenticateSkipTokenAuthCookieAuth() throws ServiceUnavailableException {
     attr.set(Attribute.SKIP_TOKEN_AUTH, true);
     authenticator = new GoogleAppEngineAuthenticator(oauthService, userService) {
       @Override
@@ -229,7 +230,7 @@ public class GoogleAppEngineAuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticateOAuth2CookieAuthBothFail() {
+  public void testAuthenticateOAuth2CookieAuthBothFail() throws ServiceUnavailableException {
     authenticator = new GoogleAppEngineAuthenticator(oauthService, userService) {
       @Override
       com.google.appengine.api.users.User getOAuth2User(HttpServletRequest request,
@@ -247,7 +248,7 @@ public class GoogleAppEngineAuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticateOAuth2FailCookieAuth() {
+  public void testAuthenticateOAuth2FailCookieAuth() throws ServiceUnavailableException {
     authenticator = new GoogleAppEngineAuthenticator(oauthService, userService) {
       @Override
       com.google.appengine.api.users.User getOAuth2User(HttpServletRequest request,
