@@ -22,6 +22,7 @@ import com.google.api.server.spi.config.Singleton;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.request.Attribute;
+import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.oauth.OAuthService;
 import com.google.appengine.api.oauth.OAuthServiceFactory;
@@ -56,7 +57,7 @@ class GoogleAppEngineAuthenticator implements Authenticator {
   }
 
   @VisibleForTesting
-  String getOAuth2ClientIdDev(String token) {
+  String getOAuth2ClientIdDev(String token) throws ServiceUnavailableException {
     GoogleAuth.TokenInfo tokenInfo = GoogleAuth.getTokenInfoRemote(token);
     return tokenInfo != null ? tokenInfo.clientId : null;
   }
@@ -68,7 +69,7 @@ class GoogleAppEngineAuthenticator implements Authenticator {
 
   @VisibleForTesting
   com.google.appengine.api.users.User getOAuth2User(HttpServletRequest request,
-      ApiMethodConfig config) {
+      ApiMethodConfig config) throws ServiceUnavailableException {
     String token = GoogleAuth.getAuthToken(request);
     if (!GoogleAuth.isOAuth2Token(token)) {
       return null;
@@ -114,7 +115,7 @@ class GoogleAppEngineAuthenticator implements Authenticator {
   }
 
   @Override
-  public User authenticate(HttpServletRequest request) {
+  public User authenticate(HttpServletRequest request) throws ServiceUnavailableException {
     Attribute attr = Attribute.from(request);
     if (!EnvUtil.isRunningOnAppEngine()) {
       return null;

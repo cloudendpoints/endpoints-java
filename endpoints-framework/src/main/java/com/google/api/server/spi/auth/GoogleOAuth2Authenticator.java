@@ -22,6 +22,7 @@ import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.Singleton;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.request.Attribute;
+import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
@@ -39,7 +40,7 @@ public class GoogleOAuth2Authenticator implements Authenticator {
   private static final Logger logger = Logger.getLogger(GoogleOAuth2Authenticator.class.getName());
 
   @Override
-  public User authenticate(HttpServletRequest request) {
+  public User authenticate(HttpServletRequest request) throws ServiceUnavailableException {
     Attribute attr = Attribute.from(request);
     if (attr.isEnabled(Attribute.SKIP_TOKEN_AUTH)) {
       return null;
@@ -89,7 +90,7 @@ public class GoogleOAuth2Authenticator implements Authenticator {
   }
 
   @VisibleForTesting
-  TokenInfo getTokenInfoRemote(String token) {
+  TokenInfo getTokenInfoRemote(String token) throws ServiceUnavailableException {
     return GoogleAuth.getTokenInfoRemote(token);
   }
 }

@@ -24,6 +24,7 @@ import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.request.Attribute;
+import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.common.collect.ImmutableList;
 
 import org.junit.Before;
@@ -65,38 +66,38 @@ public class GoogleOAuth2AuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticate_skipTokenAuth() {
+  public void testAuthenticate_skipTokenAuth() throws ServiceUnavailableException {
     attr.set(Attribute.SKIP_TOKEN_AUTH, true);
     assertNull(authenticator.authenticate(request));
   }
 
   @Test
-  public void testAuthenticate_notOAuth2() {
+  public void testAuthenticate_notOAuth2() throws ServiceUnavailableException {
     initializeRequest("Bearer badToken");
     assertNull(authenticator.authenticate(request));
   }
 
   @Test
-  public void testAuthenticate_nullTokenInfo() {
+  public void testAuthenticate_nullTokenInfo() throws ServiceUnavailableException {
     authenticator = createAuthenticator(null, null, null, null);
     assertNull(authenticator.authenticate(request));
   }
 
   @Test
-  public void testAuthenticate_scopeNotAllowed() {
+  public void testAuthenticate_scopeNotAllowed() throws ServiceUnavailableException {
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret("scope3"));
     assertNull(authenticator.authenticate(request));
   }
 
   @Test
-  public void testAuthenticate_clientIdNotAllowed() {
+  public void testAuthenticate_clientIdNotAllowed() throws ServiceUnavailableException {
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret("scope1"));
     when(config.getClientIds()).thenReturn(ImmutableList.of("clientId2"));
     assertNull(authenticator.authenticate(request));
   }
 
   @Test
-  public void testAuthenticate_skipClientIdCheck() {
+  public void testAuthenticate_skipClientIdCheck() throws ServiceUnavailableException {
     request.removeAttribute(Attribute.ENABLE_CLIENT_ID_WHITELIST);
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret("scope1"));
     when(config.getClientIds()).thenReturn(ImmutableList.of("clientId2"));
@@ -106,7 +107,7 @@ public class GoogleOAuth2AuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticate() {
+  public void testAuthenticate() throws ServiceUnavailableException {
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret("scope1"));
     when(config.getClientIds()).thenReturn(ImmutableList.of(CLIENT_ID));
     User user = authenticator.authenticate(request);
@@ -115,7 +116,7 @@ public class GoogleOAuth2AuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticate_appEngineUser() {
+  public void testAuthenticate_appEngineUser() throws ServiceUnavailableException {
     attr.set(Attribute.REQUIRE_APPENGINE_USER, true);
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret("scope1"));
     when(config.getClientIds()).thenReturn(ImmutableList.of(CLIENT_ID));

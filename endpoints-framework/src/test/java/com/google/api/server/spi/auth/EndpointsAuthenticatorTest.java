@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.server.spi.EnvUtil;
 import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.request.Attribute;
+import com.google.api.server.spi.response.ServiceUnavailableException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -53,13 +54,13 @@ public class EndpointsAuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticate_jwt() {
+  public void testAuthenticate_jwt() throws ServiceUnavailableException {
     when(jwtAuthenticator.authenticate(request)).thenReturn(USER);
     assertEquals(USER, authenticator.authenticate(request));
   }
 
   @Test
-  public void testAuthenticate_appEngine() {
+  public void testAuthenticate_appEngine() throws ServiceUnavailableException {
     when(jwtAuthenticator.authenticate(request)).thenReturn(null);
     when(appEngineAuthenticator.authenticate(request)).thenReturn(USER);
 
@@ -70,7 +71,7 @@ public class EndpointsAuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticate_oauth2NonAppEngine() {
+  public void testAuthenticate_oauth2NonAppEngine() throws ServiceUnavailableException {
     when(jwtAuthenticator.authenticate(request)).thenReturn(null);
     when(oauth2Authenticator.authenticate(request)).thenReturn(USER);
 
@@ -81,7 +82,7 @@ public class EndpointsAuthenticatorTest {
   }
 
   @Test
-  public void testAuthenticate_oAuth2NotRequireAppEngineUser() {
+  public void testAuthenticate_oAuth2NotRequireAppEngineUser() throws ServiceUnavailableException {
     when(jwtAuthenticator.authenticate(request)).thenReturn(null);
     when(oauth2Authenticator.authenticate(request)).thenReturn(USER);
 

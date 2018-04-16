@@ -16,12 +16,16 @@
 package com.google.api.server.spi.auth;
 
 import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpIOExceptionHandler;
 import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpUnsuccessfulResponseHandler;
 import com.google.api.client.util.Key;
 import com.google.api.server.spi.Client;
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.request.Attribute;
+import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
@@ -172,29 +176,66 @@ public class GoogleAuth {
     @Key("issued_to") public String clientId;
     @Key("scope") public String scopes;
     @Key("user_id") public String userId;
+    @Key("error_description") public String errorDescription;
   }
 
   /**
    * Get OAuth2 token info from remote token validation API.
+   * Retries IOExceptions and 5xx responses once.
    */
-  static TokenInfo getTokenInfoRemote(String token) {
+  static TokenInfo getTokenInfoRemote(String token) throws ServiceUnavailableException {
     try {
       HttpRequest request = Client.getInstance().getJsonHttpRequestFactory()
           .buildGetRequest(new GenericUrl(TOKEN_INFO_ENDPOINT + token));
+      configureErrorHandling(request);
       return parseTokenInfo(request);
     } catch (IOException e) {
-      logger.log(Level.WARNING, "Failed to retrieve tokeninfo", e);
-      return null;
+      throw new ServiceUnavailableException("Failed to perform access token validation", e);
     }
   }
 
   @VisibleForTesting
-  static TokenInfo parseTokenInfo(HttpRequest request) throws IOException {
-    TokenInfo info = request.execute().parseAs(TokenInfo.class);
+  static TokenInfo parseTokenInfo(HttpRequest request)
+      throws IOException, ServiceUnavailableException {
+    HttpResponse response = request.execute();
+    int statusCode = response.getStatusCode();
+    TokenInfo info = response.parseAs(TokenInfo.class);
+    if (statusCode != 200) {
+      String errorDescription = "Unknown error";
+      if (info != null && info.errorDescription != null) {
+        errorDescription = info.errorDescription;
+      }
+      errorDescription += " (" + statusCode + ")";
+      if (statusCode >= 500) {
+        logger.log(Level.SEVERE, "Error validating access token: " + errorDescription);
+        throw new ServiceUnavailableException("Failed to validate access token");
+      }
+      logger.log(Level.INFO, "Invalid access token: " + errorDescription);
+      return null;
+    }
     if (info == null || Strings.isEmptyOrWhitespace(info.email)) {
       logger.log(Level.WARNING, "Access token does not contain email scope");
       return null;
     }
     return info;
+  }
+
+  @VisibleForTesting
+  static void configureErrorHandling(HttpRequest request) {
+    request.setNumberOfRetries(1)
+        .setThrowExceptionOnExecuteError(false)
+        .setIOExceptionHandler(new HttpIOExceptionHandler() {
+          @Override
+          public boolean handleIOException(HttpRequest request, boolean supportsRetry) {
+            return true; // consider all IOException as transient
+          }
+        })
+        .setUnsuccessfulResponseHandler(new HttpUnsuccessfulResponseHandler() {
+          @Override
+          public boolean handleResponse(HttpRequest request, HttpResponse response,
+              boolean supportsRetry) {
+            return response.getStatusCode() >= 500; // only retry Google's backend errors
+          }
+        });
   }
 }
