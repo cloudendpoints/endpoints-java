@@ -80,6 +80,61 @@
             "https://www.googleapis.com/auth/userinfo.email"
           ]
         },
+        "getBooleanKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getBooleanKeyMap",
+          "path": "map_boolean_string",
+          "response": {
+            "$ref": "Map_Boolean_String"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getDateKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getDateKeyMap",
+          "path": "map_datetime_string",
+          "response": {
+            "$ref": "Map_DateTime_String"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getDateTimeKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getDateTimeKeyMap",
+          "path": "getDateTimeKeyMap",
+          "response": {
+            "$ref": "Map_DateTime_String"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getEnumKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getEnumKeyMap",
+          "path": "map_testenum_string",
+          "response": {
+            "$ref": "Map_TestEnum_String"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getFloatKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getFloatKeyMap",
+          "path": "map_float_string",
+          "response": {
+            "$ref": "Map_Float_String"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
         "getFooMap": {
           "httpMethod": "GET",
           "id": "myapi.mapEndpoint.getFooMap",
@@ -91,12 +146,23 @@
             "https://www.googleapis.com/auth/userinfo.email"
           ]
         },
-        "getFooMap2": {
+        "getFooMapMap": {
           "httpMethod": "GET",
-          "id": "myapi.mapEndpoint.getFooMap2",
+          "id": "myapi.mapEndpoint.getFooMapMap",
           "path": "map_string_map_string_foo",
           "response": {
             "$ref": "Map_String_Map_String_Foo"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getIntKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getIntKeyMap",
+          "path": "map_integer_string",
+          "response": {
+            "$ref": "Map_Integer_String"
           },
           "scopes": [
             "https://www.googleapis.com/auth/userinfo.email"
@@ -108,6 +174,17 @@
           "path": "map_string_integer",
           "response": {
             "$ref": "Map_String_Integer"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getLongKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getLongKeyMap",
+          "path": "map_long_string",
+          "response": {
+            "$ref": "Map_Long_String"
           },
           "scopes": [
             "https://www.googleapis.com/auth/userinfo.email"
@@ -167,6 +244,17 @@
           "scopes": [
             "https://www.googleapis.com/auth/userinfo.email"
           ]
+        },
+        "getStringValueMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getStringValueMap",
+          "path": "map_string_stringvalue",
+          "response": {
+            "$ref": "Map_String_StringValue"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
         }
       }
     }
@@ -217,14 +305,35 @@
         "bazMap": {
           "$ref": "Map_String_Baz"
         },
+        "booleanKeyMap": {
+          "$ref": "Map_Boolean_String"
+        },
+        "dateKeyMap": {
+          "$ref": "Map_DateTime_String"
+        },
+        "dateTimeKeyMap": {
+          "$ref": "Map_DateTime_String"
+        },
+        "enumKeyMap": {
+          "$ref": "Map_TestEnum_String"
+        },
+        "floatKeyMap": {
+          "$ref": "Map_Float_String"
+        },
         "fooMap": {
           "$ref": "Map_String_Foo"
         },
-        "fooMap2": {
+        "fooMapMap": {
           "$ref": "Map_String_Map_String_Foo"
+        },
+        "intKeyMap": {
+          "$ref": "Map_Integer_String"
         },
         "intMap": {
           "$ref": "Map_String_Integer"
+        },
+        "longKeyMap": {
+          "$ref": "Map_Long_String"
         },
         "mapOfStrings": {
           "$ref": "MapContainer"
@@ -240,8 +349,46 @@
         },
         "stringMap": {
           "$ref": "Map_String_String"
+        },
+        "stringValueMap": {
+          "$ref": "Map_String_StringValue"
         }
       },
+      "type": "object"
+    },
+    "Map_Boolean_String": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "id": "Map_Boolean_String",
+      "type": "object"
+    },
+    "Map_DateTime_String": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "id": "Map_DateTime_String",
+      "type": "object"
+    },
+    "Map_Float_String": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "id": "Map_Float_String",
+      "type": "object"
+    },
+    "Map_Integer_String": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "id": "Map_Integer_String",
+      "type": "object"
+    },
+    "Map_Long_String": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "id": "Map_Long_String",
       "type": "object"
     },
     "Map_String_Baz": {
@@ -295,6 +442,13 @@
         "type": "string"
       },
       "id": "Map_String_StringValue",
+      "type": "object"
+    },
+    "Map_TestEnum_String": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "id": "Map_TestEnum_String",
       "type": "object"
     }
   },

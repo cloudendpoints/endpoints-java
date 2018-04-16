@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/JsonMap"
+              "$ref": "#/definitions/Map_String_StringCollection"
             }
           }
         }
@@ -206,7 +206,7 @@
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/JsonMap"
+              "$ref": "#/definitions/Map_String_StringCollection"
             }
           }
         }
@@ -291,7 +291,6 @@
         "type": "string"
       }
     },
-    "JsonMap": {},
     "Map_String_StringValue": {
       "type": "object",
       "additionalProperties": {
@@ -312,16 +311,16 @@
         "format": "int32"
       }
     },
-    "Map_String_Map_String_Foo": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Map_String_Foo"
-      }
-    },
     "Map_String_Baz": {
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/Baz"
+      }
+    },
+    "Map_String_Map_String_Foo": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Map_String_Foo"
       }
     },
     "Map_String_String": {
@@ -340,6 +339,15 @@
           "items": {
             "$ref": "#/definitions/Foo"
           }
+        }
+      }
+    },
+    "Map_String_StringCollection": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
         }
       }
     },
@@ -391,10 +399,10 @@
           "$ref": "#/definitions/MapEndpoint"
         },
         "stringArrayMap": {
-          "$ref": "#/definitions/JsonMap"
+          "$ref": "#/definitions/Map_String_StringCollection"
         },
         "stringCollectionMap": {
-          "$ref": "#/definitions/JsonMap"
+          "$ref": "#/definitions/Map_String_StringCollection"
         },
         "stringMap": {
           "$ref": "#/definitions/Map_String_String"

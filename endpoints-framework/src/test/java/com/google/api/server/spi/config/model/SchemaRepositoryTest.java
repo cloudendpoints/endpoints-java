@@ -81,20 +81,30 @@ public class SchemaRepositoryTest {
 
   @Test
   public void getOrAdd_jsonMap() throws Exception {
-    ApiMethodConfig methodConfig = getMethodConfig("getMap");
-    assertThat(repo.getOrAdd(methodConfig.getReturnType(), config))
-        .isEqualTo(SchemaRepository.MAP_SCHEMA);
+    checkJsonMap("getStringEnumMap");
+    checkJsonMap("getStringArrayMap");
+    checkJsonMap("getArrayStringMap");
   }
 
   @Test
   public void getOrAdd_mapType() throws Exception {
     System.setProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG, "true");
     try {
-      ApiMethodConfig methodConfig = getMethodConfig("getMap");
+      //unsupported map types still use JsonMap schema
+      checkJsonMap("getStringArrayMap");
+      checkJsonMap("getArrayStringMap");
+      //supported map types generate proper map schema
+      ApiMethodConfig methodConfig = getMethodConfig("getStringEnumMap");
       checkMapSchema(repo.getOrAdd(methodConfig.getReturnType(), config));
     } finally {
       System.clearProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG);
     }
+  }
+
+  private void checkJsonMap(String methodName) throws Exception {
+    ApiMethodConfig methodConfig = getMethodConfig(methodName);
+    assertThat(repo.getOrAdd(methodConfig.getReturnType(), config))
+            .isEqualTo(SchemaRepository.MAP_SCHEMA);
   }
 
   @Test
@@ -198,7 +208,15 @@ public class SchemaRepositoryTest {
       return null;
     }
 
-    public Map<String, TestEnum> getMap() {
+    public Map<String, TestEnum> getStringEnumMap() {
+      return null;
+    }
+
+    public Map<String, String[]> getStringArrayMap() {
+      return null;
+    }
+
+    public Map<String[], String> getArrayStringMap() {
       return null;
     }
 

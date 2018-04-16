@@ -80,10 +80,54 @@
             "https://www.googleapis.com/auth/userinfo.email"
           ]
         },
-        "getEnumyMap": {
+        "getBooleanKeyMap": {
           "httpMethod": "GET",
-          "id": "myapi.mapEndpoint.getEnumyMap",
+          "id": "myapi.mapEndpoint.getBooleanKeyMap",
+          "path": "map_boolean_string",
+          "response": {
+            "$ref": "JsonMap"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getDateKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getDateKeyMap",
+          "path": "map_datetime_string",
+          "response": {
+            "$ref": "JsonMap"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getDateTimeKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getDateTimeKeyMap",
+          "path": "getDateTimeKeyMap",
+          "response": {
+            "$ref": "JsonMap"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getEnumKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getEnumKeyMap",
           "path": "map_testenum_string",
+          "response": {
+            "$ref": "JsonMap"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getFloatKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getFloatKeyMap",
+          "path": "map_float_string",
           "response": {
             "$ref": "JsonMap"
           },
@@ -102,10 +146,21 @@
             "https://www.googleapis.com/auth/userinfo.email"
           ]
         },
-        "getFooMap2": {
+        "getFooMapMap": {
           "httpMethod": "GET",
-          "id": "myapi.mapEndpoint.getFooMap2",
+          "id": "myapi.mapEndpoint.getFooMapMap",
           "path": "map_string_map_string_foo",
+          "response": {
+            "$ref": "JsonMap"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getIntKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getIntKeyMap",
+          "path": "map_integer_string",
           "response": {
             "$ref": "JsonMap"
           },
@@ -117,6 +172,17 @@
           "httpMethod": "GET",
           "id": "myapi.mapEndpoint.getIntMap",
           "path": "map_string_integer",
+          "response": {
+            "$ref": "JsonMap"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "getLongKeyMap": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getLongKeyMap",
+          "path": "map_long_string",
           "response": {
             "$ref": "JsonMap"
           },
@@ -179,10 +245,10 @@
             "https://www.googleapis.com/auth/userinfo.email"
           ]
         },
-        "getStringValueKeyMap": {
+        "getStringValueMap": {
           "httpMethod": "GET",
-          "id": "myapi.mapEndpoint.getStringValueKeyMap",
-          "path": "map_stringvalue_string",
+          "id": "myapi.mapEndpoint.getStringValueMap",
+          "path": "map_string_stringvalue",
           "response": {
             "$ref": "JsonMap"
           },
@@ -215,16 +281,34 @@
         "bazMap": {
           "$ref": "JsonMap"
         },
-        "enumyMap": {
+        "booleanKeyMap": {
+          "$ref": "JsonMap"
+        },
+        "dateKeyMap": {
+          "$ref": "JsonMap"
+        },
+        "dateTimeKeyMap": {
+          "$ref": "JsonMap"
+        },
+        "enumKeyMap": {
+          "$ref": "JsonMap"
+        },
+        "floatKeyMap": {
           "$ref": "JsonMap"
         },
         "fooMap": {
           "$ref": "JsonMap"
         },
-        "fooMap2": {
+        "fooMapMap": {
+          "$ref": "JsonMap"
+        },
+        "intKeyMap": {
           "$ref": "JsonMap"
         },
         "intMap": {
+          "$ref": "JsonMap"
+        },
+        "longKeyMap": {
           "$ref": "JsonMap"
         },
         "mapOfStrings": {
@@ -242,7 +326,7 @@
         "stringMap": {
           "$ref": "JsonMap"
         },
-        "stringValueKeyMap": {
+        "stringValueMap": {
           "$ref": "JsonMap"
         }
       },

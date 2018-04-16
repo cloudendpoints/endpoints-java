@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.swagger;
 
+import static com.google.api.server.spi.config.model.SchemaRepository.SUPPORT_ARRAY_VALUES_IN_MAP_FLAG;
 import static com.google.api.server.spi.config.model.SchemaRepository.SUPPORT_GENERIC_MAP_TYPES_FLAG;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -125,6 +126,20 @@ public class SwaggerGeneratorTest {
       compareSwagger(expected, swagger);
     } finally {
       System.clearProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG);
+    }
+  }
+
+  @Test
+  public void testWriteSwagger_MapEndpoint_New_With_Array() throws Exception {
+    System.setProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG, "true");
+    System.setProperty(SUPPORT_ARRAY_VALUES_IN_MAP_FLAG, "true");
+    try {
+      Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+      Swagger expected = readExpectedAsSwagger("map_endpoint_with_array.swagger");
+      compareSwagger(expected, swagger);
+    } finally {
+      System.clearProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG);
+      System.clearProperty(SUPPORT_ARRAY_VALUES_IN_MAP_FLAG);
     }
   }
 

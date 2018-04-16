@@ -18,11 +18,10 @@ package com.google.api.server.spi.testing;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiResourceProperty;
-import com.google.api.server.spi.config.Description;
-import com.google.api.server.spi.response.CollectionResponse;
+import com.google.api.server.spi.types.DateAndTime;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -51,11 +50,11 @@ public class MapEndpoint {
     return null;
   }
 
-  public Map<String, Map<String, Foo>> getFooMap2() {
+  public Map<String, Map<String, Foo>> getFooMapMap() {
     return null;
   }
 
-  public Map<StringValue, String> getStringValueKeyMap() {
+  public Map<String, StringValue> getStringValueMap() {
     return null;
   }
 
@@ -69,11 +68,39 @@ public class MapEndpoint {
     public Map<String, StringValue> stringMap;
   }
 
-  //Map types below are still generating JsonMap schema for now
+  //Keys that can be converted from / to String generate schema with additionalProperties
 
-  public Map<TestEnum, String> getEnumyMap() {
+  public Map<TestEnum, String> getEnumKeyMap() {
     return null;
   }
+
+  public Map<Boolean, String> getBooleanKeyMap() {
+    return null;
+  }
+
+  public Map<Integer, String> getIntKeyMap() {
+    return null;
+  }
+
+  public Map<Long, String> getLongKeyMap() {
+    return null;
+  }
+
+  public Map<Float, String> getFloatKeyMap() {
+    return null;
+  }
+
+  public Map<Date, String> getDateKeyMap() {
+    return null;
+  }
+
+  @ApiMethod(path = "getDateTimeKeyMap")
+  public Map<DateAndTime, String> getDateTimeKeyMap() {
+    return null;
+  }
+
+  //Maps with array-like values generate a JsonMap schema (not supported by API client generator)
+  //unless activated with SUPPORT_ARRAY_VALUES_IN_MAP_FLAG flag
 
   public Map<String, String[]> getStringArrayMap() {
     return null;
