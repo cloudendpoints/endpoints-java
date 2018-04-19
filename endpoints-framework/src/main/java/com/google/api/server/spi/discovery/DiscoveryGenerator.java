@@ -116,10 +116,12 @@ public class DiscoveryGenerator {
     ImmutableSet.Builder<ApiKey> preferred = ImmutableSet.builder();
     for (ApiKey apiKey : configsByKey.keySet()) {
       ImmutableList<ApiConfig> apiConfigs = configsByKey.get(apiKey);
-      builder.put(apiKey, writeApi(apiKey, apiConfigs, context, schemaRepository));
-      // last config takes precedence (same as writeApi)
-      if (Iterables.getLast(apiConfigs).getIsDefaultVersion()) {
-        preferred.add(apiKey);
+      if (context.generateAll || apiConfigs.get(0).getIsDiscoverable()) {
+        builder.put(apiKey, writeApi(apiKey, apiConfigs, context, schemaRepository));
+        // last config takes precedence (same as writeApi)
+        if (Iterables.getLast(apiConfigs).getIsDefaultVersion()) {
+          preferred.add(apiKey);
+        }
       }
     }
     ImmutableMap<ApiKey, RestDescription> discoveryDocs = builder.build();
@@ -450,6 +452,7 @@ public class DiscoveryGenerator {
     private String scheme = "https";
     private String hostname = "myapi.appspot.com";
     private String basePath = "/_ah/api";
+    private boolean generateAll = true;
 
     public String getApiRoot() {
       return scheme + "://" + hostname + basePath;
@@ -485,6 +488,14 @@ public class DiscoveryGenerator {
 
     public DiscoveryContext setBasePath(String basePath) {
       this.basePath = Strings.stripTrailingSlash(basePath);
+      return this;
+    }
+
+    /**
+     * Returns whether or not APIs with discoverable set to false should be generated.
+     */
+    public DiscoveryContext setGenerateAll(boolean generateAll) {
+      this.generateAll = generateAll;
       return this;
     }
   }
