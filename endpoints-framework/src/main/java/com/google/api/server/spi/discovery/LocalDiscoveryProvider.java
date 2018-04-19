@@ -58,7 +58,11 @@ public class LocalDiscoveryProvider extends AbstractDiscoveryProvider {
   private synchronized void ensureDiscoveryResult() {
     if (discoveryDocs == null) {
       DiscoveryGenerator.Result result = generator.writeDiscovery(
-          getAllApiConfigs(), new DiscoveryContext().setApiRoot(PLACEHOLDER_ROOT), repository);
+          getAllApiConfigs(),
+          new DiscoveryContext()
+              .setApiRoot(PLACEHOLDER_ROOT)
+              .setGenerateAll(false),
+          repository);
       directoryList = result.directory();
       ImmutableMap.Builder<ApiKey, RestDescription> builder = ImmutableMap.builder();
       for (Map.Entry<ApiKey, RestDescription> entry : result.discoveryDocs().entrySet()) {

@@ -36,6 +36,7 @@ import com.google.api.server.spi.testing.FooDescriptionEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.MultipleParameterEndpoint;
 import com.google.api.server.spi.testing.NamespaceEndpoint;
+import com.google.api.server.spi.testing.NonDiscoverableEndpoint;
 import com.google.api.server.spi.testing.PrimitiveEndpoint;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
@@ -180,6 +181,24 @@ public class DiscoveryGeneratorTest {
                 configLoader.loadConfiguration(ServiceContext.create(), EnumEndpoint.class)),
             new DiscoveryContext());
     assertThat(result.directory()).isEqualTo(readExpectedAsDirectory("directory.json"));
+  }
+
+  @Test
+  public void testWriteDiscovery_nonDiscoverableEndpointButGenerateAll() throws Exception {
+    getDiscovery(context, NonDiscoverableEndpoint.class);
+    RestDescription doc = getDiscovery(new DiscoveryContext(), NonDiscoverableEndpoint.class);
+    RestDescription expected = readExpectedAsDiscovery("foo_endpoint_default_context.json");
+    compareDiscovery(expected, doc);
+  }
+
+  @Test
+  public void testWriteDiscovery_nonDiscoverableEndpoint() throws Exception {
+    DiscoveryGenerator.Result result = generator.writeDiscovery(
+        ImmutableList.of(
+            configLoader.loadConfiguration(ServiceContext.create(), NonDiscoverableEndpoint.class)),
+        new DiscoveryContext().setGenerateAll(false));
+    assertThat(result.discoveryDocs()).isEmpty();
+    assertThat(result.directory().getItems()).isEmpty();
   }
 
   @Test
