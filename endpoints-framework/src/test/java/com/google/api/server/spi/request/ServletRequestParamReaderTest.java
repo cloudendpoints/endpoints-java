@@ -30,6 +30,7 @@ import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
+import com.google.api.server.spi.response.BadRequestException;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.api.server.spi.testing.TestEndpoint.Request;
@@ -39,14 +40,6 @@ import com.google.appengine.api.datastore.Blob;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,10 +54,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Tests for {@link ServletRequestParamReader}.
@@ -150,25 +148,28 @@ public class ServletRequestParamReaderTest {
         .put(TestEndpoint.NAME_STRING, "\"" + VALUE_STRING + "\"")
         .put(TestEndpoint.NAME_BOOLEAN, String.valueOf(VALUE_BOOLEAN))
         .put(TestEndpoint.NAME_LONG, String.valueOf(VALUE_LONG))
-        .put(TestEndpoint.NAME_DOUBLE, String.valueOf(VALUE_DOUBLE))
-        .put(TestEndpoint.NAME_BOOLEAN_OBJECT, String.valueOf(VALUE_BOOLEAN))
-        .put(TestEndpoint.NAME_INTEGER_OBJECT, String.valueOf(VALUE_INTEGER))
         .put(TestEndpoint.NAME_LONG_OBJECT, String.valueOf(VALUE_LONG))
+        .put(TestEndpoint.NAME_DOUBLE, String.valueOf(VALUE_DOUBLE))
+        .put(TestEndpoint.NAME_DOUBLE_OBJECT, String.valueOf(VALUE_DOUBLE))
+        .put(TestEndpoint.NAME_BOOLEAN_OBJECT, String.valueOf(VALUE_BOOLEAN))
+        .put(TestEndpoint.NAME_INTEGER, String.valueOf(VALUE_INTEGER))
+        .put(TestEndpoint.NAME_INTEGER_OBJECT, String.valueOf(VALUE_INTEGER))
+        .put(TestEndpoint.NAME_FLOAT, String.valueOf(VALUE_FLOAT))
         .put(TestEndpoint.NAME_FLOAT_OBJECT, String.valueOf(VALUE_FLOAT))
         .put("stringValue", "321")
         .put("more", "999").build());
 
     assertEquals(VALUE_STRING, params[0]);
     assertEquals(VALUE_BOOLEAN, params[1]);
-    assertNull(params[2]);
+    assertEquals(VALUE_INTEGER, params[2]);
     assertEquals(VALUE_LONG, params[3]);
-    assertNull(params[4]);
+    assertEquals(VALUE_FLOAT, params[4]);
     assertEquals(VALUE_DOUBLE, params[5]);
     assertEquals(VALUE_BOOLEAN, params[6]);
     assertEquals(VALUE_INTEGER, params[7]);
     assertEquals(VALUE_LONG, params[8]);
     assertEquals(VALUE_FLOAT, params[9]);
-    assertNull(params[10]);
+    assertEquals(VALUE_DOUBLE, params[10]);
     assertEquals("321", ((Request) params[11]).getStringValue());
     assertEquals(-1, (int) ((Request) params[11]).getIntegerValue());
     assertEquals(USER, params[12]);
@@ -586,11 +587,13 @@ public class ServletRequestParamReaderTest {
   public void testJavaxNamed() throws Exception {
     class Test {
       @SuppressWarnings("unused")
-      public void foo(@javax.inject.Named("str") String str, @javax.inject.Named("i") int i) {}
+      public void foo(
+          @javax.inject.Named("str") String str,
+          @Nullable @javax.inject.Named("i") Integer i) {}
     }
     String requestString = "{\"str\":\"hello\"}";
 
-    Method method = Test.class.getDeclaredMethod("foo", String.class, int.class);
+    Method method = Test.class.getDeclaredMethod("foo", String.class, Integer.class);
     Object[] params = readParameters(requestString, method);
 
     assertEquals(2, params.length);
@@ -602,7 +605,7 @@ public class ServletRequestParamReaderTest {
   public void testCachedNamesAreUsed() throws Exception {
     class Test {
       @SuppressWarnings("unused")
-      public void foo(@Named("foo1") String f1, @Named("foo2") String f2,
+      public void foo(@Named("foo1") String f1, @Nullable @Named("foo2") String f2,
           @Named("foo3") String f3) {}
     }
 
@@ -624,8 +627,10 @@ public class ServletRequestParamReaderTest {
   public void testNamesAreCached() throws Exception {
     class Test {
       @SuppressWarnings("unused")
-      public void foo(@Named("foo1") String f1, @Named("foo2") String f2,
-          @Named("foo3") String f3) {}
+      public void foo(
+          @Nullable @Named("foo1") String f1,
+          @Nullable @Named("foo2") String f2,
+          @Nullable @Named("foo3") String f3) {}
     }
 
     Method method = Test.class.getDeclaredMethod("foo", String.class, String.class, String.class);
@@ -828,6 +833,22 @@ public class ServletRequestParamReaderTest {
           null);
       fail("expected unauthorized method exception");
     } catch (UnauthorizedException ex) {
+      // expected
+    }
+  }
+
+  @Test
+  public void testNullValueForRequiredParam() throws Exception {
+    class TestNullValueForRequiredParam {
+      @SuppressWarnings("unused")
+      public void test(@Named("testParam") String testParam) {}
+    }
+    try {
+      Object[] params =
+          readParameters("{}",
+              TestNullValueForRequiredParam.class.getDeclaredMethod("test", String.class));
+      fail("expected bad request exception");
+    } catch (BadRequestException ex) {
       // expected
     }
   }

@@ -27,6 +27,7 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.config.DefaultValue;
 import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
@@ -229,7 +230,9 @@ public class RestServletRequestParamReaderTest {
   @Api
   public static class TestApi {
     @ApiMethod(name = "test", httpMethod = HttpMethod.GET, path = "test/{path}")
-    public void test(@Named("path") long path, @Named("dates") List<SimpleDate> dates,
+    public void test(
+        @Nullable @Named("path") long path,
+        @Nullable @Named("dates") List<SimpleDate> dates,
         @Named("defaultvalue") @DefaultValue("2015-01-01") SimpleDate defaultValue,
         TestResource resource) {
     }
