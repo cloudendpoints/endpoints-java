@@ -56,8 +56,10 @@ import java.util.regex.Pattern;
  */
 public class ApiConfigValidator {
   private static final Logger log = Logger.getLogger(ApiConfigValidator.class.getName());
+  // The underscore is allowed in the API name because of very old legacy reasons, despite the
+  // annotation documentation stating otherwise.
   private static final Pattern API_NAME_PATTERN = Pattern.compile(
-      "^[a-z]+[A-Za-z0-9]*$");
+      "^[a-z]+[A-Za-z0-9_]*$");
 
   private static final Pattern API_METHOD_NAME_PATTERN = Pattern.compile(
       "^\\w+(\\.\\w+)*$");
