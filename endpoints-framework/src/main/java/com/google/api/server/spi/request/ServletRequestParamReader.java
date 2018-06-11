@@ -177,29 +177,27 @@ public class ServletRequestParamReader extends AbstractParamReader {
           params[i] = (node == null) ? null : objectReader.forType(clazz).readValue(node);
           logger.log(Level.FINE, "deserialize: {0} {1} injected into unnamed param[{2}]",
               new Object[]{clazz, params[i], i});
-        } else {
-          if (StandardParameters.isStandardParamName(name)) {
+        } else if (StandardParameters.isStandardParamName(name)) {
             params[i] = getStandardParamValue(node, name);
+        } else {
+          JsonNode nodeValue = node.get(name);
+          if (nodeValue == null) {
+            params[i] = null;
           } else {
-            JsonNode nodeValue = node.get(name);
-            if (nodeValue == null) {
-              params[i] = null;
+            // Check for collection type
+            if (Collection.class.isAssignableFrom(clazz)
+                && type.getType() instanceof ParameterizedType) {
+              params[i] =
+                  deserializeCollection(clazz, (ParameterizedType) type.getType(), nodeValue);
             } else {
-              // Check for collection type
-              if (Collection.class.isAssignableFrom(clazz)
-                  && type.getType() instanceof ParameterizedType) {
-                params[i] =
-                    deserializeCollection(clazz, (ParameterizedType) type.getType(), nodeValue);
-              } else {
-                params[i] = objectReader.forType(clazz).readValue(nodeValue);
-              }
+              params[i] = objectReader.forType(clazz).readValue(nodeValue);
             }
-            if (params[i] == null && isRequiredParameter(method, i)) {
-              throw new BadRequestException("null value for parameter '" + name + "' not allowed");
-            }
-            logger.log(Level.FINE, "deserialize: {0} {1} injected into param[{2}] named {3}",
-                new Object[] {clazz, params[i], i, name});
           }
+          if (params[i] == null && isRequiredParameter(method, i)) {
+            throw new BadRequestException("null value for parameter '" + name + "' not allowed");
+          }
+          logger.log(Level.FINE, "deserialize: {0} {1} injected into param[{2}] named {3}",
+              new Object[] {clazz, params[i], i, name});
         }
       }
     }
