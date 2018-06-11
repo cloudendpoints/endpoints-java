@@ -178,7 +178,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
           logger.log(Level.FINE, "deserialize: {0} {1} injected into unnamed param[{2}]",
               new Object[]{clazz, params[i], i});
         } else if (StandardParameters.isStandardParamName(name)) {
-            params[i] = getStandardParamValue(node, name);
+          params[i] = getStandardParamValue(node, name);
         } else {
           JsonNode nodeValue = node.get(name);
           if (nodeValue == null) {
