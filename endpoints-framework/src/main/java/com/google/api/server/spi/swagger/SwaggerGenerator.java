@@ -413,6 +413,7 @@ public class SwaggerGenerator {
       docSchema.setProperties(fields);
     }
     if (!schema.enumValues().isEmpty()) {
+      docSchema.setType("string");
       docSchema._enum(schema.enumValues());
     }
     return docSchema;

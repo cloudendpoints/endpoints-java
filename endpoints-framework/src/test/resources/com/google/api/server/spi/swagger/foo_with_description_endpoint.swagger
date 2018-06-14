@@ -246,6 +246,7 @@
       }
     },
     "TestEnumDescription": {
+      "type": "string",
       "enum": [
         "VALUE1",
         "VALUE2"
