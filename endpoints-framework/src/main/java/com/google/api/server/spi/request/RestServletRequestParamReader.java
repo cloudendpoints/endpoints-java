@@ -135,7 +135,7 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
       return deserializeParams(body);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
         | IOException e) {
-      e.printStackTrace();
+      logger.log(Level.INFO, "Unable to read request parameter(s):", e);
       throw new BadRequestException(e);
     }
   }
