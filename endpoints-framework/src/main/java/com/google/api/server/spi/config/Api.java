@@ -34,6 +34,7 @@ public @interface Api {
    * methods will be exposed below this path. This will default to
    * "https://yourapp.appspot.com/_ah/api".
    */
+  @Deprecated
   String root() default "";
 
   /**
@@ -77,6 +78,7 @@ public @interface Api {
    * method calls. This will default to "https://yourapp.appspot.com/_ah/spi". Non-secure http URLs
    * will be automatically converted to use https.
    */
+  @Deprecated
   String backendRoot() default "";
 
   /**
