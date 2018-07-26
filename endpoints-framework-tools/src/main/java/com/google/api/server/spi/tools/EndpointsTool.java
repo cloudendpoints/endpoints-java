@@ -111,11 +111,7 @@ public class EndpointsTool {
     System.out.println(action.getHelpString());
   }
 
-  public static void main(String[] args) {
-    try {
-      new EndpointsTool().execute(args);
-    } catch (Exception e) {
-      System.err.println("Error: " + e.getMessage());
-    }
+  public static void main(String[] args) throws Exception {
+    new EndpointsTool().execute(args);
   }
 }
