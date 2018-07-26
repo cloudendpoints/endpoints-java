@@ -100,8 +100,9 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
       URL[] classPath, String outputFilePath, String hostname, String basePath,
       List<String> serviceClassNames, boolean outputToDisk)
       throws ClassNotFoundException, IOException, ApiConfigException {
-    File outputDir = new File(outputFilePath).getParentFile();
-    if (!outputDir.isDirectory()) {
+    File outputFile = new File(outputFilePath);
+    File outputDir = outputFile.getParentFile();
+    if (!outputDir.isDirectory() || outputFile.isDirectory()) {
       throw new IllegalArgumentException(outputFilePath + " is not a file");
     }
 
@@ -124,7 +125,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
     String swaggerStr = Json.mapper().writer(new EndpointsPrettyPrinter())
         .writeValueAsString(swagger);
     if (outputToDisk) {
-      Files.write(swaggerStr, new File(outputFilePath), UTF_8);
+      Files.write(swaggerStr, outputFile, UTF_8);
       System.out.println("OpenAPI document written to " + outputFilePath);
     }
 
