@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Test service used for testing array schemas.
+ * Test service used for testing map schemas.
  */
 @Api(transformers = StringValueTransformer.class)
 public class MapEndpoint {
@@ -100,7 +100,7 @@ public class MapEndpoint {
   }
 
   //Maps with array-like values generate a JsonMap schema (not supported by API client generator)
-  //unless activated with SUPPORT_ARRAY_VALUES_IN_MAP_FLAG flag
+  //unless activated with MapSchemaFlag.SUPPORT_ARRAYS_VALUES
 
   public Map<String, String[]> getStringArrayMap() {
     return null;

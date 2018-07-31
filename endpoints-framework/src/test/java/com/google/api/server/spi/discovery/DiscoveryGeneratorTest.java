@@ -15,9 +15,9 @@
  */
 package com.google.api.server.spi.discovery;
 
-import static com.google.api.server.spi.config.model.SchemaRepository.SUPPORT_ARRAY_VALUES_IN_MAP_FLAG;
-import static com.google.api.server.spi.config.model.SchemaRepository.SUPPORT_GENERIC_MAP_TYPES_FLAG;
-import static com.google.api.server.spi.config.model.SchemaRepository.WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.FORCE_JSON_MAP_SCHEMA;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.SUPPORT_ARRAYS_VALUES;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -39,6 +39,7 @@ import com.google.api.server.spi.testing.EnumEndpointV2;
 import com.google.api.server.spi.testing.FooDescriptionEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.MapEndpoint;
+import com.google.api.server.spi.testing.MapEndpointInvalid;
 import com.google.api.server.spi.testing.MultipleParameterEndpoint;
 import com.google.api.server.spi.testing.NamespaceEndpoint;
 import com.google.api.server.spi.testing.NonDiscoverableEndpoint;
@@ -50,6 +51,7 @@ import com.google.common.collect.Iterables;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -115,47 +117,53 @@ public class DiscoveryGeneratorTest {
   }
 
   @Test
-  public void testWriteDiscovery_MapEndpoint_Old() throws Exception {
+  public void testWriteDiscovery_MapEndpoint() throws Exception {
     RestDescription doc = getDiscovery(new DiscoveryContext(), MapEndpoint.class);
-    RestDescription expected = readExpectedAsDiscovery("map_endpoint_old.json");
+    RestDescription expected = readExpectedAsDiscovery("map_endpoint.json");
     compareDiscovery(expected, doc);
   }
 
   @Test
-  public void testWriteDiscovery_MapEndpoint_Warn() throws Exception {
-    System.setProperty(WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG, "true");
+  public void testWriteDiscovery_MapEndpoint_Legacy() throws Exception {
+    System.setProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName, "");
     try {
       RestDescription doc = getDiscovery(new DiscoveryContext(), MapEndpoint.class);
-      RestDescription expected = readExpectedAsDiscovery("map_endpoint_old.json");
+      RestDescription expected = readExpectedAsDiscovery("map_endpoint_legacy.json");
       compareDiscovery(expected, doc);
     } finally {
-      System.clearProperty(WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG);
+      System.clearProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName);
     }
   }
 
   @Test
-  public void testWriteDiscovery_MapEndpoint_New() throws Exception {
-    System.setProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG, "true");
+  public void testWriteDiscovery_MapEndpoint_InvalidKeyTypeKO() throws Exception {
     try {
-      RestDescription doc = getDiscovery(new DiscoveryContext(), MapEndpoint.class);
-      RestDescription expected = readExpectedAsDiscovery("map_endpoint_new.json");
-      compareDiscovery(expected, doc);
-    } finally {
-      System.clearProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG);
+      getDiscovery(new DiscoveryContext(), MapEndpointInvalid.class);
+      Assert.fail("Should have failed to generate schema for invalid key type");
+    } catch (IllegalArgumentException e){
+      //expected
     }
   }
 
   @Test
-  public void testWriteDiscovery_MapEndpoint_New_With_Array() throws Exception {
-    System.setProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG, "true");
-    System.setProperty(SUPPORT_ARRAY_VALUES_IN_MAP_FLAG, "true");
+  public void testWriteDiscovery_MapEndpoint_InvalidKeyTypeOK() throws Exception {
+    System.setProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
+    try {
+      getDiscovery(new DiscoveryContext(), MapEndpointInvalid.class);
+    } finally {
+      System.clearProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
+    }
+  }
+
+  @Test
+  public void testWriteDiscovery_MapEndpoint_WithArrayValue() throws Exception {
+    System.setProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName, "yes");
     try {
       RestDescription doc = getDiscovery(new DiscoveryContext(), MapEndpoint.class);
       RestDescription expected = readExpectedAsDiscovery("map_endpoint_with_array.json");
       compareDiscovery(expected, doc);
     } finally {
-      System.clearProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG);
-      System.clearProperty(SUPPORT_ARRAY_VALUES_IN_MAP_FLAG);
+      System.clearProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName);
     }
   }
 

@@ -1922,7 +1922,7 @@ public class AnnotationApiConfigGeneratorTest {
 
   @Test
   public void testRequestDoesContainMap() throws Exception {
-    checkRequestIsNotEmpty(new SimpleFoo<Map<ServletContext, User>>() {}.getClass());
+    checkRequestIsNotEmpty(new SimpleFoo<Map<String, User>>() {}.getClass());
   }
 
   @Test

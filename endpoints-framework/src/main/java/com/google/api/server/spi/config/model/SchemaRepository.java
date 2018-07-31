@@ -58,28 +58,6 @@ public class SchemaRepository {
   @VisibleForTesting
   static final String MAP_UNUSED_MSG = "unused for map values";
 
-  /**
-   * If enabled, will use "additionalProperties" in JsonSchema (both for Discovery and OpenAPI) to describe
-   * Map types, with proper description of the value types.
-   * This mode supports key types that can be serialized from / to String, and supports any value type.
-   * However, API client generation does not support array-like values in Maps yet, so these type of Maps will still use
-   * JsonMap as their schema by default to avoid generating invalid clients.
-   * It is still possible to enable support for array-like values with the flag
-   * {@link SchemaRepository#SUPPORT_ARRAY_VALUES_IN_MAP_FLAG}, for example when using the generated Discovery file in
-   * the API explorer.
-   */
-  public static final String SUPPORT_GENERIC_MAP_TYPES_FLAG = "endpoints.supportGenericMapTypes";
-  /**
-   * If enabled, warns about unsupported key or value types in Maps when generating API description documents.
-   * Can be enabled without "endpoints.supportGenericMapTypes" to analyze existing APIs.
-   */
-  public static final String WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG = "endpoints.warnAboutUnsupportedMapTypes";
-  /**
-   * Array values in Maps are supported by the API Explorer, but not by the client generation.
-   * This flag should be enabled when deploying an API, but disabled when generating clients.
-   */
-  public static final String SUPPORT_ARRAY_VALUES_IN_MAP_FLAG = "endpoints.supportArrayValuesInMap";
-
   private final Multimap<ApiKey, Schema> schemaByApiKeys = LinkedHashMultimap.create();
   private final Map<ApiSerializationConfig, Map<TypeToken<?>, Schema>> types = Maps.newHashMap();
   private final ResourceSchemaProvider resourceSchemaProvider = new JacksonResourceSchemaProvider();
@@ -185,10 +163,9 @@ public class SchemaRepository {
     } else if (Types.isMapType(type)) {
       schema = MAP_SCHEMA;
       boolean isGenericMapType = type.getType() instanceof ParameterizedType;
-      boolean supportsGenericMapTypes = isFlagEnabled(SUPPORT_GENERIC_MAP_TYPES_FLAG);
-      boolean warnOnly = isFlagEnabled(WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG);
-      if (isGenericMapType && (supportsGenericMapTypes || warnOnly)) {
-        schema = createMapSchema(type, typesForConfig, config, warnOnly).or(schema);
+      boolean forceJsonMapSchema = MapSchemaFlag.FORCE_JSON_MAP_SCHEMA.isEnabled();
+      if (isGenericMapType && !forceJsonMapSchema) {
+        schema = createMapSchema(type, typesForConfig, config).or(schema);
       }
       typesForConfig.put(type, schema);
       schemaByApiKeys.put(key, schema);
@@ -216,11 +193,6 @@ public class SchemaRepository {
     }
   }
 
-  //TODO is this the right way to enable flags?
-  private boolean isFlagEnabled(String flag) {
-    return Boolean.parseBoolean(System.getenv(flag)) || Boolean.parseBoolean(System.getProperty(flag));
-  }
-
   private void addSchemaToApi(ApiKey key, Schema schema) {
     if (schemaByApiKeys.containsEntry(key, schema)) {
       return;
@@ -240,18 +212,27 @@ public class SchemaRepository {
     }
   }
 
-  private Optional<Schema> createMapSchema(TypeToken type, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config,
-                                           boolean warnOnly) {
+  private Optional<Schema> createMapSchema(
+      TypeToken type, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
     FieldType keyFieldType = FieldType.fromType(Types.getTypeParameter(type, 0));
-    boolean supportedKeyType = checkMapType(SUPPORTED_MAP_KEY_TYPES.contains(keyFieldType),
-            "Type " + type + " not supported because key type is not serializable to String");
-    //TODO should it throw an exception if supportedKeyType is false? It will probably generate one at runtime.
+    boolean supportedKeyType = SUPPORTED_MAP_KEY_TYPES.contains(keyFieldType);
+    if (!supportedKeyType) {
+      String message = "Map field type '" + type + "' has a key type not serializable to String";
+      if (MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES.isEnabled()) {
+        System.err.println(message + ", its schema will be JsonMap");
+      } else {
+        throw new IllegalArgumentException(message);
+      }
+    }
     TypeToken<?> valueTypeToken = Types.getTypeParameter(type, 1);
     FieldType valueFieldType = FieldType.fromType(valueTypeToken);
-    boolean supportsArrayValueTypes = isFlagEnabled(SUPPORT_ARRAY_VALUES_IN_MAP_FLAG);
-    boolean supportedValueType = checkMapType(supportsArrayValueTypes || valueFieldType != FieldType.ARRAY,
-            "Type " + type + " not supported because value type is array-like");
-    if (!supportedKeyType || !supportedValueType || warnOnly) {
+    boolean supportArrayValues = MapSchemaFlag.SUPPORT_ARRAYS_VALUES.isEnabled();
+    boolean supportedValueType = supportArrayValues || valueFieldType != FieldType.ARRAY;
+    if (!supportedValueType) {
+      System.err.println("Map field type '" + type + "' "
+          + "has an array-like value type, its schema will be JsonMap");
+    }
+    if (!supportedKeyType || !supportedValueType) {
       return Optional.absent();
     }
     TypeToken<?> valueSchemaType = ApiAnnotationIntrospector.getSchemaType(valueTypeToken, config);
@@ -261,13 +242,6 @@ public class SchemaRepository {
     Field.Builder fieldBuilder = Field.builder().setName(MAP_UNUSED_MSG);
     fillInFieldInformation(fieldBuilder, valueSchemaType, null, typesForConfig, config);
     return Optional.of(builder.setMapValueSchema(fieldBuilder.build()).build());
-  }
-
-  private boolean checkMapType(boolean precondition, String message) {
-    if (isFlagEnabled(WARN_ABOUT_UNSUPPORTED_MAP_TYPES_FLAG) && !precondition) {
-      System.err.println(message + ", will use JsonMap");
-    }
-    return precondition;
   }
 
   private Schema createBeanSchema(

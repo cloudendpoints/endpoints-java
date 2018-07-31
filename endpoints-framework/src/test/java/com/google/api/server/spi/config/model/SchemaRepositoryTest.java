@@ -1,7 +1,8 @@
 package com.google.api.server.spi.config.model;
 
-import static com.google.api.server.spi.config.model.SchemaRepository.MAP_UNUSED_MSG;
-import static com.google.api.server.spi.config.model.SchemaRepository.SUPPORT_GENERIC_MAP_TYPES_FLAG;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.FORCE_JSON_MAP_SCHEMA;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.SUPPORT_ARRAYS_VALUES;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -80,24 +81,73 @@ public class SchemaRepositoryTest {
   }
 
   @Test
-  public void getOrAdd_jsonMap() throws Exception {
-    checkJsonMap("getStringEnumMap");
+  public void getOrAdd_mapType() throws Exception {
+    //unsupported map types still use JsonMap schema
     checkJsonMap("getStringArrayMap");
-    checkJsonMap("getArrayStringMap");
+    //non-string key values generate an exception
+    try {
+      checkJsonMap("getArrayStringMap");
+      fail("Should have failed to generate map schema");
+    } catch (IllegalArgumentException e) {
+      //expected exception
+    }
+    //supported map types generate proper map schema
+    ApiMethodConfig methodConfig = getMethodConfig("getStringEnumMap");
+    Schema schema = repo.getOrAdd(methodConfig.getReturnType(), config);
+    assertThat(schema).isEqualTo(Schema.builder()
+            .setName("Map_String_TestEnum")
+            .setType("object")
+            .setMapValueSchema(Field.builder()
+                    .setName(SchemaRepository.MAP_UNUSED_MSG)
+                    .setType(FieldType.ENUM)
+                    .setSchemaReference(SchemaReference.create(repo, config,
+                        TypeToken.of(TestEnum.class)))
+            .build())
+            .build());
   }
 
   @Test
-  public void getOrAdd_mapType() throws Exception {
-    System.setProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG, "true");
+  public void getOrAdd_mapTypeUnsupportedKeys() throws Exception {
+    System.setProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
     try {
-      //unsupported map types still use JsonMap schema
+      checkJsonMap("getArrayStringMap");
+    } finally {
+      System.clearProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
+    }
+  }
+
+  @Test
+  public void getOrAdd_mapTypeArrayValues() throws Exception {
+    System.setProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName, "true");
+    try {
+      ApiMethodConfig methodConfig = getMethodConfig("getStringArrayMap");
+      Schema schema = repo.getOrAdd(methodConfig.getReturnType(), config);
+      assertThat(schema).isEqualTo(Schema.builder()
+              .setName("Map_String_StringCollection")
+              .setType("object")
+              .setMapValueSchema(Field.builder()
+                      .setName(SchemaRepository.MAP_UNUSED_MSG)
+                      .setType(FieldType.ARRAY)
+                      .setArrayItemSchema(Field.builder()
+                          .setName(SchemaRepository.ARRAY_UNUSED_MSG)
+                          .setType(FieldType.STRING)
+                          .build())
+              .build())
+              .build());
+    } finally {
+      System.clearProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName);
+    }
+  }
+
+  @Test
+  public void getOrAdd_jsonMap() throws Exception {
+    System.setProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName, "true");
+    try {
+      checkJsonMap("getStringEnumMap");
       checkJsonMap("getStringArrayMap");
       checkJsonMap("getArrayStringMap");
-      //supported map types generate proper map schema
-      ApiMethodConfig methodConfig = getMethodConfig("getStringEnumMap");
-      checkMapSchema(repo.getOrAdd(methodConfig.getReturnType(), config));
     } finally {
-      System.clearProperty(SUPPORT_GENERIC_MAP_TYPES_FLAG);
+      System.clearProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName);
     }
   }
 
@@ -333,18 +383,6 @@ public class SchemaRepositoryTest {
                 .build())
             .build())
         .build());
-  }
-
-  private void checkMapSchema(Schema schema) {
-    assertThat(schema).isEqualTo(Schema.builder()
-            .setName("Map_String_TestEnum")
-            .setType("object")
-            .setMapValueSchema(Field.builder()
-                    .setName(MAP_UNUSED_MSG)
-                    .setType(FieldType.ENUM)
-                    .setSchemaReference(SchemaReference.create(repo, config, TypeToken.of(TestEnum.class)))
-            .build())
-            .build());
   }
 
 }
