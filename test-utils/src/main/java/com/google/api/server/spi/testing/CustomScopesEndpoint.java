@@ -16,7 +16,7 @@ public class CustomScopesEndpoint {
     public Foo foo() {
         return null;
     }
-    @ApiMethod(scopes = "cloud-platform")
+    @ApiMethod(scopes = "email")
     public Bar bar() {
         return null;
     }

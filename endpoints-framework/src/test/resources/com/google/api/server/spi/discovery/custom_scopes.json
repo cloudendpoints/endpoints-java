@@ -2,11 +2,11 @@
   "auth": {
     "oauth2": {
       "scopes": {
-        "cloud-platform": {
-          "description": "View and manage your data across Google Cloud Platform services"
-        },
         "doesnotexist": {
           "description": "doesnotexist"
+        },
+        "email": {
+          "description": "View your email address"
         },
         "https://mail.google.com/": {
           "description": "Read, send, delete, and manage your email"
@@ -92,7 +92,7 @@
             "$ref": "Bar"
           },
           "scopes": [
-            "cloud-platform"
+            "email"
           ]
         },
         "foo": {
