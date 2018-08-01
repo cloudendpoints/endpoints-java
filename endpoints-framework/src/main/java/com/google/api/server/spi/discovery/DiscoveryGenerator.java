@@ -67,13 +67,12 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -98,7 +97,7 @@ public class DiscoveryGenerator {
   private static Map<String, String> loadScopeDescriptions() {
     try {
       Properties properties = new Properties();
-      URL resourceFile = Resources.getResource("scopeDescriptions.properties");
+      URL resourceFile = Resources.getResource(DiscoveryGenerator.class, "scopeDescriptions.properties");
       InputStream inputStream = resourceFile.openStream();
       properties.load(inputStream);
       inputStream.close();
