@@ -20,4 +20,6 @@ public class CustomScopesEndpoint {
     public Bar bar() {
         return null;
     }
+    @ApiMethod(scopes = {"email", "profile", "https://mail.google.com/"})
+    public void multipleScopes() {}
 }

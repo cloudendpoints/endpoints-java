@@ -17,7 +17,6 @@ package com.google.api.server.spi.discovery;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.Preconditions;
-import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.TypeLoader;
@@ -33,7 +32,9 @@ import com.google.api.server.spi.config.model.FieldType;
 import com.google.api.server.spi.config.model.Schema;
 import com.google.api.server.spi.config.model.Schema.Field;
 import com.google.api.server.spi.config.model.SchemaRepository;
+import com.google.api.server.spi.config.model.AuthScopeRepository;
 import com.google.api.server.spi.config.model.StandardParameters;
+import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.DirectoryList.Items;
@@ -49,7 +50,6 @@ import com.google.api.services.discovery.model.RestMethod.Response;
 import com.google.api.services.discovery.model.RestResource;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Function;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -60,10 +60,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
-import com.google.common.io.Resources;
 import com.google.common.reflect.TypeToken;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -71,10 +68,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Generates discovery documents without contacting the discovery generator service.
@@ -92,20 +87,6 @@ public class DiscoveryGenerator {
       .setKind("discovery#restDescription")
       .setParameters(createStandardParameters())
       .setProtocol("rest");
-  private static final Map<String, String> SCOPE_DESCRIPTIONS = loadScopeDescriptions();
-
-  private static Map<String, String> loadScopeDescriptions() {
-    try {
-      Properties properties = new Properties();
-      URL resourceFile = Resources.getResource(DiscoveryGenerator.class, "scopeDescriptions.properties");
-      InputStream inputStream = resourceFile.openStream();
-      properties.load(inputStream);
-      inputStream.close();
-      return Maps.fromProperties(properties);
-    } catch (IOException e) {
-      throw new IllegalStateException("Cannot load scope descriptions", e);
-    }
-  }
 
   private final TypeLoader typeLoader;
 
@@ -148,7 +129,7 @@ public class DiscoveryGenerator {
   }
 
   private RestDescription writeApi(ApiKey apiKey, Iterable<ApiConfig> apiConfigs,
-      DiscoveryContext context, SchemaRepository repo) {
+      DiscoveryContext context, SchemaRepository schemaRepo) {
     // The first step is to scan all methods and try to extract a base path, aka a common prefix
     // for all methods. This prefix must end in a slash and can't contain any path parameters.
     String servicePath = computeApiServicePath(apiConfigs);
@@ -161,10 +142,8 @@ public class DiscoveryGenerator {
         .setRootUrl(context.getApiRoot() + "/")
         .setServicePath(servicePath)
         .setVersion(apiKey.getVersion());
-    //stores scopes for all ApiConfigs and ApiMethodConfig, sorted alphabetically
-    Set<String> allScopes = new TreeSet<>();
-    //userinfo.email should always be requested, as it is required for authentication
-    allScopes.add(Constant.API_EMAIL_SCOPE);
+
+    final AuthScopeRepository scopeRepo = new AuthScopeRepository();
 
     for (ApiConfig config : apiConfigs) {
       // API descriptions should be identical across all configs, but the last one will take
@@ -193,22 +172,21 @@ public class DiscoveryGenerator {
       if (config.getCanonicalName() != null) {
         doc.setCanonicalName(config.getCanonicalName());
       }
-      allScopes.addAll(AuthScopeExpressions.encode(config.getScopeExpression()));
+      scopeRepo.add(config.getScopeExpression());
       for (ApiMethodConfig methodConfig : config.getApiClassConfig().getMethods().values()) {
         if (!methodConfig.isIgnored()) {
-          writeApiMethod(config, servicePath, doc, methodConfig, repo, allScopes);
+          writeApiMethod(config, servicePath, doc, methodConfig, schemaRepo, scopeRepo);
         }
       }
     }
 
-    LinkedHashMap<String, ScopesElement> scopeElements = new LinkedHashMap<>();
-    for (String scope : allScopes) {
-      scopeElements.put(scope, new ScopesElement().setDescription(
-          MoreObjects.firstNonNull(SCOPE_DESCRIPTIONS.get(scope), scope)));
+    Map<String, ScopesElement> scopeElements = new LinkedHashMap<>();
+    for (Entry<String, String> entry : scopeRepo.getDescriptionsByScope().entrySet()) {
+      scopeElements.put(entry.getKey(), new ScopesElement().setDescription(entry.getValue()));
     }
     doc.setAuth(new Auth().setOauth2(new Oauth2().setScopes(scopeElements)));
 
-    List<Schema> schemas = repo.getAllSchemaForApi(apiKey);
+    List<Schema> schemas = schemaRepo.getAllSchemaForApi(apiKey);
     if (!schemas.isEmpty()) {
       Map<String, JsonSchema> docSchemas = Maps.newTreeMap();
       for (Schema schema : schemas) {
@@ -220,18 +198,18 @@ public class DiscoveryGenerator {
   }
 
   private void writeApiMethod(ApiConfig config, String servicePath, RestDescription doc,
-      ApiMethodConfig methodConfig, SchemaRepository repo, Set<String> allScopes) {
+      ApiMethodConfig methodConfig, SchemaRepository schemaRepo, AuthScopeRepository scopeRepo) {
     List<String> parts = DOT_SPLITTER.splitToList(methodConfig.getFullMethodName());
     Map<String, RestMethod> methods = getMethodMapFromDoc(doc, parts);
     Map<String, JsonSchema> parameters = convertMethodParameters(methodConfig);
-    List<String> scopes = AuthScopeExpressions.encodeMutable(methodConfig.getScopeExpression());
+    AuthScopeExpression scopeExpression = methodConfig.getScopeExpression();
     RestMethod method = new RestMethod()
         .setDescription(methodConfig.getDescription())
         .setHttpMethod(methodConfig.getHttpMethod())
         .setId(methodConfig.getFullMethodName())
         .setPath(methodConfig.getCanonicalPath().substring(servicePath.length()))
-        .setScopes(scopes);
-    allScopes.addAll(scopes);
+        .setScopes(AuthScopeExpressions.encodeMutable(scopeExpression));
+    scopeRepo.add(scopeExpression);
     List<String> parameterOrder = computeParameterOrder(methodConfig);
     if (!parameterOrder.isEmpty()) {
       method.setParameterOrder(parameterOrder);
@@ -242,13 +220,13 @@ public class DiscoveryGenerator {
     ApiParameterConfig requestParamConfig = getAndCheckMethodRequestResource(methodConfig);
     if (requestParamConfig != null) {
       TypeToken<?> requestType = requestParamConfig.getSchemaBaseType();
-      Schema schema = repo.getOrAdd(requestType, config);
+      Schema schema = schemaRepo.getOrAdd(requestType, config);
       method.setRequest(new Request().set$ref(schema.name()).setParameterName("resource"));
     }
     if (methodConfig.hasResourceInResponse()) {
       TypeToken<?> returnType =
           ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), config);
-      Schema schema = repo.getOrAdd(returnType, config);
+      Schema schema = schemaRepo.getOrAdd(returnType, config);
       method.setResponse(new Response().set$ref(schema.name()));
     }
     methods.put(parts.get(parts.size() - 1), method);
