@@ -3,22 +3,28 @@ package com.google.api.server.spi.config.model;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * These flags control the behavior of the schema generators regarding Map types.
- *
+ * These flags control the behavior of the schema generators regarding Map types.<br>
+ *<br>
  * By default, schema generation uses "additionalProperties" in JsonSchema to describe Map types
- * (both for Discovery and OpenAPI), with a proper description of the value types.
+ * (both for Discovery and OpenAPI), with a proper description of the value types.<br>
  * This mode supports key types that can be serialized from / to String, and supports any value
- * type except array-like ones (see {@link MapSchemaFlag#SUPPORT_ARRAYS_VALUES} for more details).
+ * type except array-like ones (see {@link MapSchemaFlag#SUPPORT_ARRAYS_VALUES} for more details).<br>
  * In previous versions of Cloud Endpoints, Maps were always represented using the untyped "JsonMap"
- * object (see {@link com.google.api.server.spi.config.model.SchemaRepository#MAP_SCHEMA}).
- *
+ * object (see {@link com.google.api.server.spi.config.model.SchemaRepository#MAP_SCHEMA}).<br>
+ * <br>
  * To enable one of these enum flags, you can either:
- * - Set system property "endpoints.mapSchema." + systemPropertyName to any value except a falsy one
- * - Set env variable "ENDPOINTS_MAP_SCHEMA_" + name() to any value except a falsy one
- *
+ * <ul>
+ * <li>Set system property {@link MapSchemaFlag#systemPropertyName} (defined as
+ * "endpoints.mapSchema." + systemPropertySuffix) to any value except a falsy one</li>
+ * <li>Set env variable {@link MapSchemaFlag#envVarName} (defined as "ENDPOINTS_MAP_SCHEMA_"
+ * + name()) to any value except a falsy one</li>
+ * </ul>
+ * <br>
  * Notes:
- * - System properties are evaluated before env variables.
- * - falsy is defined as a case-insensitive equality with "false".
+ * <ul>
+ * <li>System properties are evaluated before env variables.</li>
+ * <li>falsy is defined as a case-insensitive equality with "false".</li>
+ * </ul>
  */
 public enum MapSchemaFlag {
 
@@ -49,9 +55,9 @@ public enum MapSchemaFlag {
   @VisibleForTesting
   public String systemPropertyName;
 
-  MapSchemaFlag(String systemPropertyName) {
+  MapSchemaFlag(String systemPropertySuffix) {
     this.envVarName = ENV_VARIABLE_PREFIX + name();
-    this.systemPropertyName = SYSTEM_PROPERTY_PREFIX + systemPropertyName;
+    this.systemPropertyName = SYSTEM_PROPERTY_PREFIX + systemPropertySuffix;
   }
 
   public boolean isEnabled() {
