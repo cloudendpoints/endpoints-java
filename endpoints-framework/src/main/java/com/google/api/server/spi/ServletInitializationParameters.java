@@ -38,6 +38,7 @@ public abstract class ServletInitializationParameters {
   private static final String ILLEGAL_ARGUMENT_BACKEND_ERROR = "illegalArgumentIsBackendError";
   private static final String EXCEPTION_COMPATIBILITY = "enableExceptionCompatibility";
   private static final String PRETTY_PRINT = "prettyPrint";
+  private static final String ADD_CONTENT_LENGTH = "addContentLength";
 
   private static final Splitter CSV_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Joiner CSV_JOINER = Joiner.on(',').skipNulls();
@@ -83,13 +84,22 @@ public abstract class ServletInitializationParameters {
    */
   public abstract boolean isPrettyPrintEnabled();
 
+  /**
+   * Returns if the Content-Length header should be set on response. Should be disabled when running
+   * on App Engine, as Content-Length header is discarded by front-end servers. If enabled, has a
+   * small negative impact on CPU usage and latency.
+   *
+   */
+  public abstract boolean isAddContentLength();
+
   public static Builder builder() {
     return new AutoValue_ServletInitializationParameters.Builder()
         .setServletRestricted(true)
         .setClientIdWhitelistEnabled(true)
         .setIllegalArgumentBackendError(false)
         .setExceptionCompatibilityEnabled(true)
-        .setPrettyPrintEnabled(true);
+        .setPrettyPrintEnabled(true)
+        .setAddContentLength(false);
   }
 
   /**
@@ -160,6 +170,11 @@ public abstract class ServletInitializationParameters {
      */
     public abstract Builder setPrettyPrintEnabled(boolean prettyPrint);
 
+    /**
+     * Sets if the content length header should be set. Defaults to {@code false}.
+     */
+    public abstract Builder setAddContentLength(boolean addContentLength);
+
     abstract ServletInitializationParameters autoBuild();
 
     public ServletInitializationParameters build() {
@@ -203,6 +218,10 @@ public abstract class ServletInitializationParameters {
       if (prettyPrint != null) {
         builder.setPrettyPrintEnabled(parseBoolean(prettyPrint, PRETTY_PRINT));
       }
+      String addContentLength = config.getInitParameter(ADD_CONTENT_LENGTH);
+      if (addContentLength != null) {
+        builder.setAddContentLength(parseBoolean(addContentLength, ADD_CONTENT_LENGTH));
+      }
     }
     return builder.build();
   }
@@ -238,6 +257,7 @@ public abstract class ServletInitializationParameters {
         .put(ILLEGAL_ARGUMENT_BACKEND_ERROR, Boolean.toString(isIllegalArgumentBackendError()))
         .put(EXCEPTION_COMPATIBILITY, Boolean.toString(isExceptionCompatibilityEnabled()))
         .put(PRETTY_PRINT, Boolean.toString(isPrettyPrintEnabled()))
+        .put(ADD_CONTENT_LENGTH, Boolean.toString(isAddContentLength()))
         .build();
   }
 }

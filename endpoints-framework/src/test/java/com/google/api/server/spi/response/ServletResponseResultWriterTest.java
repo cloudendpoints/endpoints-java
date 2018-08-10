@@ -172,7 +172,7 @@ public class ServletResponseResultWriterTest {
   public void testPrettyPrint() throws Exception {
     MockHttpServletResponse response = new MockHttpServletResponse();
     ServletResponseResultWriter writer = new ServletResponseResultWriter(response, null,
-        true /* prettyPrint */);
+        true /* prettyPrint */, true /* addContentLength */);
     writer.write(ImmutableMap.of("one", "two", "three", "four"));
     // If the response is pretty printed, there should be at least two newlines.
     String body = response.getContentAsString();

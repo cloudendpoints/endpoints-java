@@ -23,16 +23,20 @@ import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.api.server.spi.types.DateAndTime;
 import com.google.api.server.spi.types.SimpleDate;
 import com.google.appengine.api.datastore.Blob;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.CountingOutputStream;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +44,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -68,15 +73,16 @@ public class ServletResponseResultWriter implements ResultWriter {
 
   private final HttpServletResponse servletResponse;
   private final ObjectWriter objectWriter;
+  private final boolean addContentLength;
 
   public ServletResponseResultWriter(
       HttpServletResponse servletResponse, ApiSerializationConfig serializationConfig) {
-    this(servletResponse, serializationConfig, false /* prettyPrint */);
+    this(servletResponse, serializationConfig, false /* prettyPrint */, false /* addContentLength */);
   }
 
   public ServletResponseResultWriter(
       HttpServletResponse servletResponse, ApiSerializationConfig serializationConfig,
-      boolean prettyPrint) {
+      boolean prettyPrint, boolean addContentLength) {
     this.servletResponse = servletResponse;
     Set<SimpleModule> modules = new LinkedHashSet<>();
     modules.addAll(WRITER_MODULES);
@@ -90,6 +96,7 @@ public class ServletResponseResultWriter implements ResultWriter {
       objectWriter = objectWriter.with(new EndpointsPrettyPrinter());
     }
     this.objectWriter = objectWriter;
+    this.addContentLength = addContentLength;
   }
 
   @Override
@@ -97,8 +104,7 @@ public class ServletResponseResultWriter implements ResultWriter {
     if (response == null) {
       write(HttpServletResponse.SC_NO_CONTENT, null, null);
     } else {
-      write(HttpServletResponse.SC_OK, null,
-          writeValueAsString(ResponseUtil.wrapCollection(response)));
+      write(HttpServletResponse.SC_OK, null, ResponseUtil.wrapCollection(response));
     }
   }
 
@@ -106,11 +112,10 @@ public class ServletResponseResultWriter implements ResultWriter {
   public void writeError(ServiceException e) throws IOException {
     Map<String, String> errors = new HashMap<>();
     errors.put(Constant.ERROR_MESSAGE, e.getMessage());
-    write(e.getStatusCode(), e.getHeaders(),
-        writeValueAsString(errors));
+    write(e.getStatusCode(), e.getHeaders(), errors);
   }
 
-  protected void write(int status, Map<String, String> headers, String content) throws IOException {
+  protected void write(int status, Map<String, String> headers, Object content) throws IOException {
     // write response status code
     servletResponse.setStatus(status);
 
@@ -124,8 +129,12 @@ public class ServletResponseResultWriter implements ResultWriter {
     // write response body
     if (content != null) {
       servletResponse.setContentType(SystemService.MIME_JSON);
-      servletResponse.setContentLength(content.getBytes("UTF-8").length);
-      servletResponse.getWriter().write(content);
+      if (addContentLength) {
+        CountingOutputStream counter = new CountingOutputStream(ByteStreams.nullOutputStream());
+        objectWriter.writeValue(counter, content);
+        servletResponse.setContentLength((int) counter.getCount());
+      }
+      objectWriter.writeValue(servletResponse.getOutputStream(), content);
     }
   }
 
@@ -203,13 +212,4 @@ public class ServletResponseResultWriter implements ResultWriter {
     return writeBlobAsBase64Module;
   }
 
-  // Writes a value as a JSON string and translates Jackson exceptions into IOException.
-  protected String writeValueAsString(Object value)
-      throws IOException {
-    try {
-      return objectWriter.writeValueAsString(value);
-    } catch (JsonProcessingException e) {
-      throw new IOException(e);
-    }
-  }
 }
