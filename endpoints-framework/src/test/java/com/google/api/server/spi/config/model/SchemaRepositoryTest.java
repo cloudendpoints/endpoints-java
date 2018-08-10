@@ -26,6 +26,7 @@ import com.google.common.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -107,6 +108,22 @@ public class SchemaRepositoryTest {
   }
 
   @Test
+  public void getOrAdd_mapSubType() throws Exception {
+    Schema expectedSchema = Schema.builder()
+        .setName("Map_String_String")
+        .setType("object")
+        .setMapValueSchema(Field.builder()
+            .setName(SchemaRepository.MAP_UNUSED_MSG)
+            .setType(FieldType.STRING)
+            .build())
+        .build();
+    assertThat(repo.getOrAdd(getMethodConfig("getMyMap").getReturnType(), config))
+        .isEqualTo(expectedSchema);
+    assertThat(repo.getOrAdd(getMethodConfig("getMySubMap").getReturnType(), config))
+        .isEqualTo(expectedSchema);
+  }
+
+  @Test
   public void getOrAdd_mapTypeUnsupportedKeys() throws Exception {
     System.setProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
     try {
@@ -114,6 +131,34 @@ public class SchemaRepositoryTest {
     } finally {
       System.clearProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
     }
+  }
+
+  @Test
+  public void getOrAdd_NestedMap() throws Exception {
+    Schema expectedSchema = Schema.builder()
+        .setName("Map_String_Map_String_String")
+        .setType("object")
+        .setMapValueSchema(Field.builder()
+            .setName(SchemaRepository.MAP_UNUSED_MSG)
+            .setType(FieldType.OBJECT)
+            .setSchemaReference(SchemaReference.create(repo, config,
+                new TypeToken<Map<String, String>>() {}))
+            .build())
+        .build();
+    assertThat(repo.getOrAdd(getMethodConfig("getNestedMap").getReturnType(), config))
+        .isEqualTo(expectedSchema);
+  }
+
+  @Test
+  public void getOrAdd_ParameterizedMap() throws Exception {
+    checkJsonMap("getParameterizedMap");
+    checkJsonMap("getParameterizedKeyMap");
+    checkJsonMap("getParameterizedValueMap");
+  }
+
+  @Test
+  public void getOrAdd_RawMap() throws Exception {
+    checkJsonMap("getRawMap");
   }
 
   @Test
@@ -270,10 +315,42 @@ public class SchemaRepositoryTest {
       return null;
     }
 
+    public MyMap getMyMap() {
+      return null;
+    }
+
+    public Map<String, Map<String, String>> getNestedMap() {
+      return null;
+    }
+
+    public <K, V> Map<K, V> getParameterizedMap() {
+      return null;
+    }
+
+    public <K> Map<K, String> getParameterizedKeyMap() {
+      return null;
+    }
+
+    public <V> Map<String, V> getParameterizedValueMap() {
+      return null;
+    }
+
+    public Map getRawMap() {
+      return null;
+    }
+
+    public MySubMap getMySubMap() {
+      return null;
+    }
+
     public Parameterized<Short> getTransformed() {
       return null;
     }
   }
+
+  private static class MyMap extends HashMap<String, String> { }
+
+  private static class MySubMap extends MyMap { }
 
   private static class Parameterized<T> {
     public T getFoo() {

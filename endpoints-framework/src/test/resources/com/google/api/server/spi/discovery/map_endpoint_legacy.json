@@ -212,6 +212,17 @@
             "https://www.googleapis.com/auth/userinfo.email"
           ]
         },
+        "getMapSubclass": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getMapSubclass",
+          "path": "mapsubclass",
+          "response": {
+            "$ref": "JsonMap"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
         "getStringArrayMap": {
           "httpMethod": "GET",
           "id": "myapi.mapEndpoint.getStringArrayMap",
@@ -316,6 +327,9 @@
         },
         "mapService": {
           "$ref": "MapEndpoint"
+        },
+        "mapSubclass": {
+          "$ref": "JsonMap"
         },
         "stringArrayMap": {
           "$ref": "JsonMap"

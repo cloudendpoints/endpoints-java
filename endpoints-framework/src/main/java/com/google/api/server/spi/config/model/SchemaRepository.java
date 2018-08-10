@@ -17,7 +17,6 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeToken;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -162,10 +161,11 @@ public class SchemaRepository {
       return ANY_SCHEMA;
     } else if (Types.isMapType(type)) {
       schema = MAP_SCHEMA;
-      boolean isGenericMapType = type.getType() instanceof ParameterizedType;
+      final TypeToken<Map<?, ?>> mapSupertype = type.getSupertype(Map.class);
+      final boolean hasConcreteKeyValue = Types.isConcreteType(mapSupertype.getType());
       boolean forceJsonMapSchema = MapSchemaFlag.FORCE_JSON_MAP_SCHEMA.isEnabled();
-      if (isGenericMapType && !forceJsonMapSchema) {
-        schema = createMapSchema(type, typesForConfig, config).or(schema);
+      if (hasConcreteKeyValue && !forceJsonMapSchema) {
+        schema = createMapSchema(mapSupertype, typesForConfig, config).or(schema);
       }
       typesForConfig.put(type, schema);
       schemaByApiKeys.put(key, schema);
@@ -213,23 +213,23 @@ public class SchemaRepository {
   }
 
   private Optional<Schema> createMapSchema(
-      TypeToken type, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
-    FieldType keyFieldType = FieldType.fromType(Types.getTypeParameter(type, 0));
+      TypeToken<Map<?, ?>> mapType, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
+    FieldType keyFieldType = FieldType.fromType(Types.getTypeParameter(mapType, 0));
     boolean supportedKeyType = SUPPORTED_MAP_KEY_TYPES.contains(keyFieldType);
     if (!supportedKeyType) {
-      String message = "Map field type '" + type + "' has a key type not serializable to String";
+      String message = "Map field type '" + mapType + "' has a key type not serializable to String";
       if (MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES.isEnabled()) {
         System.err.println(message + ", its schema will be JsonMap");
       } else {
         throw new IllegalArgumentException(message);
       }
     }
-    TypeToken<?> valueTypeToken = Types.getTypeParameter(type, 1);
+    TypeToken<?> valueTypeToken = Types.getTypeParameter(mapType, 1);
     FieldType valueFieldType = FieldType.fromType(valueTypeToken);
     boolean supportArrayValues = MapSchemaFlag.SUPPORT_ARRAYS_VALUES.isEnabled();
     boolean supportedValueType = supportArrayValues || valueFieldType != FieldType.ARRAY;
     if (!supportedValueType) {
-      System.err.println("Map field type '" + type + "' "
+      System.err.println("Map field type '" + mapType + "' "
           + "has an array-like value type, its schema will be JsonMap");
     }
     if (!supportedKeyType || !supportedValueType) {
@@ -237,7 +237,7 @@ public class SchemaRepository {
     }
     TypeToken<?> valueSchemaType = ApiAnnotationIntrospector.getSchemaType(valueTypeToken, config);
     Schema.Builder builder = Schema.builder()
-            .setName(Types.getSimpleName(type, config.getSerializationConfig()))
+            .setName(Types.getSimpleName(mapType, config.getSerializationConfig()))
             .setType("object");
     Field.Builder fieldBuilder = Field.builder().setName(MAP_UNUSED_MSG);
     fillInFieldInformation(fieldBuilder, valueSchemaType, null, typesForConfig, config);

@@ -22,6 +22,7 @@ import com.google.api.server.spi.types.DateAndTime;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -29,6 +30,8 @@ import java.util.Map;
  */
 @Api(transformers = StringValueTransformer.class)
 public class MapEndpoint {
+
+  public static class MapSubclass extends HashMap<Boolean, Integer> { }
 
   public MapEndpoint getMapService() {
     return null;
@@ -55,6 +58,10 @@ public class MapEndpoint {
   }
 
   public Map<String, StringValue> getStringValueMap() {
+    return null;
+  }
+
+  public MapSubclass getMapSubclass() {
     return null;
   }
 

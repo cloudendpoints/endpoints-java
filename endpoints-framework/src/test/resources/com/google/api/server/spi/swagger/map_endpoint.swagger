@@ -253,6 +253,20 @@
           }
         }
       }
+    },
+    "/myapi/v1/mapsubclass": {
+      "get": {
+        "operationId": "MyapiGetMapSubclass",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Map_Boolean_Integer"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -291,6 +305,13 @@
         "type": "string"
       }
     },
+    "Map_Boolean_Integer": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "format": "int32"
+      }
+    },
     "JsonMap": {},
     "Map_String_StringValue": {
       "type": "object",
@@ -312,16 +333,16 @@
         "format": "int32"
       }
     },
-    "Map_String_Map_String_Foo": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Map_String_Foo"
-      }
-    },
     "Map_String_Baz": {
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/Baz"
+      }
+    },
+    "Map_String_Map_String_Foo": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Map_String_Foo"
       }
     },
     "Map_String_String": {
@@ -390,6 +411,9 @@
         "mapService": {
           "$ref": "#/definitions/MapEndpoint"
         },
+        "mapSubclass": {
+          "$ref": "#/definitions/Map_Boolean_Integer"
+        },
         "stringArrayMap": {
           "$ref": "#/definitions/JsonMap"
         },
@@ -404,16 +428,16 @@
         }
       }
     },
-    "Map_String_Foo": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Foo"
-      }
-    },
     "Map_DateTime_String": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
+      }
+    },
+    "Map_String_Foo": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Foo"
       }
     }
   }

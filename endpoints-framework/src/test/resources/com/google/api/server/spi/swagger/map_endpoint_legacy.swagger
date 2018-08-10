@@ -253,6 +253,20 @@
           }
         }
       }
+    },
+    "/myapi/v1/mapsubclass": {
+      "get": {
+        "operationId": "MyapiGetMapSubclass",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -304,6 +318,9 @@
         },
         "mapService": {
           "$ref": "#/definitions/MapEndpoint"
+        },
+        "mapSubclass": {
+          "$ref": "#/definitions/JsonMap"
         },
         "stringArrayMap": {
           "$ref": "#/definitions/JsonMap"

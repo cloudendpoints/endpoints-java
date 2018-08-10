@@ -212,6 +212,17 @@
             "https://www.googleapis.com/auth/userinfo.email"
           ]
         },
+        "getMapSubclass": {
+          "httpMethod": "GET",
+          "id": "myapi.mapEndpoint.getMapSubclass",
+          "path": "mapsubclass",
+          "response": {
+            "$ref": "Map_Boolean_Integer"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
         "getStringArrayMap": {
           "httpMethod": "GET",
           "id": "myapi.mapEndpoint.getStringArrayMap",
@@ -341,6 +352,9 @@
         "mapService": {
           "$ref": "MapEndpoint"
         },
+        "mapSubclass": {
+          "$ref": "Map_Boolean_Integer"
+        },
         "stringArrayMap": {
           "$ref": "Map_String_StringCollection"
         },
@@ -354,6 +368,14 @@
           "$ref": "Map_String_StringValue"
         }
       },
+      "type": "object"
+    },
+    "Map_Boolean_Integer": {
+      "additionalProperties": {
+        "format": "int32",
+        "type": "integer"
+      },
+      "id": "Map_Boolean_Integer",
       "type": "object"
     },
     "Map_Boolean_String": {
