@@ -174,7 +174,8 @@ public class RestResponseResultWriterTest {
       boolean enableExceptionCompatibility) throws Exception {
     MockHttpServletResponse response = new MockHttpServletResponse();
     RestResponseResultWriter writer = new RestResponseResultWriter(
-        response, null, true /* prettyPrint */, enableExceptionCompatibility);
+        response, null, true /* prettyPrint */,
+        true /* addContentLength */, enableExceptionCompatibility);
     writer.writeError(new ServiceException(exceptionCode, message));
     ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
     ObjectNode content = mapper.readValue(response.getContentAsString(), ObjectNode.class);
@@ -209,7 +210,8 @@ public class RestResponseResultWriterTest {
       String expectedReason, String customDomain, String expectedDomain) throws Exception {
     MockHttpServletResponse response = new MockHttpServletResponse();
     RestResponseResultWriter writer = new RestResponseResultWriter(
-            response, null, true /* prettyPrint */, enableExceptionCompatibility);
+            response, null, true /* prettyPrint */,
+        true /* addContentLength */, enableExceptionCompatibility);
     writer.writeError(new ServiceException(400, "error", customReason, customDomain));
     ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
     ObjectNode content = mapper.readValue(response.getContentAsString(), ObjectNode.class);

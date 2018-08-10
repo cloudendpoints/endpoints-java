@@ -16,14 +16,11 @@
 package com.google.api.server.spi.response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
 
@@ -39,8 +36,8 @@ public class RestResponseResultWriter extends ServletResponseResultWriter {
 
   public RestResponseResultWriter(
       HttpServletResponse servletResponse, ApiSerializationConfig serializationConfig,
-      boolean prettyPrint, boolean enableExceptionCompatibility) {
-    super(servletResponse, serializationConfig, prettyPrint);
+      boolean prettyPrint, boolean addContentLength, boolean enableExceptionCompatibility) {
+    super(servletResponse, serializationConfig, prettyPrint, addContentLength);
     this.enableExceptionCompatibility = enableExceptionCompatibility;
     this.objectMapper = ObjectMapperUtil.createStandardObjectMapper(serializationConfig);
   }
@@ -70,8 +67,7 @@ public class RestResponseResultWriter extends ServletResponseResultWriter {
         e.getReason() : errorMap.getReason(e.getStatusCode());
     String domain = !Strings.isNullOrEmpty(e.getDomain()) ?
         e.getDomain() : errorMap.getDomain(e.getStatusCode());
-    write(code, e.getHeaders(),
-        writeValueAsString(createError(code, reason, domain, e.getMessage())));
+    write(code, e.getHeaders(), createError(code, reason, domain, e.getMessage()));
   }
 
   private Object createError(int code, String reason, String domain, String message) {

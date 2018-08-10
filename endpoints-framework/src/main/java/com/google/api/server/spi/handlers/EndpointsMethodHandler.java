@@ -91,6 +91,7 @@ public class EndpointsMethodHandler {
       ApiSerializationConfig serializationConfig) {
     return new RestResponseResultWriter(context.getResponse(), serializationConfig,
         StandardParameters.shouldPrettyPrint(context),
+        initParameters.isAddContentLength(),
         initParameters.isExceptionCompatibilityEnabled());
   }
 
