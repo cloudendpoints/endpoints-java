@@ -98,6 +98,15 @@
             "email"
           ]
         },
+        "complexScopeExpression": {
+          "httpMethod": "POST",
+          "id": "customScopes.customScopesEndpoint.complexScopeExpression",
+          "path": "complexScopeExpression",
+          "scopes": [
+            "email profile",
+            "https://mail.google.com/"
+          ]
+        },
         "foo": {
           "httpMethod": "POST",
           "id": "customScopes.customScopesEndpoint.foo",
@@ -106,16 +115,6 @@
             "$ref": "Foo"
           },
           "scopes": [
-            "https://mail.google.com/"
-          ]
-        },
-        "multipleScopes": {
-          "httpMethod": "POST",
-          "id": "customScopes.customScopesEndpoint.multipleScopes",
-          "path": "multipleScopes",
-          "scopes": [
-            "email",
-            "profile",
             "https://mail.google.com/"
           ]
         }
