@@ -99,9 +99,7 @@ public class EndpointsServlet extends HttpServlet {
       MethodConfigMap methods = apiConfig.getApiClassConfig().getMethods();
       for (Entry<EndpointMethod, ApiMethodConfig> methodEntry : methods.entrySet()) {
         if (!methodEntry.getValue().isIgnored()) {
-          handlersBuilder.add(
-              new EndpointsMethodHandler(initParameters, getServletContext(), methodEntry.getKey(),
-                  apiConfig, methodEntry.getValue(), systemService));
+          handlersBuilder.add(createEndpointsMethodHandler(apiConfig, methodEntry));
         }
       }
     }
@@ -132,6 +130,12 @@ public class EndpointsServlet extends HttpServlet {
     } catch (ApiConfigException | ClassNotFoundException e) {
       throw new ServletException(e);
     }
+  }
+
+  protected EndpointsMethodHandler createEndpointsMethodHandler(ApiConfig apiConfig,
+      Entry<EndpointMethod, ApiMethodConfig> methodEntry) {
+    return new EndpointsMethodHandler(initParameters, getServletContext(), methodEntry.getKey(),
+        apiConfig, methodEntry.getValue(), systemService);
   }
 
   /**
