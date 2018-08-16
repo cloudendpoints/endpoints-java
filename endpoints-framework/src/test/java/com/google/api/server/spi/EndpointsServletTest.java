@@ -114,6 +114,33 @@ public class EndpointsServletTest {
   }
 
   @Test
+  public void contentLengthHeaderNull() throws IOException {
+    req.setRequestURI("/_ah/api/test/v2/echo");
+    req.setMethod("POST");
+    req.setParameter("x", "1");
+
+    servlet.service(req, resp);
+
+    assertThat(resp.getHeader("Content-Length")).isNull();
+  }
+
+  @Test
+  public void contentLengthHeaderPresent() throws IOException, ServletException {
+    MockServletConfig config = new MockServletConfig();
+    config.addInitParameter("services", TestApi.class.getName());
+    config.addInitParameter("addContentLength", "true");
+    servlet.init(config);
+
+    req.setRequestURI("/_ah/api/test/v2/echo");
+    req.setMethod("POST");
+    req.setParameter("x", "1");
+
+    servlet.service(req, resp);
+
+    assertThat(resp.getHeader("Content-Length")).isNotNull();
+  }
+
+  @Test
   public void methodOverride() throws IOException {
     req.setRequestURI("/_ah/api/test/v2/increment");
     req.setMethod("POST");
