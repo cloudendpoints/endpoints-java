@@ -41,17 +41,13 @@ public class AuthScopeRepository {
 
   public AuthScopeRepository() {
     //userinfo.email should always be requested, as it is required for authentication
-    add(Constant.API_EMAIL_SCOPE);
-  }
-
-  public void add(String scope) {
-    descriptionsByScope
-        .put(scope, MoreObjects.firstNonNull(GOOGLE_SCOPE_DESCRIPTIONS.get(scope), scope));
+    add(AuthScopeExpressions.interpret(Constant.API_EMAIL_SCOPE));
   }
 
   public void add(AuthScopeExpression scopeExpression) {
-    for (String scope : AuthScopeExpressions.encode(scopeExpression)) {
-      add(scope);
+    for (String scope : scopeExpression.getAllScopes()) {
+      String description = MoreObjects.firstNonNull(GOOGLE_SCOPE_DESCRIPTIONS.get(scope), scope);
+      descriptionsByScope.put(scope, description);
     }
   }
 
