@@ -44,18 +44,16 @@
   },
   "definitions": {
     "EnumValue": {
+      "type": "object",
       "properties": {
         "value": {
-          "$ref": "#/definitions/TestEnum"
+          "type": "string",
+          "enum": [
+            "VALUE1",
+            "VALUE2"
+          ]
         }
       }
-    },
-    "TestEnum": {
-      "type": "string",
-      "enum": [
-        "VALUE1",
-        "VALUE2"
-      ]
     }
   }
 }
