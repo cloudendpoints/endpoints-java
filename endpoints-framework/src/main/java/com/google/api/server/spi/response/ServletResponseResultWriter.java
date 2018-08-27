@@ -33,10 +33,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,7 +41,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -95,8 +91,18 @@ public class ServletResponseResultWriter implements ResultWriter {
     if (prettyPrint) {
       objectWriter = objectWriter.with(new EndpointsPrettyPrinter());
     }
-    this.objectWriter = objectWriter;
+    this.objectWriter = configureWriter(objectWriter);
     this.addContentLength = addContentLength;
+  }
+
+  /**
+   * Override to add additional behavior, like partial response, etc.
+   *
+   * @param objectWriter the standard object writer
+   * @return a configured writer (might be wrapped)
+   */
+  protected ObjectWriter configureWriter(ObjectWriter objectWriter) {
+    return objectWriter;
   }
 
   @Override

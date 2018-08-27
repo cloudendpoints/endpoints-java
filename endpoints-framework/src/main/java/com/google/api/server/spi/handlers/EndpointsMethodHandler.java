@@ -18,6 +18,7 @@ package com.google.api.server.spi.handlers;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.EndpointsContext;
 import com.google.api.server.spi.Headers;
+import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.ServletInitializationParameters;
 import com.google.api.server.spi.SystemService;
 import com.google.api.server.spi.config.model.ApiConfig;
@@ -56,15 +57,15 @@ public class EndpointsMethodHandler {
   private final String restPath;
 
   public EndpointsMethodHandler(ServletInitializationParameters initParameters,
-      ServletContext servletContext, EndpointMethod endpointMethod, ApiConfig apiConfig,
-      ApiMethodConfig methodConfig, SystemService systemService) {
+      ServletContext servletContext, EndpointMethod endpointMethod, ApiMethodConfig methodConfig,
+      SystemService systemService) {
     this.initParameters = initParameters;
     this.servletContext = servletContext;
     this.endpointMethod = endpointMethod;
     this.methodConfig = methodConfig;
     this.systemService = systemService;
     this.restHandler = new RestHandler();
-    this.restPath = createRestPath(apiConfig, methodConfig);
+    this.restPath = createRestPath(methodConfig);
   }
 
   public String getRestMethod() {
@@ -86,18 +87,27 @@ public class EndpointsMethodHandler {
         servletContext, serializationConfig, methodConfig);
   }
 
-  @VisibleForTesting
+  /**
+   * Override to customize the serialization of the response body
+   *
+   * @return a result writer
+   * @throws ServiceException if the result writer customization fails
+   */
   protected ResultWriter createResultWriter(EndpointsContext context,
+      ApiSerializationConfig serializationConfig) throws ServiceException {
+    return _createResultWriter(context, serializationConfig);
+  }
+
+  private void writeError(EndpointsContext context, ServiceException error) throws IOException {
+      _createResultWriter(context, null).writeError(error);
+  }
+
+  private ResultWriter _createResultWriter(EndpointsContext context,
       ApiSerializationConfig serializationConfig) {
     return new RestResponseResultWriter(context.getResponse(), serializationConfig,
         StandardParameters.shouldPrettyPrint(context),
         initParameters.isAddContentLength(),
         initParameters.isExceptionCompatibilityEnabled());
-  }
-
-  private ResultWriter createErrorResultWriter(EndpointsContext context) {
-    // TODO: Convert this to RESTful errors.
-    return createResultWriter(context, null);
   }
 
   private class RestHandler implements DispatcherHandler<EndpointsContext> {
@@ -118,22 +128,24 @@ public class EndpointsMethodHandler {
           CorsHandler.setAccessControlAllowCredentials(response);
         }
         systemService.invokeServiceMethod(service, endpointMethod.getMethod(), reader, writer);
+      } catch (ServiceException e) {
+        writeError(context, e);
       } catch (Exception e) {
         // All exceptions here are unexpected, including the ServiceException that may be thrown by
         // the findService call. We return an internal server error and leave the details in the
         // backend log.
         logger.log(Level.WARNING, "exception occurred while invoking backend method", e);
-        createErrorResultWriter(context)
-            .writeError(new InternalServerErrorException("backend error"));
+        writeError(context, new InternalServerErrorException("backend error"));
       }
     }
   }
 
-  private static String createRestPath(ApiConfig apiConfig, ApiMethodConfig methodConfig) {
+  private static String createRestPath(ApiMethodConfig methodConfig) {
     // Don't include the api name or version if the path starts with a slash.
     if (methodConfig.getPath().startsWith("/")) {
       return methodConfig.getPath().substring(1);
     }
+    ApiConfig apiConfig = methodConfig.getApiConfig();
     return String.format(
         "%s/%s/%s", apiConfig.getName(), apiConfig.getVersion(), methodConfig.getPath());
   }

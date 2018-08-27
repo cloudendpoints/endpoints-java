@@ -59,6 +59,14 @@ public class EndpointsServlet extends HttpServlet {
     this.corsHandler = new CorsHandler();
   }
 
+  protected ServletInitializationParameters getInitParameters() {
+    return initParameters;
+  }
+
+  protected SystemService getSystemService() {
+    return systemService;
+  }
+
   @Override
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String method = getRequestMethod(request);
@@ -99,7 +107,8 @@ public class EndpointsServlet extends HttpServlet {
       MethodConfigMap methods = apiConfig.getApiClassConfig().getMethods();
       for (Entry<EndpointMethod, ApiMethodConfig> methodEntry : methods.entrySet()) {
         if (!methodEntry.getValue().isIgnored()) {
-          handlersBuilder.add(createEndpointsMethodHandler(apiConfig, methodEntry));
+          handlersBuilder.add(createEndpointsMethodHandler(methodEntry.getKey(),
+              methodEntry.getValue()));
         }
       }
     }
@@ -132,10 +141,10 @@ public class EndpointsServlet extends HttpServlet {
     }
   }
 
-  protected EndpointsMethodHandler createEndpointsMethodHandler(ApiConfig apiConfig,
-      Entry<EndpointMethod, ApiMethodConfig> methodEntry) {
-    return new EndpointsMethodHandler(initParameters, getServletContext(), methodEntry.getKey(),
-        apiConfig, methodEntry.getValue(), systemService);
+  protected EndpointsMethodHandler createEndpointsMethodHandler(EndpointMethod method,
+      ApiMethodConfig methodConfig) {
+    return new EndpointsMethodHandler(initParameters, getServletContext(), method,
+        methodConfig, systemService);
   }
 
   /**
