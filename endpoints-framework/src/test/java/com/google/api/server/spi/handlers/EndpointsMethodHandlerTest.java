@@ -108,8 +108,7 @@ public class EndpointsMethodHandlerTest {
         .build();
     TestMethodHandler handler = new TestMethodHandler(
         ServletInitializationParameters.builder().build(), method,
-        apiConfig, methodConfig, systemService, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-        RESOURCE);
+        methodConfig, systemService, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RESOURCE);
     handler.getRestHandler().handle(context);
   }
 
@@ -120,8 +119,8 @@ public class EndpointsMethodHandlerTest {
         apiConfig.getApiClassConfig());
     methodConfig.setPath("/root");
     TestMethodHandler handler = new TestMethodHandler(
-        ServletInitializationParameters.builder().build(), method, apiConfig, methodConfig,
-        systemService, 200);
+        ServletInitializationParameters.builder().build(), method, methodConfig, systemService,
+        200);
     assertThat(handler.getRestPath()).isEqualTo("root");
   }
 
@@ -131,7 +130,7 @@ public class EndpointsMethodHandlerTest {
     ApiMethodConfig methodConfig = new ApiMethodConfig(method, typeLoader,
         apiConfig.getApiClassConfig());
     return new TestMethodHandler(ServletInitializationParameters.builder().build(), method,
-        apiConfig, methodConfig, systemService, expectedResponse, params);
+        methodConfig, systemService, expectedResponse, params);
   }
 
   private static class TestMethodHandler extends EndpointsMethodHandler {
@@ -140,12 +139,11 @@ public class EndpointsMethodHandlerTest {
     public TestMethodHandler(
         ServletInitializationParameters initParameters,
         EndpointMethod endpointMethod,
-        ApiConfig apiConfig,
         ApiMethodConfig methodConfig,
         SystemService systemService,
         Object expectedResult,
         Object... params) {
-      super(initParameters, null /* servletContext */, endpointMethod, apiConfig, methodConfig,
+      super(initParameters, null /* servletContext */, endpointMethod, methodConfig,
           systemService);
       this.params = params;
       this.expectedResult = expectedResult;
