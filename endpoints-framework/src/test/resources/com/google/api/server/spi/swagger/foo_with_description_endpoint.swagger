@@ -233,6 +233,7 @@
   },
   "definitions": {
     "CollectionResponse_FooDescription": {
+      "type": "object",
       "properties": {
         "items": {
           "type": "array",
@@ -245,17 +246,16 @@
         }
       }
     },
-    "TestEnumDescription": {
-      "type": "string",
-      "enum": [
-        "VALUE1",
-        "VALUE2"
-      ]
-    },
     "FooDescription": {
+      "type": "object",
       "properties": {
         "choice": {
-          "$ref": "#/definitions/TestEnumDescription"
+          "type": "string",
+          "description": "description of choice",
+          "enum": [
+            "VALUE1",
+            "VALUE2"
+          ]
         },
         "name": {
           "type": "string",

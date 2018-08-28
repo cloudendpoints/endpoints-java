@@ -248,7 +248,9 @@ public class SwaggerGenerator {
     List<Schema> schemas = genCtx.schemata.getAllSchemaForApi(apiKey);
     if (!schemas.isEmpty()) {
       for (Schema schema : schemas) {
-        swagger.addDefinition(schema.name(), convertToSwaggerSchema(schema));
+        if (schema.enumValues().isEmpty()) {
+          swagger.addDefinition(schema.name(), convertToSwaggerSchema(schema));
+        }
       }
     }
   }
@@ -404,7 +406,7 @@ public class SwaggerGenerator {
   }
 
   private Model convertToSwaggerSchema(Schema schema) {
-    ModelImpl docSchema = new ModelImpl();
+    ModelImpl docSchema = new ModelImpl().type("object");
     Map<String, Property> fields = Maps.newLinkedHashMap();
     if (!schema.fields().isEmpty()) {
       for (Field f : schema.fields().values()) {
@@ -414,10 +416,6 @@ public class SwaggerGenerator {
     }
     if (schema.mapValueSchema() != null) {
       docSchema.setAdditionalProperties(convertToSwaggerProperty(schema.mapValueSchema()));
-    }
-    if (!schema.enumValues().isEmpty()) {
-      docSchema.setType("string");
-      docSchema._enum(schema.enumValues());
     }
     return docSchema;
   }
@@ -432,10 +430,12 @@ public class SwaggerGenerator {
         //cannot happen, as Property subclasses are guaranteed to have a default constructor
       }
     } else {
-      if (f.type() == FieldType.OBJECT || f.type() == FieldType.ENUM) {
+      if (f.type() == FieldType.OBJECT) {
         p = new RefProperty(f.schemaReference().get().name());
       } else if (f.type() == FieldType.ARRAY) {
         p = new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
+      } else if (f.type() == FieldType.ENUM) {
+        p = new StringProperty()._enum(getEnumValues(f.schemaReference().type()));
       }
     }
     if (p == null) {
