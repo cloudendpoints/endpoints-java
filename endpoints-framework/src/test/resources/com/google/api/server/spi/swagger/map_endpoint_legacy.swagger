@@ -270,8 +270,11 @@
     }
   },
   "definitions": {
-    "JsonMap": {},
+    "JsonMap": {
+      "type": "object"
+    },
     "MapContainer": {
+      "type": "object",
       "properties": {
         "stringMap": {
           "$ref": "#/definitions/JsonMap"
@@ -279,6 +282,7 @@
       }
     },
     "MapEndpoint": {
+      "type": "object",
       "properties": {
         "bazMap": {
           "$ref": "#/definitions/JsonMap"

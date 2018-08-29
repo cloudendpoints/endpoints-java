@@ -283,6 +283,7 @@
       }
     },
     "Foo": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string"
@@ -319,6 +320,7 @@
       }
     },
     "MapContainer": {
+      "type": "object",
       "properties": {
         "stringMap": {
           "$ref": "#/definitions/Map_String_StringValue"
@@ -332,16 +334,16 @@
         "format": "int32"
       }
     },
-    "Map_String_Baz": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Baz"
-      }
-    },
     "Map_String_Map_String_Foo": {
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/Map_String_Foo"
+      }
+    },
+    "Map_String_Baz": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Baz"
       }
     },
     "Map_String_String": {
@@ -351,6 +353,7 @@
       }
     },
     "Baz": {
+      "type": "object",
       "properties": {
         "foo": {
           "$ref": "#/definitions/Foo"
@@ -379,6 +382,7 @@
       }
     },
     "MapEndpoint": {
+      "type": "object",
       "properties": {
         "bazMap": {
           "$ref": "#/definitions/Map_String_Baz"
