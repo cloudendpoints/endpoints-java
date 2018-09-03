@@ -56,6 +56,8 @@ public class GoogleOAuth2Authenticator implements Authenticator {
       return null;
     }
 
+    attr.set(Attribute.TOKEN_INFO, tokenInfo);
+
     ApiMethodConfig config = (ApiMethodConfig) request.getAttribute(Attribute.API_METHOD_CONFIG);
 
     // Check scopes.

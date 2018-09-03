@@ -26,15 +26,54 @@ import javax.servlet.http.HttpServletRequest;
  * Defines attribute constants passed in Request.
  */
 public class Attribute {
+  /**
+   * A {@link com.google.appengine.api.users.User} with the currently authenticated App Engine user.
+   *
+   */
   public static final String AUTHENTICATED_APPENGINE_USER =
       "endpoints:Authenticated-AppEngine-User";
+  /**
+   * A {@link com.google.api.server.spi.config.model.ApiMethodConfig} with the current API method's
+   * configuration.
+   */
   public static final String API_METHOD_CONFIG = "endpoints:Api-Method-Config";
+  /**
+   * A {@link Boolean} indicating if client id whitelist should be checked.
+   */
   public static final String ENABLE_CLIENT_ID_WHITELIST =
       "endpoints:Enable-Client-Id-Whitelist";
+  /**
+   * @deprecated
+   */
   public static final String RESTRICT_SERVLET = "endpoints:Restrict-Servlet";
+  /**
+   * A {@link Boolean} indicating if the App Engine user should be populated.
+   */
   public static final String REQUIRE_APPENGINE_USER = "endpoints:Require-AppEngine-User";
+  /**
+   * A {@link Boolean} indicating if token-based authentications (OAuth2 and JWT) should be skipped.
+   */
   public static final String SKIP_TOKEN_AUTH = "endpoints:Skip-Token-Auth";
+  /**
+   * A {@link String} with the current request's auth token.
+   */
   public static final String AUTH_TOKEN = "endpoints:Auth-Token";
+  /**
+   * If set, contains a cached OAuth2 {@link com.google.api.server.spi.auth.GoogleAuth.TokenInfo}
+   * corresponding to the String token in the {@link Attribute#AUTH_TOKEN} {@value AUTH_TOKEN}
+   * attribute.
+   * The authentication from {@link com.google.api.server.spi.auth.GoogleOAuth2Authenticator} might
+   * have failed anyway because of unauthorized client id or scopes.
+   */
+  public static final String TOKEN_INFO = "endpoints:Token-Info";
+  /**
+   * If set, contains a cached instance of a parsed and valid JWT
+   * {@link com.google.api.client.googleapis.auth.oauth2.GoogleIdToken} corresponding to the String
+   * token in the {@link Attribute#AUTH_TOKEN} {@value AUTH_TOKEN} attribute.
+   * The authentication from {@link com.google.api.server.spi.auth.GoogleJwtAuthenticator} might
+   * have failed anyway because of unauthorized client id or audience.
+   */
+  public static final String ID_TOKEN = "endpoints:Id-Token";
 
   private final HttpServletRequest request;
 
@@ -47,8 +86,8 @@ public class Attribute {
     return new Attribute(request);
   }
 
-  public Object get(String attr) {
-    return request.getAttribute(attr);
+  public <T> T get(String attr) {
+    return (T) request.getAttribute(attr);
   }
 
   public void set(String attr, Object value) {

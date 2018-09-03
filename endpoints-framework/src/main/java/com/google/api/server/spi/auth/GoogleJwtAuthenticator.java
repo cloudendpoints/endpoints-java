@@ -79,10 +79,12 @@ public class GoogleJwtAuthenticator implements Authenticator {
       return null;
     }
 
+    attr.set(Attribute.ID_TOKEN, idToken);
+
     String clientId = idToken.getPayload().getAuthorizedParty();
     String audience = (String) idToken.getPayload().getAudience();
 
-    ApiMethodConfig config = (ApiMethodConfig) attr.get(Attribute.API_METHOD_CONFIG);
+    ApiMethodConfig config = attr.get(Attribute.API_METHOD_CONFIG);
 
     // Check client id.
     if ((attr.isEnabled(Attribute.ENABLE_CLIENT_ID_WHITELIST)

@@ -67,6 +67,10 @@ public class Auth {
         }
       };
 
+  public static Authenticator instantiateAuthenticator(Class<? extends Authenticator> clazz) {
+    return INSTANTIATE_AUTHENTICATOR.apply(clazz);
+  }
+
   private final HttpServletRequest request;
   private final Attribute attr;
   private final ApiMethodConfig config;
@@ -75,7 +79,7 @@ public class Auth {
   Auth(HttpServletRequest request) {
     this.request = request;
     attr = Attribute.from(request);
-    config = (ApiMethodConfig) attr.get(Attribute.API_METHOD_CONFIG);
+    config = attr.get(Attribute.API_METHOD_CONFIG);
   }
 
   static Auth from(HttpServletRequest request) {
@@ -122,7 +126,7 @@ public class Auth {
       return null;
     }
     com.google.appengine.api.users.User appEngineUser =
-        (com.google.appengine.api.users.User) attr.get(Attribute.AUTHENTICATED_APPENGINE_USER);
+        attr.get(Attribute.AUTHENTICATED_APPENGINE_USER);
     if (appEngineUser != null) {
       return appEngineUser;
     } else {
