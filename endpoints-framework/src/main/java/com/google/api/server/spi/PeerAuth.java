@@ -70,6 +70,11 @@ public class PeerAuth {
         }
       };
 
+  public static PeerAuthenticator instantiatePeerAuthenticator(Class<? extends PeerAuthenticator> clazz) {
+    return INSTANTIATE_PEER_AUTHENTICATOR.apply(clazz);
+  }
+
+
   private final HttpServletRequest request;
   private final Attribute attr;
   private final ApiMethodConfig config;
@@ -78,7 +83,7 @@ public class PeerAuth {
   PeerAuth(HttpServletRequest request) {
     this.request = request;
     attr = Attribute.from(request);
-    config = (ApiMethodConfig) attr.get(Attribute.API_METHOD_CONFIG);
+    config = attr.get(Attribute.API_METHOD_CONFIG);
   }
 
   static PeerAuth from(HttpServletRequest request) {

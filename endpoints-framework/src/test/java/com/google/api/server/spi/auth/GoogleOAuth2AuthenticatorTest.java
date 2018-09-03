@@ -16,6 +16,7 @@
 package com.google.api.server.spi.auth;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
@@ -69,24 +70,28 @@ public class GoogleOAuth2AuthenticatorTest {
   public void testAuthenticate_skipTokenAuth() throws ServiceUnavailableException {
     attr.set(Attribute.SKIP_TOKEN_AUTH, true);
     assertNull(authenticator.authenticate(request));
+    assertNull(attr.get(Attribute.TOKEN_INFO));
   }
 
   @Test
   public void testAuthenticate_notOAuth2() throws ServiceUnavailableException {
     initializeRequest("Bearer badToken");
     assertNull(authenticator.authenticate(request));
+    assertNull(attr.get(Attribute.TOKEN_INFO));
   }
 
   @Test
   public void testAuthenticate_nullTokenInfo() throws ServiceUnavailableException {
     authenticator = createAuthenticator(null, null, null, null);
     assertNull(authenticator.authenticate(request));
+    assertNull(attr.get(Attribute.TOKEN_INFO));
   }
 
   @Test
   public void testAuthenticate_scopeNotAllowed() throws ServiceUnavailableException {
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret("scope3"));
     assertNull(authenticator.authenticate(request));
+    assertNotNull(attr.get(Attribute.TOKEN_INFO));
   }
 
   @Test
@@ -94,6 +99,7 @@ public class GoogleOAuth2AuthenticatorTest {
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret("scope1"));
     when(config.getClientIds()).thenReturn(ImmutableList.of("clientId2"));
     assertNull(authenticator.authenticate(request));
+    assertNotNull(attr.get(Attribute.TOKEN_INFO));
   }
 
   @Test
@@ -104,6 +110,7 @@ public class GoogleOAuth2AuthenticatorTest {
     User user = authenticator.authenticate(request);
     assertEquals(EMAIL, user.getEmail());
     assertEquals(USER_ID, user.getId());
+    assertNotNull(attr.get(Attribute.TOKEN_INFO));
   }
 
   @Test
@@ -113,6 +120,10 @@ public class GoogleOAuth2AuthenticatorTest {
     User user = authenticator.authenticate(request);
     assertEquals(EMAIL, user.getEmail());
     assertEquals(USER_ID, user.getId());
+    final TokenInfo tokenInfo = attr.get(Attribute.TOKEN_INFO);
+    assertNotNull(tokenInfo);
+    assertEquals(EMAIL, tokenInfo.email);
+    assertEquals(USER_ID, tokenInfo.userId);
   }
 
   @Test

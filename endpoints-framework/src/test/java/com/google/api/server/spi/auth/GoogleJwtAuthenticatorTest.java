@@ -16,6 +16,7 @@
 package com.google.api.server.spi.auth;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
@@ -90,18 +91,21 @@ public class GoogleJwtAuthenticatorTest {
   public void testAuthenticate_skipTokenAuth() {
     attr.set(Attribute.SKIP_TOKEN_AUTH, true);
     assertNull(authenticator.authenticate(request));
+    assertNull(attr.get(Attribute.ID_TOKEN));
   }
 
   @Test
   public void testAuthenticate_notJwt() {
     request.addHeader(GoogleAuth.AUTHORIZATION_HEADER, "Bearer abc.abc");
     assertNull(authenticator.authenticate(request));
+    assertNull(attr.get(Attribute.ID_TOKEN));
   }
 
   @Test
   public void testAuthenticate_invalidToken() throws Exception {
     when(verifier.verify(TOKEN)).thenReturn(null);
     assertNull(authenticator.authenticate(request));
+    assertNull(attr.get(Attribute.ID_TOKEN));
   }
 
   @Test
@@ -109,6 +113,7 @@ public class GoogleJwtAuthenticatorTest {
     when(verifier.verify(TOKEN)).thenReturn(token);
     when(config.getClientIds()).thenReturn(ImmutableList.of("clientId2"));
     assertNull(authenticator.authenticate(request));
+    assertNotNull(attr.get(Attribute.ID_TOKEN));
   }
 
   @Test
@@ -117,6 +122,7 @@ public class GoogleJwtAuthenticatorTest {
     when(config.getClientIds()).thenReturn(ImmutableList.of(CLIENT_ID));
     when(config.getAudiences()).thenReturn(ImmutableList.of("audience2"));
     assertNull(authenticator.authenticate(request));
+    assertNotNull(attr.get(Attribute.ID_TOKEN));
   }
 
   @Test
@@ -128,6 +134,7 @@ public class GoogleJwtAuthenticatorTest {
     User user = authenticator.authenticate(request);
     assertEquals(EMAIL, user.getEmail());
     assertEquals(USER_ID, user.getId());
+    assertNotNull(attr.get(Attribute.ID_TOKEN));
   }
 
   @Test
@@ -138,6 +145,10 @@ public class GoogleJwtAuthenticatorTest {
     User user = authenticator.authenticate(request);
     assertEquals(EMAIL, user.getEmail());
     assertEquals(USER_ID, user.getId());
+    GoogleIdToken idToken = attr.get(Attribute.ID_TOKEN);
+    assertNotNull(idToken);
+    assertEquals(EMAIL, idToken.getPayload().getEmail());
+    assertEquals(USER_ID, idToken.getPayload().getSubject());
   }
 
   @Test
@@ -150,7 +161,7 @@ public class GoogleJwtAuthenticatorTest {
     assertEquals(EMAIL, user.getEmail());
     assertEquals(USER_ID, user.getId());
     com.google.appengine.api.users.User appEngineuser =
-        (com.google.appengine.api.users.User) attr.get(Attribute.AUTHENTICATED_APPENGINE_USER);
+        attr.get(Attribute.AUTHENTICATED_APPENGINE_USER);
     assertEquals(EMAIL, appEngineuser.getEmail());
     assertNull(appEngineuser.getUserId());
   }

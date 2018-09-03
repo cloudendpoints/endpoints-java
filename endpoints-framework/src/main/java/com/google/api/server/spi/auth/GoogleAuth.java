@@ -49,9 +49,9 @@ public class GoogleAuth {
   private static final Pattern JWT_PATTERN =
       Pattern.compile(String.format("%s\\.%s\\.%s", BASE64_REGEX, BASE64_REGEX, BASE64_REGEX));
 
-  // Remote API for validating OAuth2 access token.
+  // Remote API for validating access or id token.
   private static final String TOKEN_INFO_ENDPOINT =
-      "https://www.googleapis.com/oauth2/v2/tokeninfo?access_token=";
+      "https://www.googleapis.com/oauth2/v2/tokeninfo";
 
   @VisibleForTesting
   static final String AUTHORIZATION_HEADER = "Authorization";
@@ -115,14 +115,14 @@ public class GoogleAuth {
     return null;
   }
 
-  static boolean isJwt(String token) {
+  public static boolean isJwt(String token) {
     if (token == null) {
       return false;
     }
     return JWT_PATTERN.matcher(token).matches();
   }
 
-  static boolean isOAuth2Token(String token) {
+  public static boolean isOAuth2Token(String token) {
     if (token == null) {
       return false;
     }
@@ -176,6 +176,9 @@ public class GoogleAuth {
     @Key("issued_to") public String clientId;
     @Key("scope") public String scopes;
     @Key("user_id") public String userId;
+    @Key("audience") public String audience;
+    @Key("expires_in") public Integer expiresIn;
+    @Key("verified_email") public Boolean verifiedEmail;
     @Key("error_description") public String errorDescription;
   }
 
@@ -183,10 +186,18 @@ public class GoogleAuth {
    * Get OAuth2 token info from remote token validation API.
    * Retries IOExceptions and 5xx responses once.
    */
-  static TokenInfo getTokenInfoRemote(String token) throws ServiceUnavailableException {
+  public static TokenInfo getTokenInfoRemote(String token) throws ServiceUnavailableException {
     try {
+      String tokenParam;
+      if (isOAuth2Token(token)) {
+        tokenParam = "?access_token=";
+      } else if(isJwt(token)) {
+        tokenParam = "?id_token=";
+      } else {
+        return null;
+      }
       HttpRequest request = Client.getInstance().getJsonHttpRequestFactory()
-          .buildGetRequest(new GenericUrl(TOKEN_INFO_ENDPOINT + token));
+          .buildGetRequest(new GenericUrl(TOKEN_INFO_ENDPOINT + tokenParam + token));
       configureErrorHandling(request);
       return parseTokenInfo(request);
     } catch (IOException e) {

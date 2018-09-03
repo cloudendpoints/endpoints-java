@@ -122,7 +122,7 @@ class GoogleAppEngineAuthenticator implements Authenticator {
     }
 
     com.google.appengine.api.users.User appEngineUser = null;
-    ApiMethodConfig config = (ApiMethodConfig) attr.get(Attribute.API_METHOD_CONFIG);
+    ApiMethodConfig config = attr.get(Attribute.API_METHOD_CONFIG);
     if (!attr.isEnabled(Attribute.SKIP_TOKEN_AUTH)) {
       appEngineUser = getOAuth2User(request, config);
     }
