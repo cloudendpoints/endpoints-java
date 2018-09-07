@@ -31,9 +31,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -83,13 +87,33 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
         return new Object[0];
       }
       HttpServletRequest servletRequest = endpointsContext.getRequest();
-      String requestBody = IoUtil.readRequestBody(servletRequest);
-      logger.log(Level.FINE, "requestBody=" + requestBody);
-      // Unlike the Lily protocol, which essentially always requires a JSON body to exist (due to
-      // path and query parameters being injected into the body), bodies are optional here, so we
-      // create an empty body and inject named parameters to make deserialize work.
-      JsonNode node = Strings.isEmptyOrWhitespace(requestBody) ? objectReader.createObjectNode()
-          : objectReader.readTree(requestBody);
+      JsonNode node;
+      if (ServletFileUpload.isMultipartContent(servletRequest)) {
+        try {
+          ServletFileUpload upload = new ServletFileUpload();
+          FileItemIterator iter = upload.getItemIterator(servletRequest);
+          ObjectNode obj = (ObjectNode) objectReader.createObjectNode();
+          while (iter.hasNext()) {
+            FileItemStream item = iter.next();
+            if (item.isFormField()) {
+              obj.put(item.getFieldName(), IoUtil.readStream(item.openStream()));
+            } else {
+              throw new BadRequestException("unable to parse multipart form field");
+            }
+          }
+          node = obj;
+        } catch (FileUploadException e) {
+          throw new BadRequestException("unable to parse multipart request", e);
+        }
+      } else {
+        String requestBody = IoUtil.readRequestBody(servletRequest);
+        logger.log(Level.FINE, "requestBody=" + requestBody);
+        // Unlike the Lily protocol, which essentially always requires a JSON body to exist (due to
+        // path and query parameters being injected into the body), bodies are optional here, so we
+        // create an empty body and inject named parameters to make deserialize work.
+        node = Strings.isEmptyOrWhitespace(requestBody) ? objectReader.createObjectNode()
+            : objectReader.readTree(requestBody);
+      }
       if (!node.isObject()) {
         throw new BadRequestException("expected a JSON object body");
       }

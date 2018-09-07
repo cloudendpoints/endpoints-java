@@ -96,6 +96,7 @@ dependencies {
     exclude group: 'com.google.guava', module: 'guava-jdk5'
   }
   compile group: 'com.google.code.findbugs', name: 'jsr305', version: findbugsVersion
+  compile group: 'commons-fileupload', name: 'commons-fileupload', version: fileUploadVersion
   compile group: 'io.swagger', name: 'swagger-models', version: swaggerVersion
   compile group: 'io.swagger', name: 'swagger-core', version: swaggerVersion
   compile group: 'org.slf4j', name: 'slf4j-nop', version: slf4jVersion
