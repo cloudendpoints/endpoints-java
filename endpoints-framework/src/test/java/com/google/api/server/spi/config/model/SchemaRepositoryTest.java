@@ -96,15 +96,15 @@ public class SchemaRepositoryTest {
     ApiMethodConfig methodConfig = getMethodConfig("getStringEnumMap");
     Schema schema = repo.getOrAdd(methodConfig.getReturnType(), config);
     assertThat(schema).isEqualTo(Schema.builder()
-            .setName("Map_String_TestEnum")
-            .setType("object")
-            .setMapValueSchema(Field.builder()
-                    .setName(SchemaRepository.MAP_UNUSED_MSG)
-                    .setType(FieldType.ENUM)
-                    .setSchemaReference(SchemaReference.create(repo, config,
-                        TypeToken.of(TestEnum.class)))
+        .setName("Map_String_TestEnum")
+        .setType("object")
+        .setMapValueSchema(Field.builder()
+            .setName(SchemaRepository.MAP_UNUSED_MSG)
+            .setType(FieldType.ENUM)
+            .setSchemaReference(SchemaReference.create(repo, config,
+                TypeToken.of(TestEnum.class)))
             .build())
-            .build());
+        .build());
   }
 
   @Test
@@ -168,17 +168,17 @@ public class SchemaRepositoryTest {
       ApiMethodConfig methodConfig = getMethodConfig("getStringArrayMap");
       Schema schema = repo.getOrAdd(methodConfig.getReturnType(), config);
       assertThat(schema).isEqualTo(Schema.builder()
-              .setName("Map_String_StringCollection")
-              .setType("object")
-              .setMapValueSchema(Field.builder()
-                      .setName(SchemaRepository.MAP_UNUSED_MSG)
-                      .setType(FieldType.ARRAY)
-                      .setArrayItemSchema(Field.builder()
-                          .setName(SchemaRepository.ARRAY_UNUSED_MSG)
-                          .setType(FieldType.STRING)
-                          .build())
+          .setName("Map_String_StringCollection")
+          .setType("object")
+          .setMapValueSchema(Field.builder()
+              .setName(SchemaRepository.MAP_UNUSED_MSG)
+              .setType(FieldType.ARRAY)
+              .setArrayItemSchema(Field.builder()
+                  .setName(SchemaRepository.ARRAY_UNUSED_MSG)
+                  .setType(FieldType.STRING)
+                  .build())
               .build())
-              .build());
+          .build());
     } finally {
       System.clearProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName);
     }
@@ -199,7 +199,7 @@ public class SchemaRepositoryTest {
   private void checkJsonMap(String methodName) throws Exception {
     ApiMethodConfig methodConfig = getMethodConfig(methodName);
     assertThat(repo.getOrAdd(methodConfig.getReturnType(), config))
-            .isEqualTo(SchemaRepository.MAP_SCHEMA);
+        .isEqualTo(SchemaRepository.MAP_SCHEMA);
   }
 
   @Test
@@ -461,5 +461,4 @@ public class SchemaRepositoryTest {
             .build())
         .build());
   }
-
 }

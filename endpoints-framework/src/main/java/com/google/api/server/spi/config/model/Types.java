@@ -22,7 +22,6 @@ import com.google.api.server.spi.config.ResourceTransformer;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.common.base.Predicate;
-import com.google.common.collect.BoundType;
 import com.google.common.collect.Iterables;
 import com.google.common.reflect.TypeToken;
 

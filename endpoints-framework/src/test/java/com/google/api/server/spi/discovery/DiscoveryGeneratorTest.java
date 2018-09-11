@@ -136,17 +136,17 @@ public class DiscoveryGeneratorTest {
   }
 
   @Test
-  public void testWriteDiscovery_MapEndpoint_InvalidKeyTypeKO() throws Exception {
+  public void testWriteDiscovery_MapEndpoint_InvalidKeyType() throws Exception {
     try {
       getDiscovery(new DiscoveryContext(), MapEndpointInvalid.class);
       Assert.fail("Should have failed to generate schema for invalid key type");
-    } catch (IllegalArgumentException e){
+    } catch (IllegalArgumentException e) {
       //expected
     }
   }
 
   @Test
-  public void testWriteDiscovery_MapEndpoint_InvalidKeyTypeOK() throws Exception {
+  public void testWriteDiscovery_MapEndpoint_InvalidKeyType_ignore() throws Exception {
     System.setProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
     try {
       getDiscovery(new DiscoveryContext(), MapEndpointInvalid.class);

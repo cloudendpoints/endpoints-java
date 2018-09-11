@@ -44,12 +44,12 @@ public class SchemaRepository {
       .build();
 
   private static final EnumSet<FieldType> SUPPORTED_MAP_KEY_TYPES = EnumSet.of(
-          FieldType.STRING,
-          FieldType.ENUM,
-          FieldType.BOOLEAN,
-          FieldType.INT8, FieldType.INT16, FieldType.INT32, FieldType.INT64,
-          FieldType.FLOAT, FieldType.DOUBLE,
-          FieldType.DATE, FieldType.DATE_TIME
+      FieldType.STRING,
+      FieldType.ENUM,
+      FieldType.BOOLEAN,
+      FieldType.INT8, FieldType.INT16, FieldType.INT32, FieldType.INT64,
+      FieldType.FLOAT, FieldType.DOUBLE,
+      FieldType.DATE, FieldType.DATE_TIME
   );
 
   @VisibleForTesting
@@ -109,8 +109,8 @@ public class SchemaRepository {
   /**
    * Gets all schema for an API config.
    *
-   * @return a {@link Map} from {@link TypeToken} to {@link Schema}. If there are no schema for
-   *     this config, an empty map is returned.
+   * @return a {@link Map} from {@link TypeToken} to {@link Schema}. If there are no schema for this
+   * config, an empty map is returned.
    */
   private Map<TypeToken<?>, Schema> getAllTypesForConfig(ApiConfig config) {
     Map<TypeToken<?>, Schema> typesForConfig = types.get(config.getSerializationConfig());
@@ -207,7 +207,7 @@ public class SchemaRepository {
       }
     }
     Field mapValueSchema = schema.mapValueSchema();
-    if (mapValueSchema != null && mapValueSchema.schemaReference() != null)  {
+    if (mapValueSchema != null && mapValueSchema.schemaReference() != null) {
       addSchemaToApi(key, mapValueSchema.schemaReference().get());
     }
   }
@@ -237,8 +237,8 @@ public class SchemaRepository {
     }
     TypeToken<?> valueSchemaType = ApiAnnotationIntrospector.getSchemaType(valueTypeToken, config);
     Schema.Builder builder = Schema.builder()
-            .setName(Types.getSimpleName(mapType, config.getSerializationConfig()))
-            .setType("object");
+        .setName(Types.getSimpleName(mapType, config.getSerializationConfig()))
+        .setType("object");
     Field.Builder fieldBuilder = Field.builder().setName(MAP_UNUSED_MSG);
     fillInFieldInformation(fieldBuilder, valueSchemaType, null, typesForConfig, config);
     return Optional.of(builder.setMapValueSchema(fieldBuilder.build()).build());
@@ -256,7 +256,8 @@ public class SchemaRepository {
       TypeToken<?> propertyType = propertySchema.getType();
       if (propertyType != null) {
         Field.Builder fieldBuilder = Field.builder().setName(propertyName);
-        fillInFieldInformation(fieldBuilder, propertyType, propertySchema.getDescription(), typesForConfig, config);
+        fillInFieldInformation(fieldBuilder, propertyType, propertySchema.getDescription(),
+            typesForConfig, config);
         builder.addField(propertyName, fieldBuilder.build());
       }
     }

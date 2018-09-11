@@ -115,9 +115,9 @@ public class SwaggerGeneratorTest {
 
   @Test
   public void testWriteSwagger_MapEndpoint() throws Exception {
-      Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
-      Swagger expected = readExpectedAsSwagger("map_endpoint.swagger");
-      compareSwagger(expected, swagger);
+    Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+    Swagger expected = readExpectedAsSwagger("map_endpoint.swagger");
+    compareSwagger(expected, swagger);
   }
 
   @Test
@@ -133,17 +133,17 @@ public class SwaggerGeneratorTest {
   }
 
   @Test
-  public void testWriteDiscovery_MapEndpoint_InvalidKeyTypeKO() throws Exception {
+  public void testWriteDiscovery_MapEndpoint_InvalidKeyType() throws Exception {
     try {
       getSwagger(MapEndpointInvalid.class, new SwaggerContext(), true);
       Assert.fail("Should have failed to generate schema for invalid key type");
-    } catch (IllegalArgumentException e){
+    } catch (IllegalArgumentException e) {
       //expected
     }
   }
 
   @Test
-  public void testWriteDiscovery_MapEndpoint_InvalidKeyTypeOK() throws Exception {
+  public void testWriteDiscovery_MapEndpoint_InvalidKeyType_ignore() throws Exception {
     System.setProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
     try {
       getSwagger(MapEndpointInvalid.class, new SwaggerContext(), true);
