@@ -33,10 +33,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,7 +41,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -84,8 +80,7 @@ public class ServletResponseResultWriter implements ResultWriter {
       HttpServletResponse servletResponse, ApiSerializationConfig serializationConfig,
       boolean prettyPrint, boolean addContentLength) {
     this.servletResponse = servletResponse;
-    Set<SimpleModule> modules = new LinkedHashSet<>();
-    modules.addAll(WRITER_MODULES);
+    Set<SimpleModule> modules = new LinkedHashSet<>(WRITER_MODULES);
     ObjectWriter objectWriter = ConfiguredObjectMapper.builder()
         .apiSerializationConfig(serializationConfig)
         .addRegisteredModules(modules)
@@ -198,7 +193,7 @@ public class ServletResponseResultWriter implements ResultWriter {
   }
 
   private static SimpleModule getWriteBlobAsBase64Module() {
-    JsonSerializer<Blob> dateSerializer = new JsonSerializer<Blob>() {
+    JsonSerializer<Blob> blobSerializer = new JsonSerializer<Blob>() {
       @Override
       public void serialize(Blob value, JsonGenerator jgen, SerializerProvider provider)
           throws IOException {
@@ -208,7 +203,7 @@ public class ServletResponseResultWriter implements ResultWriter {
     };
     SimpleModule writeBlobAsBase64Module = new SimpleModule("writeBlobAsBase64Module",
         new Version(1, 0, 0, null, null, null));
-    writeBlobAsBase64Module.addSerializer(Blob.class, dateSerializer);
+    writeBlobAsBase64Module.addSerializer(Blob.class, blobSerializer);
     return writeBlobAsBase64Module;
   }
 
