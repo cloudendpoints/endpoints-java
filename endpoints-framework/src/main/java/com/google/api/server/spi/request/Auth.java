@@ -23,16 +23,6 @@ import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.Singleton;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -40,35 +30,18 @@ import javax.servlet.http.HttpServletRequest;
  * Utilities for end user authentication.
  */
 public class Auth {
-  private static final Logger logger = Logger.getLogger(Auth.class.getName());
+  private static final Singleton.Instantiator<Authenticator> INSTANTIATOR
+      = new Singleton.Instantiator<Authenticator>(new EndpointsAuthenticator());
 
-  private static volatile Map<Class<? extends Authenticator>, Authenticator>
-      authenticatorInstances = new HashMap<Class<? extends Authenticator>, Authenticator>();
-
-  private static final Authenticator DEFAULT_AUTHENTICATOR = new EndpointsAuthenticator();
-
-  private static final Function<Class<? extends Authenticator>, Authenticator>
-      INSTANTIATE_AUTHENTICATOR = new Function<Class<? extends Authenticator>, Authenticator>() {
-        @Override
-        public Authenticator apply(Class<? extends Authenticator> clazz) {
-          try {
-            if (clazz.getAnnotation(Singleton.class) != null) {
-              if (!authenticatorInstances.containsKey(clazz)) {
-                authenticatorInstances.put(clazz, clazz.newInstance());
-              }
-              return authenticatorInstances.get(clazz);
-            } else {
-              return clazz.newInstance();
-            }
-          } catch (IllegalAccessException | InstantiationException e) {
-            logger.log(Level.WARNING, "Could not instantiate  authenticator: " + clazz.getName());
-            return null;
-          }
-        }
-      };
-
+  /**
+   * Must be used to instantiate new {@link Authenticator}s to honor
+   * {@link com.google.api.server.spi.config.Singleton} contract.
+   *
+   *  @return a new instance of clazz, or an existing one if clazz is annotated with @{@link
+   * com.google.api.server.spi.config.Singleton}
+   */
   public static Authenticator instantiateAuthenticator(Class<? extends Authenticator> clazz) {
-    return INSTANTIATE_AUTHENTICATOR.apply(clazz);
+    return INSTANTIATOR.getInstanceOrDefault(clazz);
   }
 
   private final HttpServletRequest request;
@@ -88,10 +61,7 @@ public class Auth {
 
   @VisibleForTesting
   Iterable<Authenticator> getAuthenticatorInstances() {
-    List<Class<? extends Authenticator>> classes = config.getAuthenticators();
-    return classes == null ? ImmutableList.of(DEFAULT_AUTHENTICATOR)
-        : Iterables.filter(Iterables.transform(classes, INSTANTIATE_AUTHENTICATOR),
-            Predicates.notNull());
+    return INSTANTIATOR.getInstancesOrDefault(config.getAuthenticators());
   }
 
   /**
