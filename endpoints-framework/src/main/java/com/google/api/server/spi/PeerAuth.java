@@ -21,16 +21,6 @@ import com.google.api.server.spi.config.Singleton;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.request.Attribute;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,42 +28,19 @@ import javax.servlet.http.HttpServletRequest;
  * Utilities used to do peer authorization.
  */
 public class PeerAuth {
-  private static final Logger logger = Logger.getLogger(PeerAuth.class.getName());
+  private static final Singleton.Instantiator<PeerAuthenticator> INSTANTIATOR
+      = new Singleton.Instantiator<PeerAuthenticator>(new EndpointsPeerAuthenticator());
 
-  private static volatile
-      Map<Class<? extends PeerAuthenticator>, PeerAuthenticator> peerAuthenticatorInstances =
-          new HashMap<Class<? extends PeerAuthenticator>, PeerAuthenticator>();
-
-  private static final PeerAuthenticator DEFAULT_PEER_AUTHENTICATOR =
-      new EndpointsPeerAuthenticator();
-
-  private static final
-      Function<Class<? extends PeerAuthenticator>, PeerAuthenticator>
-      INSTANTIATE_PEER_AUTHENTICATOR =
-        new Function<Class<? extends PeerAuthenticator>, PeerAuthenticator>() {
-        @Override
-        public PeerAuthenticator apply(Class<? extends PeerAuthenticator> clazz) {
-          try {
-            if (clazz.getAnnotation(Singleton.class) != null) {
-              if (!peerAuthenticatorInstances.containsKey(clazz)) {
-                peerAuthenticatorInstances.put(clazz, clazz.newInstance());
-              }
-              return peerAuthenticatorInstances.get(clazz);
-            } else {
-              return clazz.newInstance();
-            }
-          } catch (IllegalAccessException | InstantiationException e) {
-            logger.log(Level.WARNING,
-                "Could not instantiate peer authenticator: " + clazz.getName());
-            return null;
-          }
-        }
-      };
-
+  /**
+   * Must be used to instantiate new {@link PeerAuthenticator}s to honor
+   * {@link com.google.api.server.spi.config.Singleton} contract.
+   *
+   * @return a new instance of clazz, or an existing one if clazz is annotated with @{@link
+   * com.google.api.server.spi.config.Singleton}
+   */
   public static PeerAuthenticator instantiatePeerAuthenticator(Class<? extends PeerAuthenticator> clazz) {
-    return INSTANTIATE_PEER_AUTHENTICATOR.apply(clazz);
+    return INSTANTIATOR.getInstanceOrDefault(clazz);
   }
-
 
   private final HttpServletRequest request;
   private final Attribute attr;
@@ -92,10 +59,7 @@ public class PeerAuth {
 
   @VisibleForTesting
   Iterable<PeerAuthenticator> getPeerAuthenticatorInstances() {
-    List<Class<? extends PeerAuthenticator>> classes = config.getPeerAuthenticators();
-    return classes == null ? ImmutableList.of(DEFAULT_PEER_AUTHENTICATOR)
-        : Iterables.filter(Iterables.transform(classes, INSTANTIATE_PEER_AUTHENTICATOR),
-            Predicates.notNull());
+    return INSTANTIATOR.getInstancesOrDefault(config.getPeerAuthenticators());
   }
 
   boolean authorizePeer() {
