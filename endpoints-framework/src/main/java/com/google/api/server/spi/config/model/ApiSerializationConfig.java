@@ -15,11 +15,16 @@
  */
 package com.google.api.server.spi.config.model;
 
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.server.spi.ConfiguredObjectMapper.Builder;
 import com.google.api.server.spi.config.ApiConfigInconsistency;
 import com.google.api.server.spi.config.Transformer;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.reflect.TypeToken;
 
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,13 +37,21 @@ import java.util.Map;
 public class ApiSerializationConfig {
 
   private final Map<TypeToken<?>, SerializerConfig> configs;
+  private final ImmutableList<Module> modules;
 
   public ApiSerializationConfig() {
     this.configs = new LinkedHashMap<>();
+    this.modules = ImmutableList.of();
   }
+
+  public ApiSerializationConfig(Iterable<? extends Module> modules) {
+		this.configs = new LinkedHashMap<>();
+		this.modules = ImmutableList.copyOf(modules);
+	}
 
   public ApiSerializationConfig(ApiSerializationConfig original) {
     this.configs = new LinkedHashMap<>(original.configs);
+    this.modules = original.modules;
   }
 
   @Override
@@ -73,6 +86,10 @@ public class ApiSerializationConfig {
   public List<SerializerConfig> getSerializerConfigs() {
     return new ArrayList<>(configs.values());
   }
+
+  public List<Module> getRegisteredModules() {
+  	return modules;
+	}
 
   public SerializerConfig getSerializerConfig(TypeToken<?> type) {
     return configs.get(type);

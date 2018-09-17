@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.request;
 
+import com.fasterxml.jackson.databind.Module;
 import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.EndpointsContext;
@@ -45,6 +46,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
+import com.hubspot.jackson.datatype.protobuf.ProtobufModule;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
@@ -73,11 +75,11 @@ import javax.servlet.http.HttpServletRequest;
 public class ServletRequestParamReader extends AbstractParamReader {
 
   private static final Logger logger = Logger.getLogger(ServletRequestParamReader.class.getName());
-  private static final Set<SimpleModule> READER_MODULES;
+  private static final Set<Module> READER_MODULES;
   private static final String APPENGINE_USER_CLASS_NAME = "com.google.appengine.api.users.User";
 
   static {
-    Set<SimpleModule> modules = new LinkedHashSet<>();
+    Set<Module> modules = new LinkedHashSet<>();
     SimpleModule dateModule =
         new SimpleModule("dateModule", new Version(1, 0, 0, null, null, null));
     dateModule.addDeserializer(Date.class, new DateDeserializer());
@@ -92,6 +94,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
         new SimpleModule("dateAndTimeModule", new Version(1, 0, 0, null, null, null));
     dateAndTimeModule.addDeserializer(DateAndTime.class, new DateAndTimeDeserializer());
     modules.add(dateAndTimeModule);
+    modules.add(new ProtobufModule());
 
     try {
       // Attempt to load the Blob class, which may not exist outside of App Engine Standard.
@@ -315,8 +318,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
     this.endpointsContext = endpointsContext;
     this.servletContext = servletContext;
 
-    LinkedHashSet<SimpleModule> modules = new LinkedHashSet<>();
-    modules.addAll(READER_MODULES);
+    LinkedHashSet<Module> modules = new LinkedHashSet<>(READER_MODULES);
     this.objectReader = ConfiguredObjectMapper
         .builder()
         .apiSerializationConfig(serializationConfig)

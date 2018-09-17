@@ -15,6 +15,13 @@
  */
 package com.google.api.server.spi.response;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.ServiceException;
@@ -25,26 +32,14 @@ import com.google.api.server.spi.types.SimpleDate;
 import com.google.appengine.api.datastore.Blob;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingOutputStream;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
+import com.hubspot.jackson.datatype.protobuf.ProtobufModule;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -52,14 +47,15 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ServletResponseResultWriter implements ResultWriter {
 
-  private static final Set<SimpleModule> WRITER_MODULES;
+  private static final Set<Module> WRITER_MODULES;
 
   static {
-    Set<SimpleModule> modules = new LinkedHashSet<>();
+    Set<Module> modules = new LinkedHashSet<>();
     modules.add(getWriteLongAsStringModule());
     modules.add(getWriteDateAsStringModule());
     modules.add(getWriteDateAndTimeAsStringModule());
     modules.add(getWriteSimpleDateAsStringModule());
+    modules.add(new ProtobufModule());
     try {
       // Attempt to load the Blob class, which may not exist outside of App Engine Standard.
       ServletResponseResultWriter.class.getClassLoader()
@@ -84,8 +80,7 @@ public class ServletResponseResultWriter implements ResultWriter {
       HttpServletResponse servletResponse, ApiSerializationConfig serializationConfig,
       boolean prettyPrint, boolean addContentLength) {
     this.servletResponse = servletResponse;
-    Set<SimpleModule> modules = new LinkedHashSet<>();
-    modules.addAll(WRITER_MODULES);
+    Set<Module> modules = new LinkedHashSet<>(WRITER_MODULES);
     ObjectWriter objectWriter = ConfiguredObjectMapper.builder()
         .apiSerializationConfig(serializationConfig)
         .addRegisteredModules(modules)
@@ -198,7 +193,7 @@ public class ServletResponseResultWriter implements ResultWriter {
   }
 
   private static SimpleModule getWriteBlobAsBase64Module() {
-    JsonSerializer<Blob> dateSerializer = new JsonSerializer<Blob>() {
+    JsonSerializer<Blob> blobSerializer = new JsonSerializer<Blob>() {
       @Override
       public void serialize(Blob value, JsonGenerator jgen, SerializerProvider provider)
           throws IOException {
@@ -208,7 +203,7 @@ public class ServletResponseResultWriter implements ResultWriter {
     };
     SimpleModule writeBlobAsBase64Module = new SimpleModule("writeBlobAsBase64Module",
         new Version(1, 0, 0, null, null, null));
-    writeBlobAsBase64Module.addSerializer(Blob.class, dateSerializer);
+    writeBlobAsBase64Module.addSerializer(Blob.class, blobSerializer);
     return writeBlobAsBase64Module;
   }
 

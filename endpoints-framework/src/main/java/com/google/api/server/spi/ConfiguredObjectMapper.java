@@ -141,6 +141,9 @@ public class ConfiguredObjectMapper {
      * @return the constructed object
      */
     public ConfiguredObjectMapper build() {
+    	if (config != null) {
+				modules.addAll(config.getRegisteredModules());
+			}
       CacheKey key = new CacheKey(config, modules.build());
       ConfiguredObjectMapper instance = cache.get(key);
       if (instance == null) {
