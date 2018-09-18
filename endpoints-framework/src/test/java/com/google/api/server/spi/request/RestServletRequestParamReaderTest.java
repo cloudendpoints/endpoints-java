@@ -201,7 +201,7 @@ public class RestServletRequestParamReaderTest {
 
     assertThat(params).hasLength(endpointMethod.getParameterClasses().length);
     assertThat(params).asList()
-        .containsExactly("4", "3", "2", "1");
+        .containsExactly(ImmutableList.of("4", "3", "2", "1"));
   }
 
   @Test
