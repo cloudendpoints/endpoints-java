@@ -201,7 +201,32 @@ public class RestServletRequestParamReaderTest {
 
     assertThat(params).hasLength(endpointMethod.getParameterClasses().length);
     assertThat(params).asList()
-        .containsExactly(ImmutableList.of("4", "3", "2", "1"));
+        .containsExactly("4", "3", "2", "1");
+  }
+
+  @Test
+  public void multipartFormData() throws Exception {
+    endpointMethod = EndpointMethod.create(TestApi.class,
+        TestApi.class.getMethod("testFormData", String.class, Integer.class));
+    methodConfig = apiConfig.getApiClassConfig().getMethods().get(endpointMethod);
+    request.setContentType("multipart/form-data; boundary=----test");
+    request.setMethod("POST");
+    String requestContent =
+        "------test\r\n" +
+        "Content-Disposition: form-data; name=\"foo\"\r\n\r\n" +
+        "test\r\n" +
+        "------test\r\n" +
+        "Content-Disposition: form-data; name=\"bar\"\r\n\r\n" +
+        "1234\r\n" +
+        "------test--\r\n";
+    request.setContent(requestContent.getBytes(StandardCharsets.UTF_8));
+    RestServletRequestParamReader reader = createReader(ImmutableMap.<String, String>of());
+
+    Object[] params = reader.read();
+
+    assertThat(params).hasLength(endpointMethod.getParameterClasses().length);
+    assertThat(params).asList()
+        .containsExactly("test", 1234);
   }
 
   private RestServletRequestParamReader createReader(Map<String, String> rawPathParameters) {
@@ -242,6 +267,15 @@ public class RestServletRequestParamReaderTest {
         httpMethod = HttpMethod.GET,
         path = "testArrayPathParam/{values}")
     public void testArrayPathParam(@Named("values") ArrayList<String> values) {
+    }
+
+    @ApiMethod(
+        name = "testFormData",
+        httpMethod = HttpMethod.POST,
+        path = "testFormData")
+    public void testFormData(
+        @Nullable @Named("foo") String foo,
+        @Nullable @Named("bar") Integer bar) {
     }
   }
 
