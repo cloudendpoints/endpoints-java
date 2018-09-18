@@ -88,6 +88,8 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
       }
       HttpServletRequest servletRequest = endpointsContext.getRequest();
       JsonNode node;
+      // multipart/form-data requests can be used for requests which have no resource body. In
+      // this case, each part represents a named parameter instead.
       if (ServletFileUpload.isMultipartContent(servletRequest)) {
         try {
           ServletFileUpload upload = new ServletFileUpload();
