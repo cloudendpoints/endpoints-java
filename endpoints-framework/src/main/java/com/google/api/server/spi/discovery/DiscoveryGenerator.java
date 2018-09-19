@@ -258,6 +258,9 @@ public class DiscoveryGenerator {
       }
       docSchema.setProperties(fields);
     }
+    if (schema.mapValueSchema() != null) {
+      docSchema.setAdditionalProperties(convertToDiscoverySchema(schema.mapValueSchema()));
+    }
     docSchema.setDescription(schema.description());
     if (!schema.enumValues().isEmpty()) {
       docSchema.setEnum(new ArrayList<>(schema.enumValues()));

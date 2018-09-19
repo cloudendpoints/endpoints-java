@@ -1,5 +1,8 @@
 package com.google.api.server.spi.config.model;
 
+import static com.google.api.server.spi.config.model.MapSchemaFlag.FORCE_JSON_MAP_SCHEMA;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.SUPPORT_ARRAYS_VALUES;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -23,6 +26,7 @@ import com.google.common.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -78,8 +82,122 @@ public class SchemaRepositoryTest {
   }
 
   @Test
+  public void getOrAdd_mapType() throws Exception {
+    //unsupported map types still use JsonMap schema
+    checkJsonMap("getStringArrayMap");
+    //non-string key values generate an exception
+    try {
+      checkJsonMap("getArrayStringMap");
+      fail("Should have failed to generate map schema");
+    } catch (IllegalArgumentException e) {
+      //expected exception
+    }
+    //supported map types generate proper map schema
+    ApiMethodConfig methodConfig = getMethodConfig("getStringEnumMap");
+    Schema schema = repo.getOrAdd(methodConfig.getReturnType(), config);
+    assertThat(schema).isEqualTo(Schema.builder()
+        .setName("Map_String_TestEnum")
+        .setType("object")
+        .setMapValueSchema(Field.builder()
+            .setName(SchemaRepository.MAP_UNUSED_MSG)
+            .setType(FieldType.ENUM)
+            .setSchemaReference(SchemaReference.create(repo, config,
+                TypeToken.of(TestEnum.class)))
+            .build())
+        .build());
+  }
+
+  @Test
+  public void getOrAdd_mapSubType() throws Exception {
+    Schema expectedSchema = Schema.builder()
+        .setName("Map_String_String")
+        .setType("object")
+        .setMapValueSchema(Field.builder()
+            .setName(SchemaRepository.MAP_UNUSED_MSG)
+            .setType(FieldType.STRING)
+            .build())
+        .build();
+    assertThat(repo.getOrAdd(getMethodConfig("getMyMap").getReturnType(), config))
+        .isEqualTo(expectedSchema);
+    assertThat(repo.getOrAdd(getMethodConfig("getMySubMap").getReturnType(), config))
+        .isEqualTo(expectedSchema);
+  }
+
+  @Test
+  public void getOrAdd_mapTypeUnsupportedKeys() throws Exception {
+    System.setProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
+    try {
+      checkJsonMap("getArrayStringMap");
+    } finally {
+      System.clearProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
+    }
+  }
+
+  @Test
+  public void getOrAdd_NestedMap() throws Exception {
+    Schema expectedSchema = Schema.builder()
+        .setName("Map_String_Map_String_String")
+        .setType("object")
+        .setMapValueSchema(Field.builder()
+            .setName(SchemaRepository.MAP_UNUSED_MSG)
+            .setType(FieldType.OBJECT)
+            .setSchemaReference(SchemaReference.create(repo, config,
+                new TypeToken<Map<String, String>>() {}))
+            .build())
+        .build();
+    assertThat(repo.getOrAdd(getMethodConfig("getNestedMap").getReturnType(), config))
+        .isEqualTo(expectedSchema);
+  }
+
+  @Test
+  public void getOrAdd_ParameterizedMap() throws Exception {
+    checkJsonMap("getParameterizedMap");
+    checkJsonMap("getParameterizedKeyMap");
+    checkJsonMap("getParameterizedValueMap");
+  }
+
+  @Test
+  public void getOrAdd_RawMap() throws Exception {
+    checkJsonMap("getRawMap");
+  }
+
+  @Test
+  public void getOrAdd_mapTypeArrayValues() throws Exception {
+    System.setProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName, "true");
+    try {
+      ApiMethodConfig methodConfig = getMethodConfig("getStringArrayMap");
+      Schema schema = repo.getOrAdd(methodConfig.getReturnType(), config);
+      assertThat(schema).isEqualTo(Schema.builder()
+          .setName("Map_String_StringCollection")
+          .setType("object")
+          .setMapValueSchema(Field.builder()
+              .setName(SchemaRepository.MAP_UNUSED_MSG)
+              .setType(FieldType.ARRAY)
+              .setArrayItemSchema(Field.builder()
+                  .setName(SchemaRepository.ARRAY_UNUSED_MSG)
+                  .setType(FieldType.STRING)
+                  .build())
+              .build())
+          .build());
+    } finally {
+      System.clearProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName);
+    }
+  }
+
+  @Test
   public void getOrAdd_jsonMap() throws Exception {
-    ApiMethodConfig methodConfig = getMethodConfig("getJsonMap");
+    System.setProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName, "true");
+    try {
+      checkJsonMap("getStringEnumMap");
+      checkJsonMap("getStringArrayMap");
+      checkJsonMap("getArrayStringMap");
+    } finally {
+      System.clearProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName);
+    }
+  }
+
+  private void checkJsonMap(String methodName) throws Exception {
+    ApiMethodConfig methodConfig = getMethodConfig(methodName);
     assertThat(repo.getOrAdd(methodConfig.getReturnType(), config))
         .isEqualTo(SchemaRepository.MAP_SCHEMA);
   }
@@ -185,7 +303,43 @@ public class SchemaRepositoryTest {
       return null;
     }
 
-    public Map<String, Object> getJsonMap() {
+    public Map<String, TestEnum> getStringEnumMap() {
+      return null;
+    }
+
+    public Map<String, String[]> getStringArrayMap() {
+      return null;
+    }
+
+    public Map<String[], String> getArrayStringMap() {
+      return null;
+    }
+
+    public MyMap getMyMap() {
+      return null;
+    }
+
+    public Map<String, Map<String, String>> getNestedMap() {
+      return null;
+    }
+
+    public <K, V> Map<K, V> getParameterizedMap() {
+      return null;
+    }
+
+    public <K> Map<K, String> getParameterizedKeyMap() {
+      return null;
+    }
+
+    public <V> Map<String, V> getParameterizedValueMap() {
+      return null;
+    }
+
+    public Map getRawMap() {
+      return null;
+    }
+
+    public MySubMap getMySubMap() {
       return null;
     }
 
@@ -193,6 +347,10 @@ public class SchemaRepositoryTest {
       return null;
     }
   }
+
+  private static class MyMap extends HashMap<String, String> { }
+
+  private static class MySubMap extends MyMap { }
 
   private static class Parameterized<T> {
     public T getFoo() {

@@ -15,6 +15,9 @@
  */
 package com.google.api.server.spi.swagger;
 
+import static com.google.api.server.spi.config.model.MapSchemaFlag.FORCE_JSON_MAP_SCHEMA;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES;
+import static com.google.api.server.spi.config.model.MapSchemaFlag.SUPPORT_ARRAYS_VALUES;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.server.spi.Constant;
@@ -37,10 +40,13 @@ import com.google.api.server.spi.testing.EnumEndpoint;
 import com.google.api.server.spi.testing.FooDescriptionEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.LimitMetricsEndpoint;
+import com.google.api.server.spi.testing.MapEndpoint;
+import com.google.api.server.spi.testing.MapEndpointInvalid;
 import com.google.common.collect.ImmutableList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -105,6 +111,57 @@ public class SwaggerGeneratorTest {
     Swagger swagger = getSwagger(ArrayEndpoint.class, new SwaggerContext(), true);
     Swagger expected = readExpectedAsSwagger("array_endpoint.swagger");
     compareSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_MapEndpoint() throws Exception {
+    Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+    Swagger expected = readExpectedAsSwagger("map_endpoint.swagger");
+    compareSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_MapEndpoint_Legacy() throws Exception {
+    System.setProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName, "");
+    try {
+      Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+      Swagger expected = readExpectedAsSwagger("map_endpoint_legacy.swagger");
+      compareSwagger(expected, swagger);
+    } finally {
+      System.clearProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName);
+    }
+  }
+
+  @Test
+  public void testWriteDiscovery_MapEndpoint_InvalidKeyType() throws Exception {
+    try {
+      getSwagger(MapEndpointInvalid.class, new SwaggerContext(), true);
+      Assert.fail("Should have failed to generate schema for invalid key type");
+    } catch (IllegalArgumentException e) {
+      //expected
+    }
+  }
+
+  @Test
+  public void testWriteDiscovery_MapEndpoint_InvalidKeyType_ignore() throws Exception {
+    System.setProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
+    try {
+      getSwagger(MapEndpointInvalid.class, new SwaggerContext(), true);
+    } finally {
+      System.clearProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
+    }
+  }
+
+  @Test
+  public void testWriteSwagger_MapEndpoint_WithArrayValue() throws Exception {
+    System.setProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName, "TRUE");
+    try {
+      Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+      Swagger expected = readExpectedAsSwagger("map_endpoint_with_array.swagger");
+      compareSwagger(expected, swagger);
+    } finally {
+      System.clearProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName);
+    }
   }
 
   @Test

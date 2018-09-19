@@ -21,6 +21,9 @@ public abstract class Schema {
   /** A map from field names to fields for the schema. */
   public abstract ImmutableSortedMap<String, Field> fields();
 
+  /** If the schema is a map, a reference to the map value type. */
+  @Nullable public abstract Field mapValueSchema();
+
   /**
    * If the schema is an enum, a list of possible enum values in their string representation.
    */
@@ -45,8 +48,9 @@ public abstract class Schema {
 
     public abstract Builder setName(String name);
     public abstract Builder setType(String type);
-    @Nullable public abstract Builder setDescription(String description);
+    public abstract Builder setDescription(String description);
     public abstract Builder setFields(ImmutableSortedMap<String, Field> fields);
+    public abstract Builder setMapValueSchema(Field mapValueSchema);
     public Builder addField(String name, Field field) {
       fieldsBuilder.put(name, field);
       return this;
@@ -101,7 +105,7 @@ public abstract class Schema {
     public abstract static class Builder {
       public abstract Builder setName(String name);
       public abstract Builder setType(FieldType type);
-      @Nullable public abstract Builder setDescription(String description);
+      public abstract Builder setDescription(String description);
       public abstract Builder setSchemaReference(SchemaReference ref);
       public abstract Builder setArrayItemSchema(Field schema);
       public abstract Field build();

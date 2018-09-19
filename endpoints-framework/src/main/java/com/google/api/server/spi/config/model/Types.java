@@ -21,15 +21,20 @@ import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.ResourceTransformer;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.response.CollectionResponse;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.reflect.TypeToken;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * Utilities for dealing with type information.
@@ -57,6 +62,30 @@ public abstract class Types {
    */
   public static boolean isMapType(TypeToken<?> type) {
     return type.isSubtypeOf(Map.class) && !isJavaClientEntity(type);
+  }
+
+  /**
+   * Returns true if this type is not parameterized, or has only concrete type variables (checked
+   * recursively on parameterized type variables).
+   */
+  public static boolean isConcreteType(Type type) {
+    if (type instanceof ParameterizedType) {
+      Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
+      return Iterables.all(Arrays.asList(typeArguments), new Predicate<Type>() {
+        @Override
+        public boolean apply(@Nullable Type input) {
+          return isConcreteType(input);
+        }
+      });
+    }
+    if (type instanceof GenericArrayType) {
+      return isConcreteType(((GenericArrayType) type).getGenericComponentType());
+    }
+    if (type instanceof Class) {
+      return true;
+    }
+    //matches instanceof TypeVariable and WildcardType
+    return false;
   }
 
   /**

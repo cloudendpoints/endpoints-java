@@ -11,11 +11,13 @@ import com.google.api.server.spi.config.jsonwriter.ResourceSchemaProvider;
 import com.google.api.server.spi.config.model.Schema.Field;
 import com.google.api.server.spi.config.model.Schema.SchemaReference;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeToken;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,8 +43,19 @@ public class SchemaRepository {
       .setType("object")
       .build();
 
+  private static final EnumSet<FieldType> SUPPORTED_MAP_KEY_TYPES = EnumSet.of(
+      FieldType.STRING,
+      FieldType.ENUM,
+      FieldType.BOOLEAN,
+      FieldType.INT8, FieldType.INT16, FieldType.INT32, FieldType.INT64,
+      FieldType.FLOAT, FieldType.DOUBLE,
+      FieldType.DATE, FieldType.DATE_TIME
+  );
+
   @VisibleForTesting
   static final String ARRAY_UNUSED_MSG = "unused for array items";
+  @VisibleForTesting
+  static final String MAP_UNUSED_MSG = "unused for map values";
 
   private final Multimap<ApiKey, Schema> schemaByApiKeys = LinkedHashMultimap.create();
   private final Map<ApiSerializationConfig, Map<TypeToken<?>, Schema>> types = Maps.newHashMap();
@@ -96,8 +109,8 @@ public class SchemaRepository {
   /**
    * Gets all schema for an API config.
    *
-   * @return a {@link Map} from {@link TypeToken} to {@link Schema}. If there are no schema for
-   *     this config, an empty map is returned.
+   * @return a {@link Map} from {@link TypeToken} to {@link Schema}. If there are no schema for this
+   * config, an empty map is returned.
    */
   private Map<TypeToken<?>, Schema> getAllTypesForConfig(ApiConfig config) {
     Map<TypeToken<?>, Schema> typesForConfig = types.get(config.getSerializationConfig());
@@ -147,9 +160,16 @@ public class SchemaRepository {
       schemaByApiKeys.put(key, ANY_SCHEMA);
       return ANY_SCHEMA;
     } else if (Types.isMapType(type)) {
-      typesForConfig.put(type, MAP_SCHEMA);
-      schemaByApiKeys.put(key, MAP_SCHEMA);
-      return MAP_SCHEMA;
+      schema = MAP_SCHEMA;
+      final TypeToken<Map<?, ?>> mapSupertype = type.getSupertype(Map.class);
+      final boolean hasConcreteKeyValue = Types.isConcreteType(mapSupertype.getType());
+      boolean forceJsonMapSchema = MapSchemaFlag.FORCE_JSON_MAP_SCHEMA.isEnabled();
+      if (hasConcreteKeyValue && !forceJsonMapSchema) {
+        schema = createMapSchema(mapSupertype, typesForConfig, config).or(schema);
+      }
+      typesForConfig.put(type, schema);
+      schemaByApiKeys.put(key, schema);
+      return schema;
     } else if (Types.isEnumType(type)) {
       Schema.Builder builder = Schema.builder()
           .setName(Types.getSimpleName(type, config.getSerializationConfig()))
@@ -186,6 +206,42 @@ public class SchemaRepository {
         addSchemaToApi(key, f.schemaReference().get());
       }
     }
+    Field mapValueSchema = schema.mapValueSchema();
+    if (mapValueSchema != null && mapValueSchema.schemaReference() != null) {
+      addSchemaToApi(key, mapValueSchema.schemaReference().get());
+    }
+  }
+
+  private Optional<Schema> createMapSchema(
+      TypeToken<Map<?, ?>> mapType, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
+    FieldType keyFieldType = FieldType.fromType(Types.getTypeParameter(mapType, 0));
+    boolean supportedKeyType = SUPPORTED_MAP_KEY_TYPES.contains(keyFieldType);
+    if (!supportedKeyType) {
+      String message = "Map field type '" + mapType + "' has a key type not serializable to String";
+      if (MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES.isEnabled()) {
+        System.err.println(message + ", its schema will be JsonMap");
+      } else {
+        throw new IllegalArgumentException(message);
+      }
+    }
+    TypeToken<?> valueTypeToken = Types.getTypeParameter(mapType, 1);
+    FieldType valueFieldType = FieldType.fromType(valueTypeToken);
+    boolean supportArrayValues = MapSchemaFlag.SUPPORT_ARRAYS_VALUES.isEnabled();
+    boolean supportedValueType = supportArrayValues || valueFieldType != FieldType.ARRAY;
+    if (!supportedValueType) {
+      System.err.println("Map field type '" + mapType + "' "
+          + "has an array-like value type, its schema will be JsonMap");
+    }
+    if (!supportedKeyType || !supportedValueType) {
+      return Optional.absent();
+    }
+    TypeToken<?> valueSchemaType = ApiAnnotationIntrospector.getSchemaType(valueTypeToken, config);
+    Schema.Builder builder = Schema.builder()
+        .setName(Types.getSimpleName(mapType, config.getSerializationConfig()))
+        .setType("object");
+    Field.Builder fieldBuilder = Field.builder().setName(MAP_UNUSED_MSG);
+    fillInFieldInformation(fieldBuilder, valueSchemaType, null, typesForConfig, config);
+    return Optional.of(builder.setMapValueSchema(fieldBuilder.build()).build());
   }
 
   private Schema createBeanSchema(
@@ -200,7 +256,8 @@ public class SchemaRepository {
       TypeToken<?> propertyType = propertySchema.getType();
       if (propertyType != null) {
         Field.Builder fieldBuilder = Field.builder().setName(propertyName);
-        fillInFieldInformation(fieldBuilder, propertyType, propertySchema.getDescription(), typesForConfig, config);
+        fillInFieldInformation(fieldBuilder, propertyType, propertySchema.getDescription(),
+            typesForConfig, config);
         builder.addField(propertyName, fieldBuilder.build());
       }
     }

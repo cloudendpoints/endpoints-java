@@ -1,0 +1,344 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "myapi.appspot.com"
+  },
+  "host": "myapi.appspot.com",
+  "basePath": "/_ah/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/myapi/v1/getDateTimeKeyMap": {
+      "get": {
+        "operationId": "MyapiGetDateTimeKeyMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/getMapOfStrings": {
+      "get": {
+        "operationId": "MyapiGetMapOfStrings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/MapContainer"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/getStringCollectionMap": {
+      "get": {
+        "operationId": "MyapiGetStringCollectionMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_boolean_string": {
+      "get": {
+        "operationId": "MyapiGetBooleanKeyMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_datetime_string": {
+      "get": {
+        "operationId": "MyapiGetDateKeyMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_float_string": {
+      "get": {
+        "operationId": "MyapiGetFloatKeyMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_integer_string": {
+      "get": {
+        "operationId": "MyapiGetIntKeyMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_long_string": {
+      "get": {
+        "operationId": "MyapiGetLongKeyMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_baz": {
+      "get": {
+        "operationId": "MyapiGetBazMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_foo": {
+      "get": {
+        "operationId": "MyapiGetFooMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_integer": {
+      "get": {
+        "operationId": "MyapiGetIntMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_map_string_foo": {
+      "get": {
+        "operationId": "MyapiGetFooMapMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_string": {
+      "get": {
+        "operationId": "MyapiGetStringMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_stringcollection": {
+      "get": {
+        "operationId": "MyapiGetStringArrayMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_string_stringvalue": {
+      "get": {
+        "operationId": "MyapiGetStringValueMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/map_testenum_string": {
+      "get": {
+        "operationId": "MyapiGetEnumKeyMap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/mapendpoint": {
+      "get": {
+        "operationId": "MyapiGetMapService",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/MapEndpoint"
+            }
+          }
+        }
+      }
+    },
+    "/myapi/v1/mapsubclass": {
+      "get": {
+        "operationId": "MyapiGetMapSubclass",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/JsonMap"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "JsonMap": {
+      "type": "object"
+    },
+    "MapContainer": {
+      "type": "object",
+      "properties": {
+        "stringMap": {
+          "$ref": "#/definitions/JsonMap"
+        }
+      }
+    },
+    "MapEndpoint": {
+      "type": "object",
+      "properties": {
+        "bazMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "booleanKeyMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "dateKeyMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "dateTimeKeyMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "enumKeyMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "floatKeyMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "fooMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "fooMapMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "intKeyMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "intMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "longKeyMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "mapOfStrings": {
+          "$ref": "#/definitions/MapContainer"
+        },
+        "mapService": {
+          "$ref": "#/definitions/MapEndpoint"
+        },
+        "mapSubclass": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "stringArrayMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "stringCollectionMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "stringMap": {
+          "$ref": "#/definitions/JsonMap"
+        },
+        "stringValueMap": {
+          "$ref": "#/definitions/JsonMap"
+        }
+      }
+    }
+  }
+}
