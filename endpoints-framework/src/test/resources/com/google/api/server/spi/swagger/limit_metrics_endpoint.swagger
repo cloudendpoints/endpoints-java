@@ -55,6 +55,7 @@
   },
   "definitions": {
     "Foo": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string"
@@ -87,8 +88,8 @@
           "values": {
             "STANDARD": 100
           },
-          "displayName": "Read requests",
-          "unit": "1/min/{project}"
+          "unit": "1/min/{project}",
+          "displayName": "Read requests"
         },
         {
           "name": "write",

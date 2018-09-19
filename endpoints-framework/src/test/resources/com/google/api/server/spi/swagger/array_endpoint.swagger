@@ -201,6 +201,7 @@
   },
   "definitions": {
     "CollectionResponse_Integer": {
+      "type": "object",
       "properties": {
         "items": {
           "type": "array",
@@ -215,6 +216,7 @@
       }
     },
     "CollectionResponse_Foo": {
+      "type": "object",
       "properties": {
         "items": {
           "type": "array",
@@ -228,6 +230,7 @@
       }
     },
     "Foo": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string"
@@ -239,6 +242,7 @@
       }
     },
     "FooCollectionCollection": {
+      "type": "object",
       "properties": {
         "items": {
           "type": "array",
@@ -251,7 +255,19 @@
         }
       }
     },
+    "ListContainer": {
+      "type": "object",
+      "properties": {
+        "strings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "Baz": {
+      "type": "object",
       "properties": {
         "foo": {
           "$ref": "#/definitions/Foo"
@@ -264,17 +280,8 @@
         }
       }
     },
-    "ListContainer": {
-      "properties": {
-        "strings": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "CollectionResponse_FooCollection": {
+      "type": "object",
       "properties": {
         "items": {
           "type": "array",
@@ -291,6 +298,7 @@
       }
     },
     "ArrayEndpoint": {
+      "type": "object",
       "properties": {
         "allArrayedFoos": {
           "type": "array",
@@ -360,6 +368,7 @@
       }
     },
     "IntegerCollection": {
+      "type": "object",
       "properties": {
         "items": {
           "type": "array",
@@ -370,17 +379,8 @@
         }
       }
     },
-    "FooCollection": {
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Foo"
-          }
-        }
-      }
-    },
     "CollectionResponse_FooCollectionCollection": {
+      "type": "object",
       "properties": {
         "items": {
           "type": "array",
@@ -396,6 +396,17 @@
         },
         "nextPageToken": {
           "type": "string"
+        }
+      }
+    },
+    "FooCollection": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Foo"
+          }
         }
       }
     }
