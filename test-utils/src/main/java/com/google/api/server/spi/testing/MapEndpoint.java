@@ -107,7 +107,7 @@ public class MapEndpoint {
   }
 
   //Maps with array-like values generate a JsonMap schema (not supported by API client generator)
-  //unless activated with MapSchemaFlag.SUPPORT_ARRAYS_VALUES
+  //unless activated with EndpointsFlag.SUPPORT_ARRAYS_VALUES
 
   public Map<String, String[]> getStringArrayMap() {
     return null;
