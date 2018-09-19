@@ -18,20 +18,13 @@ package com.google.api.server.spi.config.model;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * These flags control the behavior of the schema generators regarding Map types.<br>
- * <br>
- * By default, schema generation uses "additionalProperties" in JsonSchema to describe Map types
- * (both for Discovery and OpenAPI), with a proper description of the value types.<br> This mode
- * supports key types that can be serialized from / to String, and supports any value type except
- * array-like ones (see {@link MapSchemaFlag#SUPPORT_ARRAYS_VALUES} for more details).<br> In
- * previous versions of Cloud Endpoints, Maps were always represented using the untyped "JsonMap"
- * object (see {@link com.google.api.server.spi.config.model.SchemaRepository#MAP_SCHEMA}).<br>
+ * These flags control various Endpoints behavior.<br>
  * <br>
  * To enable one of these enum flags, you can either:
  * <ul>
- * <li>Set system property {@link MapSchemaFlag#systemPropertyName} (defined as
- * "endpoints.mapSchema." + systemPropertySuffix) to any value except a falsy one</li>
- * <li>Set env variable {@link MapSchemaFlag#envVarName} (defined as "ENDPOINTS_MAP_SCHEMA_"
+ * <li>Set system property {@link EndpointsFlag#systemPropertyName} (defined as
+ * "endpoints." + systemPropertySuffix) to any value except a false-y one</li>
+ * <li>Set env variable {@link EndpointsFlag#envVarName} (defined as "ENDPOINTS_"
  * + name()) to any value except a falsy one</li>
  * </ul>
  * <br>
@@ -41,36 +34,48 @@ import com.google.common.annotations.VisibleForTesting;
  * <li>falsy is defined as a case-insensitive equality with "false".</li>
  * </ul>
  */
-public enum MapSchemaFlag {
+public enum EndpointsFlag {
 
   /**
    * Reenabled the previous behavior of Cloud Endpoints, using untyped "JsonMap" for all Map types.
+   * By default, schema generation uses "additionalProperties" in JsonSchema to describe Map types
+   * (both for Discovery and OpenAPI), with a proper description of the value types.
    */
-  FORCE_JSON_MAP_SCHEMA("forceJsonMapSchema"),
+  MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA("mapSchema.forceJsonMapSchema"),
 
   /**
    * When enabled, schema generation will not throw an error when handling Map types with keys that
    * are not serializable from / to string (previous Cloud Endpoints behavior). It will still
-   * probably generate an error when serializing / deserializing these types at runtime.
+   * probably generate an error when serializing / deserializing these types at runtime. {@link
+   * #MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA} must be enabled for this to take effect.
    */
-  IGNORE_UNSUPPORTED_KEY_TYPES("ignoreUnsupportedKeyTypes"),
+  MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES("mapSchema.ignoreUnsupportedKeyTypes"),
 
   /**
    * Array values in "additionalProperties" are supported by the API Explorer, but not by the Java
    * client generation. This flag can be enabled when deploying an API to the server, but should
-   * always be disabled when generating Java clients.
+   * always be disabled when generating Java clients. {@link #MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA} must
+   * be enabled for this to take effect.
    */
-  SUPPORT_ARRAYS_VALUES("supportArrayValues");
+  MAP_SCHEMA_SUPPORT_ARRAYS_VALUES("mapSchema.supportArrayValues"),
 
-  private static final String ENV_VARIABLE_PREFIX = "ENDPOINTS_MAP_SCHEMA_";
-  private static final String SYSTEM_PROPERTY_PREFIX = "endpoints.mapSchema.";
+  /**
+   * When enabled, allows use of Jackson serialization annotations. Previously, the Jackson
+   * annotation introspector was unused because Jackson was a vendored dependency. Now that Jackson
+   * is an explicit dependency, this can cause conflict with apps that use Jackson annotations for
+   * reasons outside of using this framework.
+   */
+  JSON_DISABLE_JACKSON_ANNOTATIONS("json.disableJacksonAnnotations");
+
+  private static final String ENV_VARIABLE_PREFIX = "ENDPOINTS_";
+  private static final String SYSTEM_PROPERTY_PREFIX = "endpoints.";
 
   @VisibleForTesting
   public String envVarName;
   @VisibleForTesting
   public String systemPropertyName;
 
-  MapSchemaFlag(String systemPropertySuffix) {
+  EndpointsFlag(String systemPropertySuffix) {
     this.envVarName = ENV_VARIABLE_PREFIX + name();
     this.systemPropertyName = SYSTEM_PROPERTY_PREFIX + systemPropertySuffix;
   }
@@ -81,5 +86,4 @@ public enum MapSchemaFlag {
     return systemProperty != null && !"false".equalsIgnoreCase(systemProperty)
         || envVar != null && !"false".equalsIgnoreCase(envVar);
   }
-
 }

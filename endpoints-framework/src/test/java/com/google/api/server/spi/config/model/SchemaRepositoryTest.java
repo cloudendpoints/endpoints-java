@@ -1,8 +1,8 @@
 package com.google.api.server.spi.config.model;
 
-import static com.google.api.server.spi.config.model.MapSchemaFlag.FORCE_JSON_MAP_SCHEMA;
-import static com.google.api.server.spi.config.model.MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES;
-import static com.google.api.server.spi.config.model.MapSchemaFlag.SUPPORT_ARRAYS_VALUES;
+import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA;
+import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES;
+import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_SUPPORT_ARRAYS_VALUES;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -125,11 +125,11 @@ public class SchemaRepositoryTest {
 
   @Test
   public void getOrAdd_mapTypeUnsupportedKeys() throws Exception {
-    System.setProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
+    System.setProperty(MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
     try {
       checkJsonMap("getArrayStringMap");
     } finally {
-      System.clearProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
+      System.clearProperty(MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
     }
   }
 
@@ -163,7 +163,7 @@ public class SchemaRepositoryTest {
 
   @Test
   public void getOrAdd_mapTypeArrayValues() throws Exception {
-    System.setProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName, "true");
+    System.setProperty(MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.systemPropertyName, "true");
     try {
       ApiMethodConfig methodConfig = getMethodConfig("getStringArrayMap");
       Schema schema = repo.getOrAdd(methodConfig.getReturnType(), config);
@@ -180,19 +180,19 @@ public class SchemaRepositoryTest {
               .build())
           .build());
     } finally {
-      System.clearProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName);
+      System.clearProperty(MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.systemPropertyName);
     }
   }
 
   @Test
   public void getOrAdd_jsonMap() throws Exception {
-    System.setProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName, "true");
+    System.setProperty(MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA.systemPropertyName, "true");
     try {
       checkJsonMap("getStringEnumMap");
       checkJsonMap("getStringArrayMap");
       checkJsonMap("getArrayStringMap");
     } finally {
-      System.clearProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName);
+      System.clearProperty(MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA.systemPropertyName);
     }
   }
 

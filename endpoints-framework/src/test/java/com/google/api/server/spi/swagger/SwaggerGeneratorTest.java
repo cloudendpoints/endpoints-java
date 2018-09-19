@@ -15,9 +15,9 @@
  */
 package com.google.api.server.spi.swagger;
 
-import static com.google.api.server.spi.config.model.MapSchemaFlag.FORCE_JSON_MAP_SCHEMA;
-import static com.google.api.server.spi.config.model.MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES;
-import static com.google.api.server.spi.config.model.MapSchemaFlag.SUPPORT_ARRAYS_VALUES;
+import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA;
+import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES;
+import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_SUPPORT_ARRAYS_VALUES;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.server.spi.Constant;
@@ -122,13 +122,13 @@ public class SwaggerGeneratorTest {
 
   @Test
   public void testWriteSwagger_MapEndpoint_Legacy() throws Exception {
-    System.setProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName, "");
+    System.setProperty(MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA.systemPropertyName, "");
     try {
       Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
       Swagger expected = readExpectedAsSwagger("map_endpoint_legacy.swagger");
       compareSwagger(expected, swagger);
     } finally {
-      System.clearProperty(FORCE_JSON_MAP_SCHEMA.systemPropertyName);
+      System.clearProperty(MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA.systemPropertyName);
     }
   }
 
@@ -144,23 +144,23 @@ public class SwaggerGeneratorTest {
 
   @Test
   public void testWriteDiscovery_MapEndpoint_InvalidKeyType_ignore() throws Exception {
-    System.setProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
+    System.setProperty(MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
     try {
       getSwagger(MapEndpointInvalid.class, new SwaggerContext(), true);
     } finally {
-      System.clearProperty(IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
+      System.clearProperty(MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
     }
   }
 
   @Test
   public void testWriteSwagger_MapEndpoint_WithArrayValue() throws Exception {
-    System.setProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName, "TRUE");
+    System.setProperty(MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.systemPropertyName, "TRUE");
     try {
       Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
       Swagger expected = readExpectedAsSwagger("map_endpoint_with_array.swagger");
       compareSwagger(expected, swagger);
     } finally {
-      System.clearProperty(SUPPORT_ARRAYS_VALUES.systemPropertyName);
+      System.clearProperty(MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.systemPropertyName);
     }
   }
 

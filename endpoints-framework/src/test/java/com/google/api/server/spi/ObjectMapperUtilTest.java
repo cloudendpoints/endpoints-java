@@ -17,8 +17,9 @@ package com.google.api.server.spi;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.google.api.server.spi.config.model.EndpointsFlag;
 import org.junit.Test;
 
 /**
@@ -31,5 +32,42 @@ public class ObjectMapperUtilTest {
     ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
     assertThat(mapper.writeValueAsString(bytes)).isEqualTo("\"_-8\"");
     assertThat(mapper.readValue("\"_-8\"", byte[].class)).isEqualTo(bytes);
+  }
+
+  @Test
+  public void createStandardObjectMapper_useJacksonAnnotations() throws Exception {
+    ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
+    assertThat(mapper.writeValueAsString(new TestObject())).contains("test");
+  }
+
+  @Test
+  public void createStandardObjectMapper_disableJacksonAnnotations() throws Exception {
+    System.setProperty(EndpointsFlag.JSON_DISABLE_JACKSON_ANNOTATIONS.systemPropertyName, "yes");
+    try {
+      ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
+      assertThat(mapper.writeValueAsString(new TestObject())).contains("TEST");
+    } finally {
+      System.clearProperty(EndpointsFlag.JSON_DISABLE_JACKSON_ANNOTATIONS.systemPropertyName);
+    }
+  }
+
+  private enum TestEnum {
+    @JsonProperty("test") TEST
+  }
+
+  private class TestObject {
+    TestEnum test;
+
+    TestObject() {
+      this.test = TestEnum.TEST;
+    }
+
+    public void setTest(TestEnum test) {
+      this.test = test;
+    }
+
+    public TestEnum getTest() {
+      return test;
+    }
   }
 }

@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.type.ArrayType;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 
+import com.google.api.server.spi.config.model.EndpointsFlag;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -80,8 +81,11 @@ public class ObjectMapperUtil {
         .setBase64Variant(Base64Variants.MODIFIED_FOR_URL)
         .setSerializerFactory(
             BeanSerializerFactory.instance.withSerializerModifier(new DeepEmptyCheckingModifier()));
-    AnnotationIntrospector pair = AnnotationIntrospector.pair(
-        new ApiAnnotationIntrospector(config), new JacksonAnnotationIntrospector());
+    AnnotationIntrospector pair = EndpointsFlag.JSON_DISABLE_JACKSON_ANNOTATIONS.isEnabled()
+        ? new ApiAnnotationIntrospector(config)
+        : AnnotationIntrospector.pair(
+            new ApiAnnotationIntrospector(config),
+            new JacksonAnnotationIntrospector());
     objectMapper.setAnnotationIntrospector(pair);
     return objectMapper;
   }

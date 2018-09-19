@@ -163,7 +163,7 @@ public class SchemaRepository {
       schema = MAP_SCHEMA;
       final TypeToken<Map<?, ?>> mapSupertype = type.getSupertype(Map.class);
       final boolean hasConcreteKeyValue = Types.isConcreteType(mapSupertype.getType());
-      boolean forceJsonMapSchema = MapSchemaFlag.FORCE_JSON_MAP_SCHEMA.isEnabled();
+      boolean forceJsonMapSchema = EndpointsFlag.MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA.isEnabled();
       if (hasConcreteKeyValue && !forceJsonMapSchema) {
         schema = createMapSchema(mapSupertype, typesForConfig, config).or(schema);
       }
@@ -218,7 +218,7 @@ public class SchemaRepository {
     boolean supportedKeyType = SUPPORTED_MAP_KEY_TYPES.contains(keyFieldType);
     if (!supportedKeyType) {
       String message = "Map field type '" + mapType + "' has a key type not serializable to String";
-      if (MapSchemaFlag.IGNORE_UNSUPPORTED_KEY_TYPES.isEnabled()) {
+      if (EndpointsFlag.MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES.isEnabled()) {
         System.err.println(message + ", its schema will be JsonMap");
       } else {
         throw new IllegalArgumentException(message);
@@ -226,7 +226,7 @@ public class SchemaRepository {
     }
     TypeToken<?> valueTypeToken = Types.getTypeParameter(mapType, 1);
     FieldType valueFieldType = FieldType.fromType(valueTypeToken);
-    boolean supportArrayValues = MapSchemaFlag.SUPPORT_ARRAYS_VALUES.isEnabled();
+    boolean supportArrayValues = EndpointsFlag.MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.isEnabled();
     boolean supportedValueType = supportArrayValues || valueFieldType != FieldType.ARRAY;
     if (!supportedValueType) {
       System.err.println("Map field type '" + mapType + "' "
