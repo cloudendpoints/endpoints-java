@@ -60,7 +60,7 @@ public enum EndpointsFlag {
   MAP_SCHEMA_SUPPORT_ARRAYS_VALUES("mapSchema.supportArrayValues"),
 
   /**
-   * When enabled, allows use of Jackson serialization annotations. Previously, the Jackson
+   * When enabled, disables use of Jackson serialization annotations. Previously, the Jackson
    * annotation introspector was unused because Jackson was a vendored dependency. Now that Jackson
    * is an explicit dependency, this can cause conflict with apps that use Jackson annotations for
    * reasons outside of using this framework.
