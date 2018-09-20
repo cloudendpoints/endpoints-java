@@ -20,7 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * These flags control various Endpoints behavior.<br>
  * <br>
- * To enable one of these enum flags, you can either:
+ * To set one of these enum flags, you can either:
  * <ul>
  * <li>Set system property {@link EndpointsFlag#systemPropertyName} (defined as
  * "endpoints." + systemPropertySuffix) to any value except a false-y one</li>
@@ -37,35 +37,36 @@ import com.google.common.annotations.VisibleForTesting;
 public enum EndpointsFlag {
 
   /**
-   * Reenabled the previous behavior of Cloud Endpoints, using untyped "JsonMap" for all Map types.
+   * Enables the previous behavior of Cloud Endpoints, using untyped "JsonMap" for all Map types.
    * By default, schema generation uses "additionalProperties" in JsonSchema to describe Map types
-   * (both for Discovery and OpenAPI), with a proper description of the value types.
+   * (both for Discovery and OpenAPI), with a proper description of the value types. Defaults to
+   * false.
    */
-  MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA("mapSchema.forceJsonMapSchema"),
+  MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA("mapSchema.forceJsonMapSchema", false),
 
   /**
    * When enabled, schema generation will not throw an error when handling Map types with keys that
    * are not serializable from / to string (previous Cloud Endpoints behavior). It will still
    * probably generate an error when serializing / deserializing these types at runtime. {@link
-   * #MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA} must be enabled for this to take effect.
+   * #MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA} must be disabled for this to take effect. Defaults to false.
    */
-  MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES("mapSchema.ignoreUnsupportedKeyTypes"),
+  MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES("mapSchema.ignoreUnsupportedKeyTypes", false),
 
   /**
    * Array values in "additionalProperties" are supported by the API Explorer, but not by the Java
    * client generation. This flag can be enabled when deploying an API to the server, but should
    * always be disabled when generating Java clients. {@link #MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA} must
-   * be enabled for this to take effect.
+   * be disabled for this to take effect. Defaults to false.
    */
-  MAP_SCHEMA_SUPPORT_ARRAYS_VALUES("mapSchema.supportArrayValues"),
+  MAP_SCHEMA_SUPPORT_ARRAYS_VALUES("mapSchema.supportArrayValues", false),
 
   /**
-   * When enabled, disables use of Jackson serialization annotations. Previously, the Jackson
+   * When enabled, allows use of Jackson serialization annotations. Previously, the Jackson
    * annotation introspector was unused because Jackson was a vendored dependency. Now that Jackson
    * is an explicit dependency, this can cause conflict with apps that use Jackson annotations for
-   * reasons outside of using this framework.
+   * reasons outside of using this framework. Defaults to true.
    */
-  JSON_DISABLE_JACKSON_ANNOTATIONS("json.disableJacksonAnnotations");
+  JSON_USE_JACKSON_ANNOTATIONS("json.allowJacksonAnnotations", true);
 
   private static final String ENV_VARIABLE_PREFIX = "ENDPOINTS_";
   private static final String SYSTEM_PROPERTY_PREFIX = "endpoints.";
@@ -74,16 +75,22 @@ public enum EndpointsFlag {
   public String envVarName;
   @VisibleForTesting
   public String systemPropertyName;
+  private boolean defaultValue;
 
-  EndpointsFlag(String systemPropertySuffix) {
+  EndpointsFlag(String systemPropertySuffix, boolean defaultValue) {
     this.envVarName = ENV_VARIABLE_PREFIX + name();
     this.systemPropertyName = SYSTEM_PROPERTY_PREFIX + systemPropertySuffix;
+    this.defaultValue = defaultValue;
   }
 
   public boolean isEnabled() {
     String envVar = System.getenv(envVarName);
     String systemProperty = System.getProperty(systemPropertyName);
-    return systemProperty != null && !"false".equalsIgnoreCase(systemProperty)
-        || envVar != null && !"false".equalsIgnoreCase(envVar);
+    if (systemProperty != null) {
+      return !"false".equalsIgnoreCase(systemProperty);
+    } else if (envVar != null) {
+      return !"false".equalsIgnoreCase(envVar);
+    }
+    return defaultValue;
   }
 }
