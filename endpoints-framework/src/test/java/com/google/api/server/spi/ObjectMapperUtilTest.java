@@ -42,12 +42,12 @@ public class ObjectMapperUtilTest {
 
   @Test
   public void createStandardObjectMapper_disableJacksonAnnotations() throws Exception {
-    System.setProperty(EndpointsFlag.JSON_DISABLE_JACKSON_ANNOTATIONS.systemPropertyName, "yes");
+    System.setProperty(EndpointsFlag.JSON_USE_JACKSON_ANNOTATIONS.systemPropertyName, "false");
     try {
       ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
       assertThat(mapper.writeValueAsString(new TestObject())).contains("TEST");
     } finally {
-      System.clearProperty(EndpointsFlag.JSON_DISABLE_JACKSON_ANNOTATIONS.systemPropertyName);
+      System.clearProperty(EndpointsFlag.JSON_USE_JACKSON_ANNOTATIONS.systemPropertyName);
     }
   }
 

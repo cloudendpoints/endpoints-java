@@ -81,11 +81,11 @@ public class ObjectMapperUtil {
         .setBase64Variant(Base64Variants.MODIFIED_FOR_URL)
         .setSerializerFactory(
             BeanSerializerFactory.instance.withSerializerModifier(new DeepEmptyCheckingModifier()));
-    AnnotationIntrospector pair = EndpointsFlag.JSON_DISABLE_JACKSON_ANNOTATIONS.isEnabled()
-        ? new ApiAnnotationIntrospector(config)
-        : AnnotationIntrospector.pair(
+    AnnotationIntrospector pair = EndpointsFlag.JSON_USE_JACKSON_ANNOTATIONS.isEnabled()
+        ? AnnotationIntrospector.pair(
             new ApiAnnotationIntrospector(config),
-            new JacksonAnnotationIntrospector());
+            new JacksonAnnotationIntrospector())
+        : new ApiAnnotationIntrospector(config);
     objectMapper.setAnnotationIntrospector(pair);
     return objectMapper;
   }
