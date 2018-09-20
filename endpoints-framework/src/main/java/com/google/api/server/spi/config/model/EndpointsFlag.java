@@ -66,7 +66,7 @@ public enum EndpointsFlag {
    * is an explicit dependency, this can cause conflict with apps that use Jackson annotations for
    * reasons outside of using this framework. Defaults to true.
    */
-  JSON_USE_JACKSON_ANNOTATIONS("json.allowJacksonAnnotations", true);
+  JSON_USE_JACKSON_ANNOTATIONS("json.useJacksonAnnotations", true);
 
   private static final String ENV_VARIABLE_PREFIX = "ENDPOINTS_";
   private static final String SYSTEM_PROPERTY_PREFIX = "endpoints.";
