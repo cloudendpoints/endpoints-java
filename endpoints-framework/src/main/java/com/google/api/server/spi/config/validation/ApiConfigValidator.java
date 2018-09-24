@@ -35,8 +35,8 @@ import com.google.api.server.spi.config.model.Types;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.flogger.FluentLogger;
 import com.google.common.reflect.TypeToken;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -45,7 +45,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -55,7 +54,7 @@ import java.util.regex.Pattern;
  * @author Eric Orth
  */
 public class ApiConfigValidator {
-  private static final Logger log = Logger.getLogger(ApiConfigValidator.class.getName());
+  private static final FluentLogger log = FluentLogger.forEnclosingClass();
   // The underscore is allowed in the API name because of very old legacy reasons, despite the
   // annotation documentation stating otherwise.
   private static final Pattern API_NAME_PATTERN = Pattern.compile(
@@ -225,8 +224,8 @@ public class ApiConfigValidator {
         for (ApiParameterConfig parameter : methodConfig.getParameterConfigs()) {
           if (parameter.getClassification() == Classification.API_PARAMETER &&
               !"id".equals(parameter.getName()) && fieldNames.contains(parameter.getName())) {
-            log.warning("Parameter " + parameter.getName() + " conflicts with a resource field "
-                + "name. This may result in unexpected values in the request.");
+            log.atWarning().log("Parameter %s conflicts with a resource field name. This may "
+                + "result in unexpected values in the request.", parameter.getName());
           }
         }
       }

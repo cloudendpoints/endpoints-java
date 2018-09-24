@@ -35,6 +35,7 @@ import com.google.api.server.spi.types.SimpleDate;
 import com.google.appengine.api.datastore.Blob;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.flogger.FluentLogger;
 import com.google.common.reflect.TypeToken;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -72,7 +73,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class ServletRequestParamReader extends AbstractParamReader {
 
-  private static final Logger logger = Logger.getLogger(ServletRequestParamReader.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private static final Set<SimpleModule> READER_MODULES;
   private static final String APPENGINE_USER_CLASS_NAME = "com.google.appengine.api.users.User";
 
@@ -146,12 +147,11 @@ public class ServletRequestParamReader extends AbstractParamReader {
         }
         if (user == null || clazz.isAssignableFrom(user.getClass())) {
           params[i] = user;
-          logger.log(Level.FINE, "deserialize: User injected into param[{0}]", i);
+          logger.atFine().log("deserialize: User injected into param[%d]", i);
         } else {
-          logger.log(
-              Level.WARNING,
-              "deserialize: User object of type {0} is not assignable to {1}. User will be null.",
-              new Object[] {user.getClass().getName(), clazz.getName()});
+          logger.atWarning().log(
+              "deserialize: User object of type %s is not assignable to %s. User will be null.",
+              user.getClass().getName(), clazz.getName());
         }
       } else if (APPENGINE_USER_CLASS_NAME.equals(clazz.getName())) {
         // User type parameter requires no Named annotation (ignored if present)
@@ -161,22 +161,22 @@ public class ServletRequestParamReader extends AbstractParamReader {
           throw new UnauthorizedException("Valid user credentials are required.");
         }
         params[i] = appEngineUser;
-        logger.log(Level.FINE, "deserialize: App Engine User injected into param[{0}]", i);
+        logger.atFine().log("deserialize: App Engine User injected into param[%d]", i);
       } else if (clazz == HttpServletRequest.class) {
         // HttpServletRequest type parameter requires no Named annotation (ignored if present)
         params[i] = endpointsContext.getRequest();
-        logger.log(Level.FINE, "deserialize: HttpServletRequest injected into param[{0}]", i);
+        logger.atFine().log("deserialize: HttpServletRequest injected into param[%d]", i);
       } else if (clazz == ServletContext.class) {
         // ServletContext type parameter requires no Named annotation (ignored if present)
         params[i] = servletContext;
-        logger.log(Level.FINE, "deserialize: ServletContext {0} injected into param[{1}]",
-            new Object[] {params[i], i});
+        logger.atFine().log("deserialize: ServletContext %s injected into param[%d]",
+            params[i], i);
       } else {
         String name = parameterNames.get(i);
         if (Strings.isNullOrEmpty(name)) {
           params[i] = (node == null) ? null : objectReader.forType(clazz).readValue(node);
-          logger.log(Level.FINE, "deserialize: {0} {1} injected into unnamed param[{2}]",
-              new Object[]{clazz, params[i], i});
+          logger.atFine().log("deserialize: %s %s injected into unnamed param[%d]",
+              clazz, params[i], i);
         } else if (StandardParameters.isStandardParamName(name)) {
           params[i] = getStandardParamValue(node, name);
         } else {
@@ -196,8 +196,8 @@ public class ServletRequestParamReader extends AbstractParamReader {
           if (params[i] == null && isRequiredParameter(method, i)) {
             throw new BadRequestException("null value for parameter '" + name + "' not allowed");
           }
-          logger.log(Level.FINE, "deserialize: {0} {1} injected into param[{2}] named {3}",
-              new Object[] {clazz, params[i], i, name});
+          logger.atFine().log("deserialize: %s %s injected into param[%d] named {%s}",
+              clazz, params[i], i, name);
         }
       }
     }
@@ -331,7 +331,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
     // TODO: Take charset from content-type as encoding
     try {
       String requestBody = IoUtil.readStream(endpointsContext.getRequest().getInputStream());
-      logger.log(Level.FINE, "requestBody=" + requestBody);
+      logger.atFine().log("requestBody=%s", requestBody);
       if (requestBody == null || requestBody.trim().isEmpty()) {
         return new Object[0];
       }

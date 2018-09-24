@@ -29,10 +29,9 @@ import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import com.google.common.flogger.FluentLogger;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +40,7 @@ import javax.servlet.http.HttpServletRequest;
  * Common auth utils for built-in authenticators.
  */
 public class GoogleAuth {
-  private static final Logger logger = Logger.getLogger(GoogleAuth.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   // Identifies JSON Web Tokens
   // From java/com/google/gaia/client/AuthSubRequestDetector.java
@@ -218,14 +217,14 @@ public class GoogleAuth {
       }
       errorDescription += " (" + statusCode + ")";
       if (statusCode >= 500) {
-        logger.log(Level.SEVERE, "Error validating access token: " + errorDescription);
+        logger.atSevere().log("Error validating access token: %s", errorDescription);
         throw new ServiceUnavailableException("Failed to validate access token");
       }
-      logger.log(Level.INFO, "Invalid access token: " + errorDescription);
+      logger.atInfo().log("Invalid access token: %s", errorDescription);
       return null;
     }
     if (info == null || Strings.isEmptyOrWhitespace(info.email)) {
-      logger.log(Level.WARNING, "Access token does not contain email scope");
+      logger.atWarning().log("Access token does not contain email scope");
       return null;
     }
     return info;

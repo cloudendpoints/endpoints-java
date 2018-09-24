@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import com.google.common.flogger.FluentLogger;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -56,8 +57,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class RestServletRequestParamReader extends ServletRequestParamReader {
 
-  private static final Logger logger = Logger
-      .getLogger(RestServletRequestParamReader.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private static final Splitter COMPOSITE_PATH_SPLITTER = Splitter.on(',');
 
   private final Map<String, String> rawPathParameters;
@@ -109,7 +109,7 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
         }
       } else {
         String requestBody = IoUtil.readRequestBody(servletRequest);
-        logger.log(Level.FINE, "requestBody=" + requestBody);
+        logger.atFine().log("requestBody=%s", requestBody);
         // Unlike the Lily protocol, which essentially always requires a JSON body to exist (due to
         // path and query parameters being injected into the body), bodies are optional here, so we
         // create an empty body and inject named parameters to make deserialize work.
@@ -161,7 +161,7 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
       return deserializeParams(body);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
         | IOException e) {
-      logger.log(Level.INFO, "Unable to read request parameter(s):", e);
+      logger.atInfo().withCause(e).log("Unable to read request parameter(s)");
       throw new BadRequestException(e);
     }
   }

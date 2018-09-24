@@ -24,6 +24,7 @@ import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
+import com.google.common.flogger.FluentLogger;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -50,7 +51,7 @@ public class EndpointsPeerAuthenticator implements PeerAuthenticator {
 
   private static final String PUBLIC_CERT_URL =
       "https://www.googleapis.com/service_accounts/v1/metadata/x509/" + SIGNER;
-  private static final Logger logger = Logger.getLogger(EndpointsPeerAuthenticator.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private static final ImmutableSet<String> localHostAddresses = getLocalHostAddresses();
 
   private final GoogleJwtAuthenticator jwtAuthenticator;
@@ -76,7 +77,7 @@ public class EndpointsPeerAuthenticator implements PeerAuthenticator {
     }
     ImmutableSet<String> localHostSet = builder.build();
     if (localHostSet.isEmpty()) {
-      logger.warning("Unable to lookup local addresses.");
+      logger.atWarning().log("Unable to lookup local addresses.");
     }
     return localHostSet;
   }
@@ -105,7 +106,7 @@ public class EndpointsPeerAuthenticator implements PeerAuthenticator {
 
     // Skip peer verification for localhost request.
     if (localHostAddresses.contains(request.getRemoteAddr())) {
-      logger.fine("Skip endpoints peer verication from localhost.");
+      logger.atFine().log("Skip endpoints peer verication from localhost.");
       return true;
     }
     // Verify peer token, signer and audience.
@@ -127,7 +128,7 @@ public class EndpointsPeerAuthenticator implements PeerAuthenticator {
       return urlFromIdToken.getHost().equals(urlFromRequest.getHost())
           && getPort(urlFromIdToken) == getPort(urlFromRequest);
     } catch (MalformedURLException e) {
-      logger.warning("Invalid URL from request");
+      logger.atWarning().log("Invalid URL from request");
       return false;
     }
   }

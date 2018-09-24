@@ -7,15 +7,13 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-
-import java.util.logging.Logger;
+import com.google.common.flogger.FluentLogger;
 
 /**
  * Base class for providing discovery data.
  */
 abstract class AbstractDiscoveryProvider implements DiscoveryProvider {
-  protected static final Logger logger =
-      Logger.getLogger(AbstractDiscoveryProvider.class.getName());
+  protected static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
       new Function<ApiConfig, ApiKey>() {
         @Override public ApiKey apply(ApiConfig config) {
@@ -39,7 +37,7 @@ abstract class AbstractDiscoveryProvider implements DiscoveryProvider {
     ApiKey key = new ApiKey(name, version, null /* root */);
     ImmutableList<ApiConfig> configs = configsByKey.get(key);
     if (configs.isEmpty()) {
-      logger.info("No configuration found for name: " + name + ", version: " + version);
+      logger.atInfo().log("No configuration found for name: %s, version: %s", name, version);
       throw new NotFoundException("Not Found");
     }
     return configs;

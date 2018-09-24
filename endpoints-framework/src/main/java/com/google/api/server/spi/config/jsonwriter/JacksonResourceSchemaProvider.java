@@ -23,6 +23,7 @@ import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospect
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.Types;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.flogger.FluentLogger;
 import com.google.common.reflect.TypeToken;
 
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -36,7 +37,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -45,8 +45,7 @@ import javax.annotation.Nullable;
  */
 public class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvider {
 
-  private static final Logger logger =
-      Logger.getLogger(JacksonResourceSchemaProvider.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   @Override
   public ResourceSchema getResourceSchema(TypeToken<?> type, ApiConfig config) {
@@ -66,8 +65,8 @@ public class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvide
       String name = definition.getName();
       if (genericDataFieldNames == null || genericDataFieldNames.contains(name)) {
         if (hasUnresolvedType(propertyType)) {
-          logger.warning("skipping field '" + name + "' of type '" + propertyType
-              + "' because it is unresolved.");
+          logger.atWarning().log("skipping field '%s' of type '%s' because it is unresolved.", name,
+              propertyType);
           continue;
         }
         if (propertyType != null) {
@@ -75,10 +74,11 @@ public class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvide
           propertySchema.setDescription(definition.getMetadata().getDescription());
           schemaBuilder.addProperty(name, propertySchema);
         } else {
-          logger.warning("No type found for property '" + name + "' on class '" + type + "'.");
+          logger.atWarning().log("No type found for property '%s' on class '%s'.", name, type);
         }
       } else {
-        logger.fine("skipping field '" + name + "' because it's not a Java client model field.");
+        logger.atFine()
+            .log("skipping field '%s' because it's not a Java client model field.", name);
       }
     }
     return schemaBuilder.build();
@@ -97,7 +97,7 @@ public class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvide
       ParameterizedType p = (ParameterizedType) javaType;
       for (Type t : p.getActualTypeArguments()) {
         if (Types.isWildcardType(type.resolveType(t))) {
-          logger.warning("skipping field of type " + type + " because it is unresolved");
+          logger.atWarning().log("skipping field of type '%s' because it is unresolved", type);
           return true;
         }
       }

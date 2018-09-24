@@ -33,7 +33,6 @@ import com.google.common.collect.Lists;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * Provides discovery information by proxying to the v1.0 discovery service.
@@ -63,7 +62,7 @@ public class ProxyingDiscoveryProvider extends AbstractDiscoveryProvider {
           .generateRest(new com.google.api.services.discovery.model.ApiConfig().setConfig(
               getApiConfigStringWithRoot(getApiConfigs(name, version), root))).execute();
     } catch (IOException | ApiConfigException e) {
-      logger.log(Level.SEVERE, "Could not generate or cache discovery doc", e);
+      logger.atSevere().withCause(e).log("Could not generate or cache discovery doc");
       throw new InternalServerErrorException("Internal Server Error", e);
     }
   }
@@ -76,7 +75,7 @@ public class ProxyingDiscoveryProvider extends AbstractDiscoveryProvider {
           .generateRpc(new com.google.api.services.discovery.model.ApiConfig().setConfig(
               getApiConfigStringWithRoot(getApiConfigs(name, version), root))).execute();
     } catch (IOException | ApiConfigException e) {
-      logger.log(Level.SEVERE, "Could not generate or cache discovery doc", e);
+      logger.atSevere().withCause(e).log("Could not generate or cache discovery doc");
       throw new InternalServerErrorException("Internal Server Error", e);
     }
   }
@@ -90,7 +89,7 @@ public class ProxyingDiscoveryProvider extends AbstractDiscoveryProvider {
       configs.setConfigs(Lists.newArrayList(configStrings.values()));
       return discovery.apis().generateDirectory(configs).execute();
     } catch (IOException | ApiConfigException e) {
-      logger.log(Level.SEVERE, "Could not generate or cache directory", e);
+      logger.atSevere().withCause(e).log("Could not generate or cache directory");
       throw new InternalServerErrorException("Internal Server Error", e);
     }
   }
@@ -99,7 +98,7 @@ public class ProxyingDiscoveryProvider extends AbstractDiscoveryProvider {
       throws InternalServerErrorException, ApiConfigException {
     Map<ApiKey, String> configMap = configWriter.writeConfig(rewriteConfigsWithRoot(configs, root));
     if (configMap.size() != 1) {
-      logger.severe("config generation yielded more than one API");
+      logger.atSevere().log("config generation yielded more than one API");
       throw new InternalServerErrorException("Internal Server Error");
     }
     return Iterables.getFirst(configMap.values(), null);

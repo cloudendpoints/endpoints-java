@@ -19,7 +19,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-
+import com.google.common.flogger.FluentLogger;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Annotation used with Authenticator and PeerAuthenticator to denote only one instance will be
@@ -45,7 +44,7 @@ public @interface Singleton {
    */
   class Instantiator<A> {
 
-    private static final Logger logger = Logger.getLogger(Instantiator.class.getName());
+    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
     private volatile Map<Class<? extends A>, A> instances = new HashMap<>();
 
@@ -65,7 +64,7 @@ public @interface Singleton {
             return clazz.newInstance();
           }
         } catch (IllegalAccessException | InstantiationException e) {
-          logger.log(Level.WARNING, "Could not instantiate: " + clazz.getName());
+          logger.atWarning().log("Could not instantiate: %s", clazz.getName());
           return null;
         }
       }

@@ -26,8 +26,7 @@ import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.common.flogger.FluentLogger;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -37,7 +36,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Singleton
 public class GoogleOAuth2Authenticator implements Authenticator {
-  private static final Logger logger = Logger.getLogger(GoogleOAuth2Authenticator.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   @Override
   public User authenticate(HttpServletRequest request) throws ServiceUnavailableException {
@@ -62,20 +61,20 @@ public class GoogleOAuth2Authenticator implements Authenticator {
 
     // Check scopes.
     if (Strings.isEmptyOrWhitespace(tokenInfo.scopes)) {
-      logger.warning("Access token does not contain a valid scope");
+      logger.atWarning().log("Access token does not contain a valid scope");
       return null;
     }
     String[] authorizedScopes = tokenInfo.scopes.split("\\s+");
     if (!config.getScopeExpression().isAuthorized(ImmutableSet.copyOf(authorizedScopes))) {
-      logger.warning(
-          "Access token does not contain sufficient scopes from: " + config.getScopeExpression());
+      logger.atWarning().log(
+          "Access token does not contain sufficient scopes from: %s", config.getScopeExpression());
       return null;
     }
 
     // Check clientId.
     if (attr.isEnabled(Attribute.ENABLE_CLIENT_ID_WHITELIST)
         && !GoogleAuth.checkClientId(tokenInfo.clientId, config.getClientIds(), true)) {
-      logger.warning("ClientId is not allowed: " + tokenInfo.clientId);
+      logger.atWarning().log("ClientId is not allowed: %s", tokenInfo.clientId);
       return null;
     }
 
@@ -83,10 +82,10 @@ public class GoogleOAuth2Authenticator implements Authenticator {
     if (attr.isEnabled(Attribute.REQUIRE_APPENGINE_USER)) {
       com.google.appengine.api.users.User appEngineUser =
           new com.google.appengine.api.users.User(tokenInfo.email, "");
-      logger.log(Level.INFO, "appEngineUser = {0}", appEngineUser);
+      logger.atInfo().log("appEngineUser = %s", appEngineUser);
       request.setAttribute(Attribute.AUTHENTICATED_APPENGINE_USER, appEngineUser);
     } else {
-      logger.log(Level.INFO, "user = {0}", user);
+      logger.atInfo().log("user = %s", user);
     }
     return user;
   }

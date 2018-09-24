@@ -24,6 +24,7 @@ import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.flogger.FluentLogger;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import java.util.concurrent.Callable;
@@ -36,7 +37,7 @@ import java.util.logging.Logger;
  * A {@link DiscoveryProvider} that caches results and delegates computation to another provider.
  */
 public class CachingDiscoveryProvider implements DiscoveryProvider {
-  private static final Logger logger = Logger.getLogger(CachingDiscoveryProvider.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final int CACHE_EXPIRY_MINS = 10;
 
@@ -99,7 +100,7 @@ public class CachingDiscoveryProvider implements DiscoveryProvider {
       if (e.getCause() instanceof InternalServerErrorException) {
         throw (InternalServerErrorException) e.getCause();
       } else {
-        logger.log(Level.SEVERE, "Could not generate or cache directory", e.getCause());
+        logger.atSevere().withCause(e.getCause()).log("Could not generate or cache directory");
         throw new InternalServerErrorException("Internal Server Error", e.getCause());
       }
     }
@@ -124,7 +125,7 @@ public class CachingDiscoveryProvider implements DiscoveryProvider {
       } else if (e.getCause() instanceof InternalServerErrorException) {
         throw (InternalServerErrorException) e.getCause();
       } else {
-        logger.log(Level.SEVERE, "Could not generate or cache discovery doc", e.getCause());
+        logger.atSevere().withCause(e.getCause()).log("Could not generate or cache discovery doc");
         throw new InternalServerErrorException("Internal Server Error", e.getCause());
       }
     }

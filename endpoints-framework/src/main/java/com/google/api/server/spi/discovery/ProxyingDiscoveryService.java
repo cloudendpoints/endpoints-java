@@ -25,9 +25,7 @@ import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
 import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.annotations.VisibleForTesting;
-
-import java.util.logging.Logger;
-
+import com.google.common.flogger.FluentLogger;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -43,7 +41,7 @@ import javax.servlet.http.HttpServletRequest;
         + "available, the resource and method details for each API"
 )
 public class ProxyingDiscoveryService {
-  private static final Logger logger = Logger.getLogger(ProxyingDiscoveryService.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private DiscoveryProvider discoveryProvider;
   private boolean initialized = false;
@@ -87,7 +85,7 @@ public class ProxyingDiscoveryService {
 
   private void checkIsInitialized() throws InternalServerErrorException {
     if (!initialized) {
-      logger.warning("Tried to call discovery before initialization!");
+      logger.atWarning().log("Tried to call discovery before initialization!");
       throw new InternalServerErrorException("Internal Server Error");
     }
   }
@@ -98,7 +96,8 @@ public class ProxyingDiscoveryService {
     String uri = request.getRequestURI();
     int index = uri.indexOf("discovery/v1/apis");
     if (index == -1) {
-      logger.severe("Could not compute discovery root from url: " + request.getRequestURI());
+      logger.atSevere()
+          .log("Could not compute discovery root from url: %s", request.getRequestURI());
       throw new InternalServerErrorException("Internal Server Error");
     }
     StringBuffer url = request.getRequestURL();

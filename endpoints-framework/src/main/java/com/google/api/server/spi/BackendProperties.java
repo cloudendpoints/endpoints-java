@@ -17,6 +17,7 @@ package com.google.api.server.spi;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import com.google.common.flogger.FluentLogger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +28,7 @@ import javax.annotation.Nullable;
  * generally come from environment variables.
  */
 public class BackendProperties {
-  private static final Logger logger = Logger.getLogger(BackendProperties.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   static final String APP_ID_PROPERTY = "com.google.appengine.application.id";
   static final String PROJECT_NUMBER_PROPERTY = "GOOGLE_PROJECT_NUMBER";
@@ -70,7 +71,7 @@ public class BackendProperties {
       try {
         return Long.parseLong(property);
       } catch (NumberFormatException e) {
-        logger.log(Level.WARNING, "Project number (%s) is not an int64.", property);
+        logger.atWarning().log("Project number (%s) is not an int64.", property);
         return PROJECT_NUMBER_UNKNOWN;
       }
     } else {
