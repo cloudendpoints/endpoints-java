@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import com.google.common.flogger.FluentLogger;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ import java.util.regex.Pattern;
  * alphanumeric characters or underscores, and cannot start with a numeric.
  */
 public class PathTrie<T> {
-  private static final Logger log = Logger.getLogger(PathTrie.class.getName());
+  private static final FluentLogger log = FluentLogger.forEnclosingClass();
   private static final Splitter PATH_SPLITTER = Splitter.on('/');
   private static final String PARAMETER_PATH_SEGMENT = "{}";
   private static final Pattern PARAMETER_NAME_PATTERN = Pattern.compile("[a-zA-Z_][a-zA-Z_\\d]*");
@@ -207,7 +208,7 @@ public class PathTrie<T> {
           throw new IllegalArgumentException(String.format("Path '%s' is already mapped", path));
         }
         if (pathExists) {
-          log.warning(String.format("Path '%s' is already mapped, but overwriting it", path));
+          log.atWarning().log("Path '%s' is already mapped, but overwriting it", path);
         }
         httpMethodMap.put(method, new MethodInfo<>(parameterNames, value));
       }

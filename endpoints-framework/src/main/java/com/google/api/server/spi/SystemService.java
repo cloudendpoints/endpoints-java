@@ -44,7 +44,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-
+import com.google.common.flogger.FluentLogger;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -57,15 +57,13 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 
 /**
  * System service that execute service methods.
  */
 public class SystemService {
-  private static final Logger logger = Logger.getLogger(SystemService.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private static final String OAUTH_EXCEPTION_CLASS =
       "com.google.appengine.api.oauth.OAuthRequestException";
 
@@ -316,7 +314,7 @@ public class SystemService {
       throw new ServiceException(500, builder.toString());
     } else {
       Object service = services.get(0);
-      logger.log(Level.FINE, "{0} => {1}", new Object[]{name, services.get(0)});
+      logger.atFine().log("%s => %s", name, services.get(0));
       return service;
     }
   }
@@ -331,7 +329,7 @@ public class SystemService {
     if (endpointNode != null) {
       EndpointMethod method = endpointNode.methods.get(methodName);
       if (method != null) {
-        logger.log(Level.FINE, "serviceMethod={0}", method.getMethod());
+        logger.atFine().log("serviceMethod=%s", method.getMethod());
         return method.getMethod();
       }
     }
@@ -347,11 +345,11 @@ public class SystemService {
 
     try {
       Object[] params = paramReader.read();
-      logger.log(Level.FINE, "params={0} (String)", Arrays.toString(params));
+      logger.atFine().log("params=%s (String)", Arrays.toString(params));
       Object response = method.invoke(service, params);
       resultWriter.write(response);
     } catch (IllegalArgumentException | IllegalAccessException e) {
-      logger.log(Level.SEVERE, "exception occurred while calling backend method", e);
+      logger.atSevere().withCause(e).log("exception occurred while calling backend method");
       resultWriter.writeError(new BadRequestException(e));
     } catch (InvocationTargetException e) {
       Throwable cause = e.getCause();
@@ -372,9 +370,10 @@ public class SystemService {
         level = Level.SEVERE;
         resultWriter.writeError(new InternalServerErrorException(cause));
       }
-      logger.log(level, "exception occurred while calling backend method", cause);
+      logger.at(level).withCause(cause).log("exception occurred while calling backend method");
     } catch (ServiceException e) {
-      logger.log(e.getLogLevel(), "exception occurred while calling backend method", e);
+      logger.at(e.getLogLevel()).withCause(e)
+          .log("exception occurred while calling backend method");
       resultWriter.writeError(e);
     }
   }

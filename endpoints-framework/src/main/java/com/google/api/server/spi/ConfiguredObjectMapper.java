@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import com.google.common.flogger.FluentLogger;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -83,8 +84,7 @@ public class ConfiguredObjectMapper {
    * A builder for constructing {@link ConfiguredObjectMapper} instances.
    */
   public static class Builder {
-    private static final Logger logger =
-        Logger.getLogger(Builder.class.getName());
+    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
     private int maxCacheSize;
     private ApiSerializationConfig config;
@@ -159,9 +159,9 @@ public class ConfiguredObjectMapper {
         }
 
         cache.put(key, instance);
-        logger.log(Level.FINE, "Cache miss, created ObjectMapper");
+        logger.atFine().log("Cache miss, created ObjectMapper");
       } else {
-        logger.log(Level.FINE, "Cache hit, reusing ObjectMapper");
+        logger.atFine().log("Cache hit, reusing ObjectMapper");
       }
       return instance;
     }

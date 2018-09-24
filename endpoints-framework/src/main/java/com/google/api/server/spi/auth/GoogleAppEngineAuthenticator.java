@@ -31,6 +31,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
+import com.google.common.flogger.FluentLogger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,8 +43,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Singleton
 class GoogleAppEngineAuthenticator implements Authenticator {
-  private static final Logger logger =
-      Logger.getLogger(GoogleAppEngineAuthenticator.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private final OAuthService oauthService;
   private final UserService userService;
 
@@ -86,13 +86,13 @@ class GoogleAppEngineAuthenticator implements Authenticator {
           authorized = scopeExpression.isAuthorized(ImmutableSet.copyOf(authorizedScopes));
         }
         if (!authorized) {
-          logger.warning(
-              "Access token does not contain sufficient scopes from: " + scopeExpression);
+          logger.atWarning().log(
+              "Access token does not contain sufficient scopes from: %s", scopeExpression);
           return null;
         }
         clientId = oauthService.getClientId(allScopes);
       } catch (OAuthRequestException e) {
-        logger.log(Level.WARNING, "Failed to get client id for '" + scopeExpression + "'", e);
+        logger.atWarning().withCause(e).log("Failed to get client id for '%s'", scopeExpression);
         return null;
       }
     } else { // Dev env.
@@ -101,7 +101,7 @@ class GoogleAppEngineAuthenticator implements Authenticator {
     // Check client id.
     if ((Attribute.from(request).isEnabled(Attribute.ENABLE_CLIENT_ID_WHITELIST)
         && !GoogleAuth.checkClientId(clientId, config.getClientIds(), true))) {
-      logger.warning("ClientId is not allowed: " + clientId);
+      logger.atWarning().log("ClientId is not allowed: %s", clientId);
       return null;
     }
 
@@ -109,7 +109,7 @@ class GoogleAppEngineAuthenticator implements Authenticator {
       com.google.appengine.api.users.User appEngineUser = oauthService.getCurrentUser(allScopes);
       return appEngineUser;
     } catch (OAuthRequestException e) {
-      logger.log(Level.WARNING, "Failed to get user for '" + scopeExpression + "'", e);
+      logger.atWarning().withCause(e).log("Failed to get user for '%s'", scopeExpression);
     }
     return null;
   }
@@ -134,10 +134,10 @@ class GoogleAppEngineAuthenticator implements Authenticator {
     }
     User user = new User(appEngineUser.getEmail());
     if (attr.isEnabled(Attribute.REQUIRE_APPENGINE_USER)) {
-      logger.log(Level.INFO, "appEngineUser = {0}", appEngineUser);
+      logger.atInfo().log("appEngineUser = %s", appEngineUser);
       attr.set(Attribute.AUTHENTICATED_APPENGINE_USER, appEngineUser);
     } else {
-      logger.log(Level.INFO, "User = {0}", user);
+      logger.atInfo().log("User = %s", user);
     }
     return user;
   }

@@ -24,12 +24,9 @@ import com.google.api.server.spi.config.Singleton;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.request.Attribute;
 import com.google.common.annotations.VisibleForTesting;
-
+import com.google.common.flogger.FluentLogger;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -37,7 +34,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Singleton
 public class GoogleJwtAuthenticator implements Authenticator {
-  private static final Logger logger = Logger.getLogger(GoogleJwtAuthenticator.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private final GoogleIdTokenVerifier verifier;
 
   public GoogleJwtAuthenticator() {
@@ -57,7 +54,7 @@ public class GoogleJwtAuthenticator implements Authenticator {
     try {
       return verifier.verify(token);
     } catch (GeneralSecurityException | IOException | IllegalArgumentException e) {
-      logger.warning(e.getMessage());
+      logger.atWarning().withCause(e).log("error while verifying JWT");
       return null;
     }
   }
@@ -89,12 +86,12 @@ public class GoogleJwtAuthenticator implements Authenticator {
     // Check client id.
     if ((attr.isEnabled(Attribute.ENABLE_CLIENT_ID_WHITELIST)
         && !GoogleAuth.checkClientId(clientId, config.getClientIds(), false))) {
-      logger.warning("ClientId is not allowed: " + clientId);
+      logger.atWarning().log("ClientId is not allowed: %s", clientId);
       return null;
     }
     // Check audience.
     if (!GoogleAuth.checkAudience(audience, config.getAudiences(), clientId)) {
-      logger.warning("Audience is not allowed: " + audience);
+      logger.atWarning().log("Audience is not allowed: %s", audience);
       return null;
     }
 
@@ -105,9 +102,9 @@ public class GoogleJwtAuthenticator implements Authenticator {
       com.google.appengine.api.users.User appEngineUser =
           (email == null) ? null : new com.google.appengine.api.users.User(email, "");
       attr.set(Attribute.AUTHENTICATED_APPENGINE_USER, appEngineUser);
-      logger.log(Level.FINE, "appEngineUser = {0}", appEngineUser);
+      logger.atFine().log("appEngineUser = %s", appEngineUser);
     } else {
-      logger.log(Level.FINE, "user = {0}", user);
+      logger.atFine().log("user = %s", user);
     }
     return user;
   }

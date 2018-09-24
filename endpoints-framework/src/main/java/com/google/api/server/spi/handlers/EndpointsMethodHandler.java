@@ -33,11 +33,8 @@ import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.RestResponseResultWriter;
 import com.google.api.server.spi.response.ResultWriter;
 import com.google.common.annotations.VisibleForTesting;
-
+import com.google.common.flogger.FluentLogger;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,7 +44,7 @@ import javax.servlet.http.HttpServletResponse;
  * (eventually) JSON-RPC dispatching.
  */
 public class EndpointsMethodHandler {
-  private static final Logger logger = Logger.getLogger(EndpointsMethodHandler.class.getName());
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private final ServletInitializationParameters initParameters;
   private final ServletContext servletContext;
   private final EndpointMethod endpointMethod;
@@ -134,7 +131,7 @@ public class EndpointsMethodHandler {
         // All exceptions here are unexpected, including the ServiceException that may be thrown by
         // the findService call. We return an internal server error and leave the details in the
         // backend log.
-        logger.log(Level.WARNING, "exception occurred while invoking backend method", e);
+        logger.atWarning().withCause(e).log("exception occurred while invoking backend method");
         writeError(context, new InternalServerErrorException("backend error"));
       }
     }
