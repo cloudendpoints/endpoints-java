@@ -15,6 +15,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.flogger.FluentLogger;
 import com.google.common.reflect.TypeToken;
 
 import java.util.EnumSet;
@@ -26,6 +27,7 @@ import java.util.Map.Entry;
  * A repository which creates and caches the compiled schemas for an API.
  */
 public class SchemaRepository {
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private static final Schema PLACEHOLDER_SCHEMA = Schema.builder()
       .setName("_placeholder_")
       .setType("_placeholder_")
@@ -78,6 +80,8 @@ public class SchemaRepository {
     Schema schema = typesForConfig.get(type);
     if (schema != null) {
       if (schema == PLACEHOLDER_SCHEMA) {
+        logger.atSevere()
+            .log("Schema repository is in a bad state: type %s has a placeholder schema", type);
         throw new IllegalStateException("schema repository is in a bad state!");
       }
       return schema;
@@ -94,6 +98,8 @@ public class SchemaRepository {
     Map<TypeToken<?>, Schema> typesForConfig = getAllTypesForConfig(config);
     Schema schema = getOrCreateTypeForConfig(type, typesForConfig, config);
     if (schema == PLACEHOLDER_SCHEMA) {
+      logger.atSevere()
+          .log("Schema repository is in a bad state: type %s has a placeholder schema", type);
       throw new IllegalStateException("schema repository is in a bad state!");
     }
     return schema;
@@ -139,6 +145,8 @@ public class SchemaRepository {
     typesForConfig.put(type, PLACEHOLDER_SCHEMA);
     TypeToken<?> arrayItemType = Types.getArrayItemType(type);
     if (typeLoader.isSchemaType(type)) {
+      logger.atSevere()
+          .log("attempted to add primitive type '%s' to schema repository", type);
       throw new IllegalArgumentException("Can't add a primitive type as a resource");
     } else if (arrayItemType != null) {
       Field.Builder arrayItemSchema = Field.builder().setName(ARRAY_UNUSED_MSG);
