@@ -2,10 +2,10 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "myapi.appspot.com"
+    "title": "swagger-test.appspot.com"
   },
-  "host": "myapi.appspot.com",
-  "basePath": "/_ah/api",
+  "host": "swagger-test.appspot.com",
+  "basePath": "/api",
   "schemes": [
     "https"
   ],
@@ -16,20 +16,23 @@
     "application/json"
   ],
   "paths": {
-    "/absolutepath/v1/absolutepathmethod": {
-      "post": {
-        "operationId": "AbsolutepathV1AbsolutePath",
+    "/myapi/v1/foo": {
+      "get": {
+        "operationId": "MyapiV1Get",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response"
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Foo"
+            }
           }
         }
       }
     },
-    "/absolutepath/v1/create": {
-      "post": {
-        "operationId": "AbsolutepathV1CreateFoo",
+    "/myapi/v2/foo": {
+      "get": {
+        "operationId": "MyapiV2Get",
         "parameters": [],
         "responses": {
           "200": {

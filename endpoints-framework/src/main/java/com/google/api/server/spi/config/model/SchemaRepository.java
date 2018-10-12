@@ -58,7 +58,8 @@ public class SchemaRepository {
   static final String MAP_UNUSED_MSG = "unused for map values";
 
   private final Multimap<ApiKey, Schema> schemaByApiKeys = LinkedHashMultimap.create();
-  private final Map<ApiSerializationConfig, Map<TypeToken<?>, Schema>> types = Maps.newHashMap();
+  private final Map<ApiSerializationConfig, Map<TypeToken<?>, Schema>> types 
+      = Maps.newLinkedHashMap();
   private final ResourceSchemaProvider resourceSchemaProvider = new JacksonResourceSchemaProvider();
 
   private final TypeLoader typeLoader;
@@ -102,7 +103,7 @@ public class SchemaRepository {
   /**
    * Gets all schema for an API key.
    */
-  public List<Schema> getAllSchemaForApi(ApiKey apiKey) {
+  public ImmutableList<Schema> getAllSchemaForApi(ApiKey apiKey) {
     return ImmutableList.copyOf(schemaByApiKeys.get(apiKey.withoutRoot()));
   }
 
@@ -115,7 +116,7 @@ public class SchemaRepository {
   private Map<TypeToken<?>, Schema> getAllTypesForConfig(ApiConfig config) {
     Map<TypeToken<?>, Schema> typesForConfig = types.get(config.getSerializationConfig());
     if (typesForConfig == null) {
-      typesForConfig = Maps.newHashMap();
+      typesForConfig = Maps.newLinkedHashMap();
       types.put(config.getSerializationConfig(), typesForConfig);
     }
     return typesForConfig;

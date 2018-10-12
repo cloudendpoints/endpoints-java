@@ -19,7 +19,7 @@
     "/foo/v1/foos": {
       "get": {
         "description": "list desc",
-        "operationId": "FooListFoos",
+        "operationId": "FooV1ListFoos",
         "parameters": [
           {
             "name": "n",
@@ -47,7 +47,7 @@
         ]
       },
       "post": {
-        "operationId": "FooToplevel",
+        "operationId": "FooV1Toplevel",
         "parameters": [],
         "responses": {
           "200": {
@@ -70,7 +70,7 @@
     "/foo/v1/foos/{id}": {
       "get": {
         "description": "get desc",
-        "operationId": "FooGetFoo",
+        "operationId": "FooV1GetFoo",
         "parameters": [
           {
             "name": "id",
@@ -99,7 +99,7 @@
       },
       "post": {
         "description": "update desc",
-        "operationId": "FooUpdateFoo",
+        "operationId": "FooV1UpdateFoo",
         "parameters": [
           {
             "name": "id",
@@ -136,7 +136,7 @@
       },
       "put": {
         "description": "create desc",
-        "operationId": "FooCreateFoo",
+        "operationId": "FooV1CreateFoo",
         "parameters": [
           {
             "name": "id",
@@ -173,7 +173,7 @@
       },
       "delete": {
         "description": "delete desc",
-        "operationId": "FooDeleteFoo",
+        "operationId": "FooV1DeleteFoo",
         "parameters": [
           {
             "name": "id",
@@ -221,6 +221,18 @@
     }
   },
   "definitions": {
+    "Foo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "CollectionResponse_Foo": {
       "type": "object",
       "properties": {
@@ -232,18 +244,6 @@
         },
         "nextPageToken": {
           "type": "string"
-        }
-      }
-    },
-    "Foo": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "integer",
-          "format": "int32"
         }
       }
     }

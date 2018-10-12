@@ -18,7 +18,7 @@
   "paths": {
     "/enum/v1/{value}": {
       "post": {
-        "operationId": "EnumCreate",
+        "operationId": "EnumV1Create",
         "parameters": [
           {
             "name": "value",

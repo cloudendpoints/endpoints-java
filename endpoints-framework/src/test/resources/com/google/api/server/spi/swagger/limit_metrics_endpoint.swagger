@@ -18,7 +18,7 @@
   "paths": {
     "/limits/v1/create": {
       "post": {
-        "operationId": "LimitsCreateFoo",
+        "operationId": "LimitsV1CreateFoo",
         "parameters": [],
         "responses": {
           "200": {
@@ -37,7 +37,7 @@
     },
     "/limits/v1/customFoo": {
       "post": {
-        "operationId": "LimitsCustomFoo",
+        "operationId": "LimitsV1CustomFoo",
         "parameters": [],
         "responses": {
           "200": {

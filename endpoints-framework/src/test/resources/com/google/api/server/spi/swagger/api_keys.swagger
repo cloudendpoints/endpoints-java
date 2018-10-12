@@ -18,7 +18,7 @@
   "paths": {
     "/apikeys/v1/apiKeyWithAuth": {
       "post": {
-        "operationId": "ApikeysApiKeyWithAuth",
+        "operationId": "ApikeysV1ApiKeyWithAuth",
         "parameters": [],
         "responses": {
           "200": {
@@ -35,7 +35,7 @@
     },
     "/apikeys/v1/inheritApiKeySetting": {
       "post": {
-        "operationId": "ApikeysInheritApiKeySetting",
+        "operationId": "ApikeysV1InheritApiKeySetting",
         "parameters": [],
         "responses": {
           "200": {
@@ -51,7 +51,7 @@
     },
     "/apikeys/v1/overrideApiKeySetting": {
       "post": {
-        "operationId": "ApikeysOverrideApiKeySetting",
+        "operationId": "ApikeysV1OverrideApiKeySetting",
         "parameters": [],
         "responses": {
           "200": {
