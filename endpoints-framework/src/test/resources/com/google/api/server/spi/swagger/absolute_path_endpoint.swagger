@@ -18,7 +18,7 @@
   "paths": {
     "/absolutepath/v1/create": {
       "post": {
-        "operationId": "AbsolutepathCreateFoo",
+        "operationId": "AbsolutepathV1CreateFoo",
         "parameters": [],
         "responses": {
           "200": {
@@ -32,7 +32,7 @@
     },
     "/absolutepathmethod/v1": {
       "post": {
-        "operationId": "AbsolutepathAbsolutePath",
+        "operationId": "AbsolutepathV1AbsolutePath",
         "parameters": [],
         "responses": {
           "200": {
@@ -43,7 +43,7 @@
     },
     "/absolutepathmethod2/v1": {
       "post": {
-        "operationId": "AbsolutepathAbsolutePath2",
+        "operationId": "AbsolutepathV1AbsolutePath2",
         "parameters": [],
         "responses": {
           "200": {

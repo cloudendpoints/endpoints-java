@@ -18,7 +18,7 @@
   "paths": {
     "/thirdparty/v1/authOverride": {
       "post": {
-        "operationId": "ThirdpartyAuthOverride",
+        "operationId": "ThirdpartyV1AuthOverride",
         "parameters": [],
         "responses": {
           "200": {
@@ -34,7 +34,7 @@
     },
     "/thirdparty/v1/googleAuth": {
       "post": {
-        "operationId": "ThirdpartyGoogleAuth",
+        "operationId": "ThirdpartyV1GoogleAuth",
         "parameters": [],
         "responses": {
           "200": {
@@ -50,7 +50,7 @@
     },
     "/thirdparty/v1/noOverride": {
       "post": {
-        "operationId": "ThirdpartyNoOverride",
+        "operationId": "ThirdpartyV1NoOverride",
         "parameters": [],
         "responses": {
           "200": {

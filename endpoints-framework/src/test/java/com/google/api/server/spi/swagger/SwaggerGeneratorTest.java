@@ -42,7 +42,14 @@ import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.LimitMetricsEndpoint;
 import com.google.api.server.spi.testing.MapEndpoint;
 import com.google.api.server.spi.testing.MapEndpointInvalid;
+import com.google.api.server.spi.testing.MultiResourceEndpoint.NoResourceEndpoint;
+import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource1Endpoint;
+import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource2Endpoint;
+import com.google.api.server.spi.testing.MultiVersionEndpoint.Version1Endpoint;
+import com.google.api.server.spi.testing.MultiVersionEndpoint.Version2Endpoint;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -52,8 +59,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import io.swagger.models.HttpMethod;
+import io.swagger.models.Operation;
+import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
+
+import java.util.Collection;
+import java.util.Map.Entry;
 
 /**
  * Tests for {@link SwaggerGenerator}.
@@ -80,7 +93,7 @@ public class SwaggerGeneratorTest {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), false, context);
     Swagger expected = readExpectedAsSwagger("foo_endpoint.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
@@ -88,7 +101,7 @@ public class SwaggerGeneratorTest {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), false, new SwaggerContext());
     Swagger expected = readExpectedAsSwagger("foo_endpoint_default_context.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
@@ -96,28 +109,28 @@ public class SwaggerGeneratorTest {
     Swagger swagger = getSwagger(
         FooEndpoint.class, new SwaggerContext().setApiRoot("http://localhost:8080/api"), false);
     Swagger expected = readExpectedAsSwagger("foo_endpoint_localhost.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_EnumEndpoint() throws Exception {
     Swagger swagger = getSwagger(EnumEndpoint.class, new SwaggerContext(), true);
     Swagger expected = readExpectedAsSwagger("enum_endpoint.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_ArrayEndpoint() throws Exception {
     Swagger swagger = getSwagger(ArrayEndpoint.class, new SwaggerContext(), true);
     Swagger expected = readExpectedAsSwagger("array_endpoint.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_MapEndpoint() throws Exception {
     Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
     Swagger expected = readExpectedAsSwagger("map_endpoint.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
@@ -126,7 +139,7 @@ public class SwaggerGeneratorTest {
     try {
       Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
       Swagger expected = readExpectedAsSwagger("map_endpoint_legacy.swagger");
-      compareSwagger(expected, swagger);
+      checkSwagger(expected, swagger);
     } finally {
       System.clearProperty(MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA.systemPropertyName);
     }
@@ -158,7 +171,7 @@ public class SwaggerGeneratorTest {
     try {
       Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
       Swagger expected = readExpectedAsSwagger("map_endpoint_with_array.swagger");
-      compareSwagger(expected, swagger);
+      checkSwagger(expected, swagger);
     } finally {
       System.clearProperty(MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.systemPropertyName);
     }
@@ -169,7 +182,7 @@ public class SwaggerGeneratorTest {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
     Swagger expected = readExpectedAsSwagger("foo_endpoint_internal.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
@@ -178,7 +191,7 @@ public class SwaggerGeneratorTest {
         configLoader.loadConfiguration(ServiceContext.create(), ThirdPartyAuthEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
     Swagger expected = readExpectedAsSwagger("third_party_auth.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
@@ -187,7 +200,7 @@ public class SwaggerGeneratorTest {
         configLoader.loadConfiguration(ServiceContext.create(), GoogleAuthEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
     Swagger expected = readExpectedAsSwagger("google_auth.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
@@ -196,28 +209,28 @@ public class SwaggerGeneratorTest {
         configLoader.loadConfiguration(ServiceContext.create(), ApiKeysEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
     Swagger expected = readExpectedAsSwagger("api_keys.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_AbsolutePathEndpoint() throws Exception {
     Swagger swagger = getSwagger(AbsolutePathEndpoint.class, new SwaggerContext(), true);
     Swagger expected = readExpectedAsSwagger("absolute_path_endpoint.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_AbsoluteCommonPathEndpoint() throws Exception {
     Swagger swagger = getSwagger(AbsoluteCommonPathEndpoint.class, new SwaggerContext(), true);
     Swagger expected = readExpectedAsSwagger("absolute_common_path_endpoint.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_LimitMetricsEndpoint() throws Exception {
     Swagger swagger = getSwagger(LimitMetricsEndpoint.class, new SwaggerContext(), true);
     Swagger expected = readExpectedAsSwagger("limit_metrics_endpoint.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
   }
 
   @Test
@@ -225,7 +238,30 @@ public class SwaggerGeneratorTest {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooDescriptionEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), false, context);
     Swagger expected = readExpectedAsSwagger("foo_with_description_endpoint.swagger");
-    compareSwagger(expected, swagger);
+    checkSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_MultiResourceEndpoint() throws Exception {
+    ServiceContext serviceContext = ServiceContext.create();
+    ImmutableList<ApiConfig> configs = ImmutableList.of(
+        configLoader.loadConfiguration(serviceContext, NoResourceEndpoint.class), 
+        configLoader.loadConfiguration(serviceContext, Resource1Endpoint.class), 
+        configLoader.loadConfiguration(serviceContext, Resource2Endpoint.class));
+    Swagger swagger = generator.writeSwagger(configs, false, context);
+    Swagger expected = readExpectedAsSwagger("multi_resource_endpoint.swagger");
+    checkSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_MultiVersionEndpoint() throws Exception {
+    ServiceContext serviceContext = ServiceContext.create();
+    ImmutableList<ApiConfig> configs = ImmutableList.of(
+        configLoader.loadConfiguration(serviceContext, Version1Endpoint.class),
+        configLoader.loadConfiguration(serviceContext, Version2Endpoint.class));
+    Swagger swagger = generator.writeSwagger(configs, false, context);
+    Swagger expected = readExpectedAsSwagger("multi_version_endpoint.swagger");
+    checkSwagger(expected, swagger);
   }
 
   private Swagger getSwagger(Class<?> serviceClass, SwaggerContext context, boolean internal)
@@ -239,12 +275,51 @@ public class SwaggerGeneratorTest {
     return mapper.readValue(expectedString, Swagger.class);
   }
 
+  private void checkSwagger(Swagger expected, Swagger actual) throws Exception {
+    compareSwagger(expected, actual);
+    // operationIds should be unique to be deployed on Endpoints Management
+    checkDuplicateOperations(actual);
+    // Jackson preserves order when deserializing expected result, and SwaggerGenerator should
+    // always output resource and security definitions in the same order
+    checkOrdering(expected, actual);
+  }
+
   private void compareSwagger(Swagger expected, Swagger actual) throws Exception {
     System.out.println("Actual: " + mapper.writeValueAsString(actual));
     System.out.println("Expected: " + mapper.writeValueAsString(expected));
     assertThat(actual).isEqualTo(expected);
     // TODO: Remove once Swagger models check this in equals
     assertThat(actual.getVendorExtensions()).isEqualTo(expected.getVendorExtensions());
+  }
+
+  private void checkDuplicateOperations(Swagger actual) {
+    Multimap<String, String> operationIds = HashMultimap.create();
+    for (Entry<String, Path> pathEntry : actual.getPaths().entrySet()) {
+      for (Entry<HttpMethod, Operation> opEntry : pathEntry.getValue().getOperationMap()
+          .entrySet()) {
+        operationIds
+            .put(opEntry.getValue().getOperationId(), pathEntry.getKey() + "|" + opEntry.getKey());
+      }
+    }
+    int duplicateOperationIdCount = 0;
+    for (Entry<String, Collection<String>> entry : operationIds.asMap().entrySet()) {
+      if (entry.getValue().size() > 1) {
+        System.out.println("Duplicate operation id: " + entry);
+        duplicateOperationIdCount++;
+      }
+    }
+    assertThat(duplicateOperationIdCount).named("Duplicate operation ids").isEqualTo(0);
+  }
+
+  private void checkOrdering(Swagger expected, Swagger actual) {
+    if (expected.getSecurityDefinitions() != null && actual.getSecurityDefinitions() != null) {
+      assertThat(ImmutableList.of(expected.getSecurityDefinitions().keySet()))
+          .isEqualTo(ImmutableList.of(actual.getSecurityDefinitions().keySet()));
+    }
+    if (expected.getDefinitions() != null && actual.getDefinitions() != null) {
+      assertThat(ImmutableList.of(expected.getDefinitions().keySet()))
+          .isEqualTo(ImmutableList.of(actual.getDefinitions().keySet()));
+    }
   }
 
   @Api(name = "thirdparty", version = "v1",

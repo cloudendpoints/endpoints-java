@@ -18,7 +18,7 @@
   "paths": {
     "/myapi/v1/getDateTimeKeyMap": {
       "get": {
-        "operationId": "MyapiGetDateTimeKeyMap",
+        "operationId": "MyapiV1GetDateTimeKeyMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -32,7 +32,7 @@
     },
     "/myapi/v1/getMapOfStrings": {
       "get": {
-        "operationId": "MyapiGetMapOfStrings",
+        "operationId": "MyapiV1GetMapOfStrings",
         "parameters": [],
         "responses": {
           "200": {
@@ -46,7 +46,7 @@
     },
     "/myapi/v1/getStringCollectionMap": {
       "get": {
-        "operationId": "MyapiGetStringCollectionMap",
+        "operationId": "MyapiV1GetStringCollectionMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -60,7 +60,7 @@
     },
     "/myapi/v1/map_boolean_string": {
       "get": {
-        "operationId": "MyapiGetBooleanKeyMap",
+        "operationId": "MyapiV1GetBooleanKeyMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -74,7 +74,7 @@
     },
     "/myapi/v1/map_datetime_string": {
       "get": {
-        "operationId": "MyapiGetDateKeyMap",
+        "operationId": "MyapiV1GetDateKeyMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -88,7 +88,7 @@
     },
     "/myapi/v1/map_float_string": {
       "get": {
-        "operationId": "MyapiGetFloatKeyMap",
+        "operationId": "MyapiV1GetFloatKeyMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -102,7 +102,7 @@
     },
     "/myapi/v1/map_integer_string": {
       "get": {
-        "operationId": "MyapiGetIntKeyMap",
+        "operationId": "MyapiV1GetIntKeyMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -116,7 +116,7 @@
     },
     "/myapi/v1/map_long_string": {
       "get": {
-        "operationId": "MyapiGetLongKeyMap",
+        "operationId": "MyapiV1GetLongKeyMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -130,7 +130,7 @@
     },
     "/myapi/v1/map_string_baz": {
       "get": {
-        "operationId": "MyapiGetBazMap",
+        "operationId": "MyapiV1GetBazMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -144,7 +144,7 @@
     },
     "/myapi/v1/map_string_foo": {
       "get": {
-        "operationId": "MyapiGetFooMap",
+        "operationId": "MyapiV1GetFooMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -158,7 +158,7 @@
     },
     "/myapi/v1/map_string_integer": {
       "get": {
-        "operationId": "MyapiGetIntMap",
+        "operationId": "MyapiV1GetIntMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -172,7 +172,7 @@
     },
     "/myapi/v1/map_string_map_string_foo": {
       "get": {
-        "operationId": "MyapiGetFooMapMap",
+        "operationId": "MyapiV1GetFooMapMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -186,7 +186,7 @@
     },
     "/myapi/v1/map_string_string": {
       "get": {
-        "operationId": "MyapiGetStringMap",
+        "operationId": "MyapiV1GetStringMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -200,7 +200,7 @@
     },
     "/myapi/v1/map_string_stringcollection": {
       "get": {
-        "operationId": "MyapiGetStringArrayMap",
+        "operationId": "MyapiV1GetStringArrayMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -214,7 +214,7 @@
     },
     "/myapi/v1/map_string_stringvalue": {
       "get": {
-        "operationId": "MyapiGetStringValueMap",
+        "operationId": "MyapiV1GetStringValueMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -228,7 +228,7 @@
     },
     "/myapi/v1/map_testenum_string": {
       "get": {
-        "operationId": "MyapiGetEnumKeyMap",
+        "operationId": "MyapiV1GetEnumKeyMap",
         "parameters": [],
         "responses": {
           "200": {
@@ -242,7 +242,7 @@
     },
     "/myapi/v1/mapendpoint": {
       "get": {
-        "operationId": "MyapiGetMapService",
+        "operationId": "MyapiV1GetMapService",
         "parameters": [],
         "responses": {
           "200": {
@@ -256,7 +256,7 @@
     },
     "/myapi/v1/mapsubclass": {
       "get": {
-        "operationId": "MyapiGetMapSubclass",
+        "operationId": "MyapiV1GetMapSubclass",
         "parameters": [],
         "responses": {
           "200": {
@@ -334,16 +334,16 @@
         "format": "int32"
       }
     },
-    "Map_String_Map_String_Foo": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Map_String_Foo"
-      }
-    },
     "Map_String_Baz": {
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/Baz"
+      }
+    },
+    "Map_String_Map_String_Foo": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Map_String_Foo"
       }
     },
     "Map_String_String": {
@@ -440,16 +440,16 @@
         }
       }
     },
-    "Map_DateTime_String": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
     "Map_String_Foo": {
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/Foo"
+      }
+    },
+    "Map_DateTime_String": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
       }
     }
   }

@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -115,6 +116,7 @@ public class SwaggerGenerator {
 
   private static final Converter<String, String> CONVERTER =
       CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL);
+  private static final Joiner JOINER = Joiner.on("").skipNulls();
   private static final ImmutableMap<Type, String> TYPE_TO_STRING_MAP =
       ImmutableMap.<java.lang.reflect.Type, String>builder()
           .put(String.class, "string")
@@ -246,11 +248,9 @@ public class SwaggerGenerator {
       writeApiClass(apiConfig, swagger, genCtx);
     }
     List<Schema> schemas = genCtx.schemata.getAllSchemaForApi(apiKey);
-    if (!schemas.isEmpty()) {
-      for (Schema schema : schemas) {
-        if (schema.enumValues().isEmpty()) {
-          swagger.addDefinition(schema.name(), convertToSwaggerSchema(schema));
-        }
+    for (Schema schema : schemas) {
+      if (schema.enumValues().isEmpty()) {
+        getOrCreateDefinitionMap(swagger).put(schema.name(), convertToSwaggerSchema(schema));
       }
     }
   }
@@ -449,8 +449,9 @@ public class SwaggerGenerator {
   }
 
   private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig) {
-    return CONVERTER.convert(apiConfig.getName()) +
-        CONVERTER.convert(methodConfig.getEndpointMethodName());
+    return FluentIterable.of(apiConfig.getName(), apiConfig.getVersion(),
+        apiConfig.getResource(), apiConfig.getApiClassConfig().getResource(),
+        methodConfig.getEndpointMethodName()).transform(CONVERTER).join(JOINER);
   }
 
   private static Property getSwaggerArrayProperty(TypeToken<?> typeToken) {
@@ -504,11 +505,20 @@ public class SwaggerGenerator {
     return tokenDef;
   }
 
+  private Map<String, Model> getOrCreateDefinitionMap(Swagger swagger) {
+    Map<String, Model> definitions = swagger.getDefinitions();
+    if (definitions == null) {
+      definitions = new LinkedHashMap<>();
+      swagger.setDefinitions(definitions);
+    }
+    return definitions;
+  }
+
   private static Map<String, SecuritySchemeDefinition> getOrCreateSecurityDefinitionMap(
       Swagger swagger) {
     Map<String, SecuritySchemeDefinition> securityDefinitions = swagger.getSecurityDefinitions();
     if (securityDefinitions == null) {
-      securityDefinitions = new HashMap<>();
+      securityDefinitions = new LinkedHashMap<>();
       swagger.setSecurityDefinitions(securityDefinitions);
     }
     return securityDefinitions;
