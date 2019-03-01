@@ -226,10 +226,28 @@ public class SchemaRepositoryTest {
             .setName("TestEnum")
             .setType("string")
             .addEnumValue("VALUE1")
-            .addEnumValue("VALUE2")
+            .addEnumValue("value_2")
             .addEnumDescription("")
             .addEnumDescription("")
             .build());
+  }
+
+  @Test
+  public void getOrAdd_enum_disableJacksonAnnotations() throws Exception {
+    System.setProperty(EndpointsFlag.JSON_USE_JACKSON_ANNOTATIONS.systemPropertyName, "false");
+    try {
+      assertThat(repo.getOrAdd(TypeToken.of(TestEnum.class), config))
+          .isEqualTo(Schema.builder()
+              .setName("TestEnum")
+              .setType("string")
+              .addEnumValue("VALUE1")
+              .addEnumValue("VALUE2")
+              .addEnumDescription("")
+              .addEnumDescription("")
+              .build());
+    } finally {
+      System.clearProperty(EndpointsFlag.JSON_USE_JACKSON_ANNOTATIONS.systemPropertyName);
+    }
   }
 
   @Test
@@ -270,7 +288,7 @@ public class SchemaRepositoryTest {
             .setName("TestEnum")
             .setType("string")
             .addEnumValue("VALUE1")
-            .addEnumValue("VALUE2")
+            .addEnumValue("value_2")
             .addEnumDescription("")
             .addEnumDescription("")
             .build(),

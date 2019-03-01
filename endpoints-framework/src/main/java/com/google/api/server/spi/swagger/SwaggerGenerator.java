@@ -33,6 +33,7 @@ import com.google.api.server.spi.config.model.FieldType;
 import com.google.api.server.spi.config.model.Schema;
 import com.google.api.server.spi.config.model.Schema.Field;
 import com.google.api.server.spi.config.model.SchemaRepository;
+import com.google.api.server.spi.config.model.Types;
 import com.google.api.server.spi.config.validation.ApiConfigValidator;
 import com.google.api.server.spi.types.DateAndTime;
 import com.google.api.server.spi.types.SimpleDate;
@@ -487,11 +488,7 @@ public class SwaggerGenerator {
   }
 
   private static List<String> getEnumValues(TypeToken<?> t) {
-    List<String> values = Lists.newArrayList();
-    for (Object value : t.getRawType().getEnumConstants()) {
-      values.add(value.toString());
-    }
-    return values;
+    return new ArrayList<>(Types.getEnumValuesAndDescriptions((TypeToken<Enum<?>>) t).keySet());
   }
 
   private static SecuritySchemeDefinition toScheme(

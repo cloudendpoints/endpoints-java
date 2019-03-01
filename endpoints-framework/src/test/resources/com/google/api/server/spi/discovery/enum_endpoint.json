@@ -30,7 +30,7 @@
         "value": {
           "enum": [
             "VALUE1",
-            "VALUE2"
+            "value_2"
           ],
           "enumDescriptions": [
             "",
@@ -110,7 +110,7 @@
     },
     "TestEnum": {
       "id": "TestEnum",
-      "enum" : [ "VALUE1", "VALUE2" ],
+      "enum" : [ "VALUE1", "value_2" ],
       "enumDescriptions" : [ "", "" ],
       "type": "string"
     }
