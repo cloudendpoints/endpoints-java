@@ -16,6 +16,8 @@
 package com.google.api.server.spi.response;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.ServiceException;
@@ -27,6 +29,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
@@ -218,5 +221,52 @@ public class RestResponseResultWriterTest {
     JsonNode innerError = content.path("error").path("errors").path(0);
     assertThat(innerError.path("domain").asText()).isEqualTo(expectedDomain);
     assertThat(innerError.path("reason").asText()).isEqualTo(expectedReason);
+  }
+
+  @Test
+  public void writeError_extraFields() throws Exception {
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    RestResponseResultWriter writer = new RestResponseResultWriter(response, null, true /* prettyPrint */,
+        true /* addContentLength */, true /* enableExceptionCompatibility */);
+
+    ServiceException serviceException = new ServiceException(400, "customMessage", "customReason", "customDomain");
+    // Extra field string
+    serviceException.putExtraField("someExtraString", "string1")
+                    .putExtraField("someNullString", (String)null);
+    // Extra field number
+    serviceException.putExtraField("someExtraInt", Integer.valueOf(12))
+                    .putExtraField("someExtraFloat", Float.valueOf(1.2f))
+                    .putExtraField("someNullNumber", (Number)null);
+    // Extra field boolean
+    serviceException.putExtraField("someExtraTrue", TRUE)
+                    .putExtraField("someExtraFalse", FALSE)
+                    .putExtraField("someNullBoolean", (Boolean)null);
+    // Extra field, keys are equals to reserved keywords when ignoring case
+    serviceException.putExtraField("Domain", TRUE)
+                    .putExtraField("REASON", Long.valueOf(1234567890))
+                    .putExtraField("messAge", "hello world!");
+
+    String expectedError = "{\"error\": {\"errors\": [{" +
+        "  \"domain\": \"customDomain\"," +
+        "  \"reason\": \"customReason\"," +
+        "  \"message\": \"customMessage\"," +
+        "  \"someExtraString\": \"string1\"," +
+        "  \"someNullString\": null," +
+        "  \"someExtraInt\": 12," +
+        "  \"someExtraFloat\": 1.2," +
+        "  \"someNullNumber\": null," +
+        "  \"someExtraTrue\": true," +
+        "  \"someExtraFalse\": false," +
+        "  \"someNullBoolean\": null," +
+        "  \"Domain\": true," +
+        "  \"REASON\": \"1234567890\"," +
+        "  \"messAge\": \"hello world!\"" +
+        " }]," +
+        " \"code\": 400," +
+        " \"message\": \"customMessage\"" +
+        "}}";
+
+    writer.writeError(serviceException);
+    JSONAssert.assertEquals(expectedError, response.getContentAsString(), true);
   }
 }
