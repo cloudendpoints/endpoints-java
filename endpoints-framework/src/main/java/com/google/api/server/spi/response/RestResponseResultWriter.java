@@ -23,6 +23,7 @@ import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.common.base.Strings;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -67,16 +68,19 @@ public class RestResponseResultWriter extends ServletResponseResultWriter {
         e.getReason() : errorMap.getReason(e.getStatusCode());
     String domain = !Strings.isNullOrEmpty(e.getDomain()) ?
         e.getDomain() : errorMap.getDomain(e.getStatusCode());
-    write(code, e.getHeaders(), createError(code, reason, domain, e.getMessage()));
+    write(code, e.getHeaders(), createError(code, reason, domain, e.getMessage(), e.getExtraFields()));
   }
 
-  private Object createError(int code, String reason, String domain, String message) {
+  private Object createError(int code, String reason, String domain, String message, Map<String, Object> extraFields) {
     ObjectNode topLevel = objectMapper.createObjectNode();
     ObjectNode topError = objectMapper.createObjectNode();
     ObjectNode error = objectMapper.createObjectNode();
     error.put("domain", domain);
     error.put("reason", reason);
     error.put("message", message);
+    for (Map.Entry<String, Object> extraField : extraFields.entrySet()) {
+      error.putPOJO(extraField.getKey(), extraField.getValue());
+    }
     topError.set("errors", objectMapper.createArrayNode().add(error));
     topError.put("code", code);
     topError.put("message", message);
