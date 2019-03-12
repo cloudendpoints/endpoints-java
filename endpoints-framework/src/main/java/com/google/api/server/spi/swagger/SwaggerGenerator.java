@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -407,7 +406,7 @@ public class SwaggerGenerator {
 
   private Model convertToSwaggerSchema(Schema schema) {
     ModelImpl docSchema = new ModelImpl().type("object");
-    Map<String, Property> fields = Maps.newLinkedHashMap();
+    Map<String, Property> fields = new TreeMap<>();
     if (!schema.fields().isEmpty()) {
       for (Field f : schema.fields().values()) {
         fields.put(f.name(), convertToSwaggerProperty(f));
@@ -508,7 +507,7 @@ public class SwaggerGenerator {
   private Map<String, Model> getOrCreateDefinitionMap(Swagger swagger) {
     Map<String, Model> definitions = swagger.getDefinitions();
     if (definitions == null) {
-      definitions = new LinkedHashMap<>();
+      definitions = new TreeMap<>();
       swagger.setDefinitions(definitions);
     }
     return definitions;
@@ -518,7 +517,7 @@ public class SwaggerGenerator {
       Swagger swagger) {
     Map<String, SecuritySchemeDefinition> securityDefinitions = swagger.getSecurityDefinitions();
     if (securityDefinitions == null) {
-      securityDefinitions = new LinkedHashMap<>();
+      securityDefinitions = new TreeMap<>();
       swagger.setSecurityDefinitions(securityDefinitions);
     }
     return securityDefinitions;
