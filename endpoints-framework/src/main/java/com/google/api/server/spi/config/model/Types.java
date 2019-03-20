@@ -15,8 +15,12 @@
  */
 package com.google.api.server.spi.config.model;
 
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.util.EnumValues;
 import com.google.api.client.util.GenericData;
 import com.google.api.client.util.Preconditions;
+import com.google.api.server.spi.ObjectMapperUtil;
+import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.ResourceTransformer;
 import com.google.api.server.spi.config.Transformer;
@@ -32,6 +36,8 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -54,6 +60,33 @@ public abstract class Types {
    */
   public static boolean isEnumType(TypeToken<?> type) {
     return type.isSubtypeOf(Enum.class);
+  }
+
+  /**
+   * Determines enum constant names for serialization, and their description for API schema.
+   * 
+   * @param type an enum type
+   * @return a map containing the enum field names as keys,
+   *  and schema description as values (possibly empty but not null).
+   */
+  public static Map<String, String> getEnumValuesAndDescriptions(TypeToken<Enum<?>> type) {
+    Class<Enum<?>> enumType = (Class<Enum<?>>) type.getRawType();
+    Map<String, String> descriptions = new HashMap<>();
+    for (java.lang.reflect.Field field : enumType.getFields()) {
+      if (field.isEnumConstant()) {
+        Description description = field.getAnnotation(Description.class);
+        descriptions.put(field.getName(), description != null ? description.value() : "");
+      }
+    }
+    SerializationConfig serializationConfig = ObjectMapperUtil.createStandardObjectMapper()
+        .getSerializationConfig();
+    EnumValues enumValues = EnumValues.construct(serializationConfig, enumType);
+    Map<String, String> valueAndDescription = new LinkedHashMap<>();
+    for (Enum<?> enumConstant : enumType.getEnumConstants()) {
+      valueAndDescription.put(enumValues.serializedValueFor(enumConstant).toString(),
+          descriptions.get(enumConstant.name()));
+    }
+    return valueAndDescription;
   }
 
   /**

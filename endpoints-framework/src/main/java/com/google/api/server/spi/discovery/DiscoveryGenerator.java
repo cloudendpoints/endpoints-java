@@ -20,7 +20,6 @@ import com.google.api.client.util.Preconditions;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.TypeLoader;
-import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiKey;
@@ -34,6 +33,7 @@ import com.google.api.server.spi.config.model.Schema.Field;
 import com.google.api.server.spi.config.model.SchemaRepository;
 import com.google.api.server.spi.config.model.AuthScopeRepository;
 import com.google.api.server.spi.config.model.StandardParameters;
+import com.google.api.server.spi.config.model.Types;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.services.discovery.model.DirectoryList;
@@ -363,14 +363,13 @@ public class DiscoveryGenerator {
     }
 
     if (parameterConfig.isEnum()) {
+      Map<String, String> enumValuesAndDescriptions = Types
+          .getEnumValuesAndDescriptions((TypeToken<Enum<?>>) type);
       List<String> enumValues = Lists.newArrayList();
       List<String> enumDescriptions = Lists.newArrayList();
-      for (java.lang.reflect.Field field : type.getRawType().getFields()) {
-        if (field.isEnumConstant()) {
-          enumValues.add(field.getName());
-          Description description = field.getAnnotation(Description.class);
-          enumDescriptions.add(description == null ? "" : description.value());
-        }
+      for (Entry<String, String> entry : enumValuesAndDescriptions.entrySet()) {
+        enumValues.add(entry.getKey());
+        enumDescriptions.add(entry.getValue());
       }
       schema.setEnum(enumValues);
       schema.setEnumDescriptions(enumDescriptions);

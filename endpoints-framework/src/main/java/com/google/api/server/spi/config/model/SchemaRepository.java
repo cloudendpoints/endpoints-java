@@ -2,7 +2,6 @@ package com.google.api.server.spi.config.model;
 
 import com.google.api.client.util.Maps;
 import com.google.api.server.spi.TypeLoader;
-import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.ResourcePropertySchema;
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
@@ -18,7 +17,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeToken;
 
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -172,15 +170,13 @@ public class SchemaRepository {
       schemaByApiKeys.put(key, schema);
       return schema;
     } else if (Types.isEnumType(type)) {
+      Map<String, String> valuesAndDescriptions = Types.getEnumValuesAndDescriptions(type);
       Schema.Builder builder = Schema.builder()
           .setName(Types.getSimpleName(type, config.getSerializationConfig()))
           .setType("string");
-      for (java.lang.reflect.Field field : type.getRawType().getFields()) {
-        if (field.isEnumConstant()) {
-          builder.addEnumValue(field.getName());
-          Description description = field.getAnnotation(Description.class);
-          builder.addEnumDescription(description == null ? "" : description.value());
-        }
+      for (Entry<String, String> entry : valuesAndDescriptions.entrySet()) {
+        builder.addEnumValue(entry.getKey());
+        builder.addEnumDescription(entry.getValue());
       }
       schema = builder.build();
       typesForConfig.put(type, schema);
