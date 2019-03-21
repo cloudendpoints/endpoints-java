@@ -27,7 +27,8 @@ import javax.servlet.http.HttpServletRequest;
  * A handler which sends a redirect to the API Explorer.
  */
 public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
-  private static final String EXPLORER_URL = "http://apis-explorer.appspot.com/apis-explorer/";
+  
+  private static final String EXPLORER_URL = "https://developers.google.com/apis-explorer/";
 
   @Override
   public void handle(EndpointsContext context) throws IOException {
@@ -37,8 +38,7 @@ public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
   private String getExplorerUrl(HttpServletRequest req, String path) {
     String url = stripRedundantPorts(Strings.stripTrailingSlash(req.getRequestURL().toString()));
     // This will convert http://localhost:8080/_ah/api/explorer to
-    // http://apis-explorer.appspot.com/apis-explorer/?base=http://localhost:8080/_ah/api&
-    //   root=http://localhost:8080/_ah/api
+    // ${EXPLORER_URL}?base=http://localhost:8080/_ah/api&root=http://localhost:8080/_ah/api
     // The root parameter is necessary for the non-default module case and the case where the
     // host is manually specified. This will override the root, which API explorer now respects
     // by default.
