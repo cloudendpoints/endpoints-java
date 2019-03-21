@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - openjdk7
+  - openjdk8
 install:
  - JAVA_HOME=$(jdk_switcher home openjdk8) ./gradlew classes testClasses
 after_success:
