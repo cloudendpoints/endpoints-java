@@ -46,8 +46,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -322,7 +320,7 @@ public class SwaggerGenerator {
           Schema schema = genCtx.schemata.getOrAdd(requestType, apiConfig);
           BodyParameter bodyParameter = new BodyParameter();
           bodyParameter.setName("body");
-          bodyParameter.setSchema(new RefModel(schema.name()));
+          bodyParameter.setSchema(new RefModel(schema.name()).asDefault(schema.name()));
           operation.addParameter(bodyParameter);
           break;
         case UNKNOWN:
@@ -336,7 +334,7 @@ public class SwaggerGenerator {
       TypeToken<?> returnType =
           ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), apiConfig);
       Schema schema = genCtx.schemata.getOrAdd(returnType, apiConfig);
-      response.setSchema(new RefProperty(schema.name()));
+      response.setResponseSchema(new RefModel(schema.name()).asDefault(schema.name()));
     }
     operation.response(200, response);
     writeAuthConfig(swagger, methodConfig, operation);
@@ -431,7 +429,8 @@ public class SwaggerGenerator {
       }
     } else {
       if (f.type() == FieldType.OBJECT) {
-        p = new RefProperty(f.schemaReference().get().name());
+        String name = f.schemaReference().get().name();
+        p = new RefProperty(name).asDefault(name);
       } else if (f.type() == FieldType.ARRAY) {
         p = new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
       } else if (f.type() == FieldType.ENUM) {

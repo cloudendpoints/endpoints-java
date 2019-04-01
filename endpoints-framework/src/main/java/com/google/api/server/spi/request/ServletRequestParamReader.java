@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.request;
 
+import com.fasterxml.jackson.core.Base64Variants;
 import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.EndpointsContext;
@@ -322,7 +323,8 @@ public class ServletRequestParamReader extends AbstractParamReader {
         .apiSerializationConfig(serializationConfig)
         .addRegisteredModules(modules)
         .build()
-        .reader();
+        .reader()
+        .with(Base64Variants.MIME_NO_LINEFEEDS);
   }
 
   @Override
