@@ -32,6 +32,11 @@ import org.junit.runners.JUnit4;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Tests for {@link RestResponseResultWriter}.
  */
@@ -268,5 +273,80 @@ public class RestResponseResultWriterTest {
 
     writer.writeError(serviceException);
     JSONAssert.assertEquals(expectedError, response.getContentAsString(), true);
+  }
+
+  @Test
+  public void writeError_extraFieldsUnsafe() throws Exception {
+
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    RestResponseResultWriter writer = new RestResponseResultWriter(response, null, true /* prettyPrint */,
+            true /* addContentLength */, true /* enableExceptionCompatibility */);
+
+    TestServiceExceptionExtraFieldUnsafe serviceException = new TestServiceExceptionExtraFieldUnsafe(400, "customMessage", "customReason", "customDomain");
+
+    // Extra field array
+    Boolean[] booleans = new Boolean[] { TRUE, FALSE, TRUE };
+
+    // Extra field List
+    List<String> stringList = Arrays.asList("First", "Second", "Last");
+
+    // Extra field Map
+    Map<Integer, TestValue> map = new HashMap<>();
+    map.put(1, new TestValue("Alice", 7, TestEnum.VALUE1));
+    map.put(2, new TestValue("Bob", 12, TestEnum.VALUE2));
+    map.put(3, new TestValue("Clark", 31, TestEnum.VALUE3));
+
+    serviceException.putExtraFieldUnsafe("someExtraNull", null)
+                    .putExtraFieldUnsafe("someExtraArray", booleans)
+                    .putExtraFieldUnsafe("someExtraList", stringList)
+                    .putExtraFieldUnsafe("someExtraMap", map);
+
+    String expectedError = "{\"error\": {\"errors\": [{" +
+            "  \"domain\": \"customDomain\"," +
+            "  \"reason\": \"customReason\"," +
+            "  \"message\": \"customMessage\"," +
+            "  \"someExtraNull\": null," +
+            "  \"someExtraArray\": [true, false, true]," +
+            "  \"someExtraList\": [\"First\", \"Second\", \"Last\"]," +
+            "  \"someExtraMap\": {" +
+            "    \"1\": {\"name\": \"Alice\", \"age\": 7, \"testEnum\": \"VALUE1\"}," +
+            "    \"2\": {\"name\": \"Bob\", \"age\": 12, \"testEnum\": \"VALUE2\"}," +
+            "    \"3\": {\"name\": \"Clark\", \"age\": 31, \"testEnum\": \"VALUE3\"}" +
+            "  }" +
+            " }]," +
+            " \"code\": 400," +
+            " \"message\": \"customMessage\"" +
+            "}}";
+
+    writer.writeError(serviceException);
+    JSONAssert.assertEquals(expectedError, response.getContentAsString(), true);
+  }
+
+  enum TestEnum {
+    VALUE1, VALUE2, VALUE3;
+  }
+
+  class TestValue {
+    public String name;
+    public int age;
+    public TestEnum testEnum;
+
+    TestValue(String name, int age, TestEnum testEnum) {
+      this.name = name;
+      this.age = age;
+      this.testEnum = testEnum;
+    }
+  }
+
+  class TestServiceExceptionExtraFieldUnsafe extends ServiceException {
+
+    TestServiceExceptionExtraFieldUnsafe(int statusCode, String statusMessage, String reason, String domain) {
+      super(statusCode, statusMessage, reason, domain);
+    }
+
+    @Override
+    public TestServiceExceptionExtraFieldUnsafe putExtraFieldUnsafe(String fieldName, Object value) {
+      return (TestServiceExceptionExtraFieldUnsafe) super.putExtraFieldUnsafe(fieldName, value);
+    }
   }
 }
