@@ -153,6 +153,26 @@ public class ServiceException extends Exception {
     return putExtraFieldInternal(fieldName, value);
   }
 
+  /**
+   * Associates to this exception an extra field as a field name/value pair. If a field
+   * with the same name was previously set, the old value is replaced by the specified
+   * value.<br>
+   * This unsafe version accepts any POJO as is:
+   * <ul>
+   * <li>the object should be serializable</li>
+   * <li>no defensive copy nor conversion are made. So {@code value} should not be modified
+   * or reused after the call of this method.</li>
+   * </ul>
+   * These constraints must be taken into consideration when overriding this method.
+   * @return this
+   * @throws NullPointerException if {@code fieldName} is {@code null}.
+   * @throws IllegalArgumentException if {@code fieldName} is one of the reserved field
+   *         names {@link #EXTRA_FIELDS_RESERVED_NAMES}.
+   */
+  protected ServiceException putExtraFieldUnsafe(String fieldName, Object value) {
+    return putExtraFieldInternal(fieldName, value);
+  }
+
   private ServiceException putExtraFieldInternal(String fieldName, Object value) {
     Preconditions.checkNotNull(fieldName);
     Preconditions.checkArgument(!EXTRA_FIELDS_RESERVED_NAMES.contains(fieldName), "The field name '%s' is reserved", fieldName);
