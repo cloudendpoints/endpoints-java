@@ -1,1 +1,1 @@
-include ':endpoints-framework', 'endpoints-framework-all', ':endpoints-framework-tools', ':endpoints-framework-guice', ':test-utils', ':discovery-client', ':test-compat', ':test-compat:legacy-app', ':test-compat:new-app', ':test-compat:new-app-guice'
+include ':endpoints-framework', 'endpoints-framework-all', ':endpoints-framework-tools', ':endpoints-framework-guice', ':test-utils', ':discovery-client'
