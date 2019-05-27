@@ -82,11 +82,7 @@ def configureMaven(project, projectName, projectDescription) {
         mavenDeployer {
           beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-          repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-            authentication(userName: ossrhUsername, password: ossrhPassword)
-          }
-
-          snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+          repository(url: "https://aodocs.jfrog.io/aodocs/aodocs-java-release/") {
             authentication(userName: ossrhUsername, password: ossrhPassword)
           }
 
@@ -97,9 +93,9 @@ def configureMaven(project, projectName, projectDescription) {
             url 'https://cloud.google.com/endpoints/docs/frameworks/java'
 
             scm {
-              connection 'scm:git:https://github.com/cloudendpoints/endpoints-java'
-              developerConnection 'scm:git:https://github.com/cloudendpoints/endpoints-java'
-              url 'scm:git:https://github.com/cloudendpoints/endpoints-java'
+              connection 'scm:git:https://github.com/AODocs/endpoints-java.git'
+              developerConnection 'scm:git:https://github.com/AODocs/endpoints-java.git'
+              url 'scm:git:https://github.com/AODocs/endpoints-java.git'
             }
 
             licenses {
