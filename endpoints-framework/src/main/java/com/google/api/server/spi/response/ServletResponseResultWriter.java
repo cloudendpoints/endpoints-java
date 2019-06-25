@@ -136,7 +136,7 @@ public class ServletResponseResultWriter implements ResultWriter {
     }
 
     // write response body
-    ObjectWriter writer = isError ? objectWriter: errorObjectWriter;
+    ObjectWriter writer = isError ? errorObjectWriter: objectWriter;
     if (content != null) {
       servletResponse.setContentType(SystemService.MIME_JSON);
       if (addContentLength) {

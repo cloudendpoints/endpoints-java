@@ -19,7 +19,10 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.api.server.spi.ObjectMapperUtil;
+import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.types.DateAndTime;
 import com.google.api.server.spi.types.SimpleDate;
 import com.google.appengine.api.datastore.Blob;
@@ -234,5 +237,37 @@ public class ServletResponseResultWriterTest {
     ServletResponseResultWriter writer = new ServletResponseResultWriter(response, null);
     writer.write(value);
     return response.getContentAsString();
+  }
+  
+  @Test
+  public void testExceptionWriterShouldNotBeCustomized() throws IOException {
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    ServletResponseResultWriter writer = createCustomizedWriter(response);
+    ServiceException exception = new ServiceException(400, "sample message");
+    writer.writeError(exception);
+    String errorContent = response.getContentAsString();
+    assertEquals("{\"error_message\":\"sample message\"}", errorContent);
+  }
+  
+  @Test
+  public void testWriterCustomization() throws IOException {
+    Map<String, String> unorderedMap = new HashMap<>();
+    unorderedMap.put("a", "value_a");
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    ServletResponseResultWriter writer = createCustomizedWriter(response);
+    writer.write(unorderedMap);
+    String content = response.getContentAsString();
+    assertEquals("{a:\"value_a\"}", content);
+  }
+  
+  //Customized writer: for response, the fields name has no quote. For error, they have.
+  private ServletResponseResultWriter createCustomizedWriter(HttpServletResponse response) {
+    ServletResponseResultWriter writer = new ServletResponseResultWriter(response, null) {
+      @Override
+      protected ObjectWriter configureWriter(ObjectWriter objectWriter) {
+        return objectWriter.withoutFeatures(JsonGenerator.Feature.QUOTE_FIELD_NAMES);
+      }
+    };
+    return writer;
   }
 }
