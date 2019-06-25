@@ -69,6 +69,7 @@ public class ServletResponseResultWriter implements ResultWriter {
 
   private final HttpServletResponse servletResponse;
   private final ObjectWriter objectWriter;
+  private final ObjectWriter errorObjectWriter;
   private final boolean addContentLength;
 
   public ServletResponseResultWriter(
@@ -92,6 +93,7 @@ public class ServletResponseResultWriter implements ResultWriter {
       objectWriter = objectWriter.with(new EndpointsPrettyPrinter());
     }
     this.objectWriter = configureWriter(objectWriter);
+    this.errorObjectWriter = objectWriter;
     this.addContentLength = addContentLength;
   }
 
@@ -108,9 +110,9 @@ public class ServletResponseResultWriter implements ResultWriter {
   @Override
   public void write(Object response) throws IOException {
     if (response == null) {
-      write(HttpServletResponse.SC_NO_CONTENT, null, null);
+      write(HttpServletResponse.SC_NO_CONTENT, null, null, false);
     } else {
-      write(HttpServletResponse.SC_OK, null, ResponseUtil.wrapCollection(response));
+      write(HttpServletResponse.SC_OK, null, ResponseUtil.wrapCollection(response), false);
     }
   }
 
@@ -118,10 +120,11 @@ public class ServletResponseResultWriter implements ResultWriter {
   public void writeError(ServiceException e) throws IOException {
     Map<String, String> errors = new HashMap<>();
     errors.put(Constant.ERROR_MESSAGE, e.getMessage());
-    write(e.getStatusCode(), e.getHeaders(), errors);
+    write(e.getStatusCode(), e.getHeaders(), errors, true);
   }
 
-  protected void write(int status, Map<String, String> headers, Object content) throws IOException {
+  protected void write(int status, Map<String, String> headers, Object content, boolean isError) throws IOException {
+    
     // write response status code
     servletResponse.setStatus(status);
 
@@ -133,14 +136,15 @@ public class ServletResponseResultWriter implements ResultWriter {
     }
 
     // write response body
+    ObjectWriter writer = isError ? objectWriter: errorObjectWriter;
     if (content != null) {
       servletResponse.setContentType(SystemService.MIME_JSON);
       if (addContentLength) {
         CountingOutputStream counter = new CountingOutputStream(ByteStreams.nullOutputStream());
-        objectWriter.writeValue(counter, content);
+        writer.writeValue(counter, content);
         servletResponse.setContentLength((int) counter.getCount());
       }
-      objectWriter.writeValue(servletResponse.getOutputStream(), content);
+      writer.writeValue(servletResponse.getOutputStream(), content);
     }
   }
 

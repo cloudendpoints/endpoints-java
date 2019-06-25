@@ -68,7 +68,7 @@ public class RestResponseResultWriter extends ServletResponseResultWriter {
         e.getReason() : errorMap.getReason(e.getStatusCode());
     String domain = !Strings.isNullOrEmpty(e.getDomain()) ?
         e.getDomain() : errorMap.getDomain(e.getStatusCode());
-    write(code, e.getHeaders(), createError(code, reason, domain, e.getMessage(), e.getExtraFields()));
+    write(code, e.getHeaders(), createError(code, reason, domain, e.getMessage(), e.getExtraFields()), true);
   }
 
   private Object createError(int code, String reason, String domain, String message, Map<String, Object> extraFields) {
