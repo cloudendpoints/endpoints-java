@@ -901,8 +901,8 @@ public class ServletRequestParamReaderTest {
     try {
       readParameters(
           "{" + TestEndpoint.NAME_DATE_AND_TIME + ":\"" + simpleDateString + "\"}", method);
-      fail("Expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {}
+      fail("Expected BadRequestException");
+    } catch (BadRequestException expected) {}
   }
 
   private Calendar getCalendarFromDate(Date date) {
