@@ -25,6 +25,7 @@ shadowJar {
   relocate 'com.google.common', "${repackagedDir}.com.google.common"
   relocate 'com.google.api.client', "${repackagedDir}.com.google.api.client"
   relocate 'org.slf4j', "${repackagedDir}.org.slf4j"
+  relocate 'com.google.thirdparty', "${repackagedDir}.com.google.thirdparty"
 
   dependencies {
     exclude(dependency('com.google.appengine:appengine-api-1.0-sdk:.*'))
