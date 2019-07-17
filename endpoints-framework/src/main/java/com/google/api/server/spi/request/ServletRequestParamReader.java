@@ -16,6 +16,7 @@
 package com.google.api.server.spi.request;
 
 import com.fasterxml.jackson.core.Base64Variants;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.EndpointsContext;
@@ -61,8 +62,6 @@ import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -257,9 +256,13 @@ public class ServletRequestParamReader extends AbstractParamReader {
     @Override
     public Date deserialize(JsonParser jsonParser, DeserializationContext context)
         throws IOException {
-      com.google.api.client.util.DateTime date =
-          new com.google.api.client.util.DateTime(jsonParser.readValueAs(String.class));
-      return new Date(date.getValue());
+      String value = jsonParser.readValueAs(String.class);
+      try {
+        com.google.api.client.util.DateTime date = new com.google.api.client.util.DateTime(value);
+        return new Date(date.getValue());
+      } catch (NumberFormatException e) {
+        throw InvalidFormatException.from(jsonParser, e.getMessage(), value, Date.class);
+      }
     }
   }
 
@@ -267,7 +270,12 @@ public class ServletRequestParamReader extends AbstractParamReader {
     @Override
     public DateAndTime deserialize(JsonParser jsonParser, DeserializationContext context)
         throws IOException {
-      return DateAndTime.parseRfc3339String(jsonParser.readValueAs(String.class));
+      String value = jsonParser.readValueAs(String.class);
+      try {
+        return DateAndTime.parseRfc3339String(value);
+      } catch (IllegalArgumentException e) {
+        throw InvalidFormatException.from(jsonParser, e.getMessage(), value, DateAndTime.class);
+      }
     }
   }
 
@@ -283,11 +291,21 @@ public class ServletRequestParamReader extends AbstractParamReader {
         int year = Integer.parseInt(matcher.group(1));
         int month = Integer.parseInt(matcher.group(2));
         int day = Integer.parseInt(matcher.group(3));
-        return new SimpleDate(year, month, day);
+        try {
+          return new SimpleDate(year, month, day);
+        } catch (IllegalArgumentException e) {
+          throw buildException(jsonParser, value);
+        }
       } else {
-        throw new IllegalArgumentException(
-            "String is not an RFC3339 formated date (yyyy-mm-dd): " + value);
+        throw buildException(jsonParser, value);
       }
+    }
+    
+    private InvalidFormatException buildException(JsonParser jsonParser, String value) {
+      return InvalidFormatException.from(jsonParser,
+              "String is not an RFC3339 formated date (yyyy-mm-dd)",
+              value,
+              SimpleDate.class);
     }
   }
 
