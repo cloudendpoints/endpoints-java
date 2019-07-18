@@ -298,6 +298,17 @@ public class RestServletRequestParamReaderTest {
   }
   
   @Test
+  public void parseError() throws ServiceException {
+    request.setContent("{\"field\": \"this is an invalid json".getBytes(StandardCharsets.UTF_8));
+    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
+  
+    thrown.expect(BadRequestException.class);
+    thrown.expectMessage("Parse error");
+    reader.read();
+  
+  }
+  
+  @Test
   public void gzippedRequest() throws Exception {
     request.addParameter("path", "1234");
     request.setContent(compress(

@@ -169,39 +169,32 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
         | IOException e) {
       logger.atInfo().withCause(e).log("Unable to read request parameter(s)");
-      throw new BadRequestException("Parse error", "parseError", "global");
+      throw new BadRequestException("Parse error", "parseError", e);
     }
   }
   
   private BadRequestException translate(InvalidFormatException e) {
     String messagePattern = "Invalid {0} value \"{1}\".{2}";
+    String message;
     String reason = "parseError";
     if (e.getTargetType().isEnum()) {
-      return new BadRequestException(
-              MessageFormat.format(messagePattern, "enum",
-                      e.getValue(),
-                      " Valid values are " + Arrays.toString(e.getTargetType().getEnumConstants())),
-              reason
+      message = MessageFormat.format(messagePattern, "enum",
+              e.getValue(),
+              " Valid values are " + Arrays.toString(e.getTargetType().getEnumConstants())
       );
     } else if (isNumber(e.getTargetType())) {
-      return new BadRequestException(
-              MessageFormat.format(messagePattern, "number", e.getValue(), ""),
-              reason
-      );
+      message = MessageFormat.format(messagePattern, "number", e.getValue(), "");
     } else if (isBoolean(e.getTargetType())) {
-      return new BadRequestException(
-              MessageFormat.format(messagePattern,"boolean", e.getValue(), " Valid values are [true, false]"),
-              reason
-      );
+      message = MessageFormat.format(messagePattern,"boolean", e.getValue(), " Valid values are [true, false]");
     } else if (isDate(e.getTargetType())) {
-      return new BadRequestException(
-              MessageFormat.format(messagePattern, "date", e.getValue(), ""),
-              reason
-      );
+      message = MessageFormat.format(messagePattern, "date", e.getValue(), "");
     } else {
-      return new BadRequestException("Parse error", reason, "global");
+      message = "Parse error";
     }
+    
+    return new BadRequestException(message, reason, e);
   }
+  
   private boolean isBoolean(Class<?> clazz) {
     return Boolean.class.equals(clazz) || boolean.class.equals(clazz);
   }
