@@ -38,12 +38,9 @@ public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
   private String getExplorerUrl(HttpServletRequest req, String path) {
     String url = stripRedundantPorts(Strings.stripTrailingSlash(req.getRequestURL().toString()));
     // This will convert http://localhost:8080/_ah/api/explorer to
-    // ${EXPLORER_URL}?base=http://localhost:8080/_ah/api&root=http://localhost:8080/_ah/api
-    // The root parameter is necessary for the non-default module case and the case where the
-    // host is manually specified. This will override the root, which API explorer now respects
-    // by default.
+    // ${EXPLORER_URL}?base=http://localhost:8080/_ah/api
     String apiRoot = url.substring(0, url.length() - path.length() - 1);
-    return EXPLORER_URL + "?base=" + apiRoot + "&root=" + apiRoot;
+    return EXPLORER_URL + "?base=" + apiRoot;
   }
 
   private static String stripRedundantPorts(String url) {
