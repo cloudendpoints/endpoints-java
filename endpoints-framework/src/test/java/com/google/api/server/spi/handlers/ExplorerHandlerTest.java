@@ -32,19 +32,19 @@ public class ExplorerHandlerTest {
   @Test
   public void testHandle() throws Exception {
     testHandle("http", 8080, "https://developers.google.com/apis-explorer/"
-        + "?base=http://localhost:8080/_ah/api&root=http://localhost:8080/_ah/api");
+        + "?base=http://localhost:8080/_ah/api");
   }
 
   @Test
   public void testHandle_explicitHttpPort() throws Exception {
     testHandle("http", 80, "https://developers.google.com/apis-explorer/"
-        + "?base=http://localhost/_ah/api&root=http://localhost/_ah/api");
+        + "?base=http://localhost/_ah/api");
   }
 
   @Test
   public void testHandle_explicitHttpsPort() throws Exception {
     testHandle("https", 443, "https://developers.google.com/apis-explorer/"
-        + "?base=https://localhost/_ah/api&root=https://localhost/_ah/api");
+        + "?base=https://localhost/_ah/api");
   }
 
   private void testHandle(String scheme, int port, String expectedLocation) throws Exception {
