@@ -6,6 +6,11 @@
   },
   "host": "myapi.appspot.com",
   "basePath": "/_ah/api",
+  "tags": [
+    {
+      "name": "limits:v1"
+    }
+  ],
   "schemes": [
     "https"
   ],
@@ -18,6 +23,9 @@
   "paths": {
     "/limits/v1/create": {
       "post": {
+        "tags": [
+          "limits:v1"
+        ],
         "operationId": "LimitsV1CreateFoo",
         "parameters": [],
         "responses": {
@@ -37,6 +45,9 @@
     },
     "/limits/v1/customFoo": {
       "post": {
+        "tags": [
+          "limits:v1"
+        ],
         "operationId": "LimitsV1CustomFoo",
         "parameters": [],
         "responses": {

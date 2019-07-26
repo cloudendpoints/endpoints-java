@@ -6,6 +6,14 @@
   },
   "host": "swagger-test.appspot.com",
   "basePath": "/api",
+  "tags": [
+    {
+      "name": "myapi:v1"
+    },
+    {
+      "name": "myapi:v2"
+    }
+  ],
   "schemes": [
     "https"
   ],
@@ -18,6 +26,9 @@
   "paths": {
     "/myapi/v1/foo": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1Get",
         "parameters": [],
         "responses": {
@@ -32,6 +43,9 @@
     },
     "/myapi/v2/foo": {
       "get": {
+        "tags": [
+          "myapi:v2"
+        ],
         "operationId": "MyapiV2Get",
         "parameters": [],
         "responses": {

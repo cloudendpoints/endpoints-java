@@ -18,7 +18,6 @@ package com.google.api.server.spi.swagger;
 import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA;
 import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES;
 import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_SUPPORT_ARRAYS_VALUES;
-import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.IoUtil;
@@ -47,9 +46,7 @@ import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource1Endpoint
 import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource2Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version1Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version2Endpoint;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -59,14 +56,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
-
-import java.util.Collection;
-import java.util.Map.Entry;
 
 /**
  * Tests for {@link SwaggerGenerator}.
@@ -91,7 +82,7 @@ public class SwaggerGeneratorTest {
   @Test
   public void testWriteSwagger_FooEndpoint() throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooEndpoint.class);
-    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), false, context);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
     Swagger expected = readExpectedAsSwagger("foo_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
@@ -99,7 +90,7 @@ public class SwaggerGeneratorTest {
   @Test
   public void testWriteSwagger_FooEndpointDefaultContext() throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooEndpoint.class);
-    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), false, new SwaggerContext());
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), new SwaggerContext());
     Swagger expected = readExpectedAsSwagger("foo_endpoint_default_context.swagger");
     checkSwagger(expected, swagger);
   }
@@ -107,28 +98,28 @@ public class SwaggerGeneratorTest {
   @Test
   public void testWriteSwagger_FooEndpointLocalhost() throws Exception {
     Swagger swagger = getSwagger(
-        FooEndpoint.class, new SwaggerContext().setApiRoot("http://localhost:8080/api"), false);
+        FooEndpoint.class, new SwaggerContext().setApiRoot("http://localhost:8080/api"));
     Swagger expected = readExpectedAsSwagger("foo_endpoint_localhost.swagger");
     checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_EnumEndpoint() throws Exception {
-    Swagger swagger = getSwagger(EnumEndpoint.class, new SwaggerContext(), true);
+    Swagger swagger = getSwagger(EnumEndpoint.class, new SwaggerContext());
     Swagger expected = readExpectedAsSwagger("enum_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_ArrayEndpoint() throws Exception {
-    Swagger swagger = getSwagger(ArrayEndpoint.class, new SwaggerContext(), true);
+    Swagger swagger = getSwagger(ArrayEndpoint.class, new SwaggerContext());
     Swagger expected = readExpectedAsSwagger("array_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_MapEndpoint() throws Exception {
-    Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+    Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext());
     Swagger expected = readExpectedAsSwagger("map_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
@@ -137,7 +128,7 @@ public class SwaggerGeneratorTest {
   public void testWriteSwagger_MapEndpoint_Legacy() throws Exception {
     System.setProperty(MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA.systemPropertyName, "");
     try {
-      Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+      Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext());
       Swagger expected = readExpectedAsSwagger("map_endpoint_legacy.swagger");
       checkSwagger(expected, swagger);
     } finally {
@@ -148,7 +139,7 @@ public class SwaggerGeneratorTest {
   @Test
   public void testWriteDiscovery_MapEndpoint_InvalidKeyType() throws Exception {
     try {
-      getSwagger(MapEndpointInvalid.class, new SwaggerContext(), true);
+      getSwagger(MapEndpointInvalid.class, new SwaggerContext());
       Assert.fail("Should have failed to generate schema for invalid key type");
     } catch (IllegalArgumentException e) {
       //expected
@@ -159,7 +150,7 @@ public class SwaggerGeneratorTest {
   public void testWriteDiscovery_MapEndpoint_InvalidKeyType_ignore() throws Exception {
     System.setProperty(MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName, "true");
     try {
-      getSwagger(MapEndpointInvalid.class, new SwaggerContext(), true);
+      getSwagger(MapEndpointInvalid.class, new SwaggerContext());
     } finally {
       System.clearProperty(MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES.systemPropertyName);
     }
@@ -169,7 +160,7 @@ public class SwaggerGeneratorTest {
   public void testWriteSwagger_MapEndpoint_WithArrayValue() throws Exception {
     System.setProperty(MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.systemPropertyName, "TRUE");
     try {
-      Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext(), true);
+      Swagger swagger = getSwagger(MapEndpoint.class, new SwaggerContext());
       Swagger expected = readExpectedAsSwagger("map_endpoint_with_array.swagger");
       checkSwagger(expected, swagger);
     } finally {
@@ -178,18 +169,10 @@ public class SwaggerGeneratorTest {
   }
 
   @Test
-  public void testWriteSwagger_FooEndpoint_internal() throws Exception {
-    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooEndpoint.class);
-    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
-    Swagger expected = readExpectedAsSwagger("foo_endpoint_internal.swagger");
-    checkSwagger(expected, swagger);
-  }
-
-  @Test
   public void testWriteSwagger_ThirdPartyAuthEndpoint() throws Exception {
     ApiConfig config =
         configLoader.loadConfiguration(ServiceContext.create(), ThirdPartyAuthEndpoint.class);
-    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
     Swagger expected = readExpectedAsSwagger("third_party_auth.swagger");
     checkSwagger(expected, swagger);
   }
@@ -198,7 +181,7 @@ public class SwaggerGeneratorTest {
   public void testWriteSwagger_GoogleAuthEndpoint() throws Exception {
     ApiConfig config =
         configLoader.loadConfiguration(ServiceContext.create(), GoogleAuthEndpoint.class);
-    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
     Swagger expected = readExpectedAsSwagger("google_auth.swagger");
     checkSwagger(expected, swagger);
   }
@@ -207,28 +190,28 @@ public class SwaggerGeneratorTest {
   public void testWriteSwagger_ApiKeys() throws Exception {
     ApiConfig config =
         configLoader.loadConfiguration(ServiceContext.create(), ApiKeysEndpoint.class);
-    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), true, context);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
     Swagger expected = readExpectedAsSwagger("api_keys.swagger");
     checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_AbsolutePathEndpoint() throws Exception {
-    Swagger swagger = getSwagger(AbsolutePathEndpoint.class, new SwaggerContext(), true);
+    Swagger swagger = getSwagger(AbsolutePathEndpoint.class, new SwaggerContext());
     Swagger expected = readExpectedAsSwagger("absolute_path_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_AbsoluteCommonPathEndpoint() throws Exception {
-    Swagger swagger = getSwagger(AbsoluteCommonPathEndpoint.class, new SwaggerContext(), true);
+    Swagger swagger = getSwagger(AbsoluteCommonPathEndpoint.class, new SwaggerContext());
     Swagger expected = readExpectedAsSwagger("absolute_common_path_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
 
   @Test
   public void testWriteSwagger_LimitMetricsEndpoint() throws Exception {
-    Swagger swagger = getSwagger(LimitMetricsEndpoint.class, new SwaggerContext(), true);
+    Swagger swagger = getSwagger(LimitMetricsEndpoint.class, new SwaggerContext());
     Swagger expected = readExpectedAsSwagger("limit_metrics_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
@@ -236,7 +219,7 @@ public class SwaggerGeneratorTest {
   @Test
   public void testWriteSwagger_FooEndpointWithDescription() throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooDescriptionEndpoint.class);
-    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), false, context);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
     Swagger expected = readExpectedAsSwagger("foo_with_description_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
@@ -248,7 +231,7 @@ public class SwaggerGeneratorTest {
         configLoader.loadConfiguration(serviceContext, NoResourceEndpoint.class), 
         configLoader.loadConfiguration(serviceContext, Resource1Endpoint.class), 
         configLoader.loadConfiguration(serviceContext, Resource2Endpoint.class));
-    Swagger swagger = generator.writeSwagger(configs, false, context);
+    Swagger swagger = generator.writeSwagger(configs, context);
     Swagger expected = readExpectedAsSwagger("multi_resource_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
@@ -259,15 +242,15 @@ public class SwaggerGeneratorTest {
     ImmutableList<ApiConfig> configs = ImmutableList.of(
         configLoader.loadConfiguration(serviceContext, Version1Endpoint.class),
         configLoader.loadConfiguration(serviceContext, Version2Endpoint.class));
-    Swagger swagger = generator.writeSwagger(configs, false, context);
+    Swagger swagger = generator.writeSwagger(configs, context);
     Swagger expected = readExpectedAsSwagger("multi_version_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
 
-  private Swagger getSwagger(Class<?> serviceClass, SwaggerContext context, boolean internal)
+  private Swagger getSwagger(Class<?> serviceClass, SwaggerContext context)
       throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), serviceClass);
-    return generator.writeSwagger(ImmutableList.of(config), internal, context);
+    return generator.writeSwagger(ImmutableList.of(config), context);
   }
 
   private Swagger readExpectedAsSwagger(String file) throws Exception {
@@ -276,50 +259,8 @@ public class SwaggerGeneratorTest {
   }
 
   private void checkSwagger(Swagger expected, Swagger actual) throws Exception {
-    compareSwagger(expected, actual);
-    // operationIds should be unique to be deployed on Endpoints Management
-    checkDuplicateOperations(actual);
-    // Jackson preserves order when deserializing expected result, and SwaggerGenerator should
-    // always output resource and security definitions in the same order
-    checkOrdering(expected, actual);
-  }
-
-  private void compareSwagger(Swagger expected, Swagger actual) throws Exception {
-    System.out.println("Actual: " + mapper.writeValueAsString(actual));
-    System.out.println("Expected: " + mapper.writeValueAsString(expected));
-    assertThat(actual).isEqualTo(expected);
-    // TODO: Remove once Swagger models check this in equals
-    assertThat(actual.getVendorExtensions()).isEqualTo(expected.getVendorExtensions());
-  }
-
-  private void checkDuplicateOperations(Swagger actual) {
-    Multimap<String, String> operationIds = HashMultimap.create();
-    for (Entry<String, Path> pathEntry : actual.getPaths().entrySet()) {
-      for (Entry<HttpMethod, Operation> opEntry : pathEntry.getValue().getOperationMap()
-          .entrySet()) {
-        operationIds
-            .put(opEntry.getValue().getOperationId(), pathEntry.getKey() + "|" + opEntry.getKey());
-      }
-    }
-    int duplicateOperationIdCount = 0;
-    for (Entry<String, Collection<String>> entry : operationIds.asMap().entrySet()) {
-      if (entry.getValue().size() > 1) {
-        System.out.println("Duplicate operation id: " + entry);
-        duplicateOperationIdCount++;
-      }
-    }
-    assertThat(duplicateOperationIdCount).named("Duplicate operation ids").isEqualTo(0);
-  }
-
-  private void checkOrdering(Swagger expected, Swagger actual) {
-    if (expected.getSecurityDefinitions() != null && actual.getSecurityDefinitions() != null) {
-      assertThat(ImmutableList.of(expected.getSecurityDefinitions().keySet()))
-          .isEqualTo(ImmutableList.of(actual.getSecurityDefinitions().keySet()));
-    }
-    if (expected.getDefinitions() != null && actual.getDefinitions() != null) {
-      assertThat(ImmutableList.of(expected.getDefinitions().keySet()))
-          .isEqualTo(ImmutableList.of(actual.getDefinitions().keySet()));
-    }
+    SwaggerSubject.assertThat(actual).isSameAs(expected);
+    SwaggerSubject.assertThat(actual).hasNoDuplicateOperations();
   }
 
   @Api(name = "thirdparty", version = "v1",
@@ -345,7 +286,7 @@ public class SwaggerGeneratorTest {
   private static class GoogleAuthEndpoint extends ThirdPartyAuthEndpoint {
     @ApiMethod(
         issuerAudiences = {
-            @ApiIssuerAudience(name = Constant.GOOGLE_ID_TOKEN_NAME, audiences = "googleaud")
+            @ApiIssuerAudience(name = Constant.GOOGLE_ID_TOKEN_ALT, audiences = "googleaud")
         }
     )
     public void googleAuth() { }

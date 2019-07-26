@@ -156,6 +156,7 @@ public class ApiMethodConfig {
   private List<Class<? extends Authenticator>> authenticators;
   private List<Class<? extends PeerAuthenticator>> peerAuthenticators;
   private boolean ignored = false;
+  private boolean deprecated = false;
   private Boolean apiKeyRequired;
   private TypeToken<?> returnType;
   private List<ApiMetricCostConfig> metricCosts;
@@ -442,7 +443,7 @@ public class ApiMethodConfig {
   public void setIssuerAudiences(ApiIssuerAudienceConfig issuerAudiences) {
     Preconditions.checkNotNull(issuerAudiences, "issuerAudiences should never be null");
     this.issuerAudiences = issuerAudiences;
-    if (issuerAudiences.hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME)) {
+    if (issuerAudiences.hasGoogleIssuer()) {
       getApiClassConfig().getApiConfig().ensureGoogleIssuer();
     }
   }
@@ -481,6 +482,14 @@ public class ApiMethodConfig {
 
   public boolean isIgnored() {
     return ignored;
+  }
+
+  public void setDeprecated(boolean deprecated) {
+    this.deprecated = deprecated;
+  }
+
+  public boolean isDeprecated() {
+    return deprecated;
   }
 
   public void setApiKeyRequired(boolean apiKeyRequired) {

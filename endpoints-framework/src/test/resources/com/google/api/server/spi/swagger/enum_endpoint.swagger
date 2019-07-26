@@ -6,6 +6,11 @@
   },
   "host": "myapi.appspot.com",
   "basePath": "/_ah/api",
+  "tags": [
+    {
+      "name": "enum:v1"
+    }
+  ],
   "schemes": [
     "https"
   ],
@@ -18,6 +23,9 @@
   "paths": {
     "/enum/v1/{value}": {
       "post": {
+        "tags": [
+          "enum:v1"
+        ],
         "operationId": "EnumV1Create",
         "parameters": [
           {

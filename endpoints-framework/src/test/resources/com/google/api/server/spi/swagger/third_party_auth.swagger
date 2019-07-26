@@ -6,6 +6,11 @@
   },
   "host": "swagger-test.appspot.com",
   "basePath": "/api",
+  "tags": [
+    {
+      "name": "thirdparty:v1"
+    }
+  ],
   "schemes": [
     "https"
   ],
@@ -18,6 +23,9 @@
   "paths": {
     "/thirdparty/v1/authOverride": {
       "post": {
+        "tags": [
+          "thirdparty:v1"
+        ],
         "operationId": "ThirdpartyV1AuthOverride",
         "parameters": [],
         "responses": {
@@ -34,6 +42,9 @@
     },
     "/thirdparty/v1/noOverride": {
       "post": {
+        "tags": [
+          "thirdparty:v1"
+        ],
         "operationId": "ThirdpartyV1NoOverride",
         "parameters": [],
         "responses": {

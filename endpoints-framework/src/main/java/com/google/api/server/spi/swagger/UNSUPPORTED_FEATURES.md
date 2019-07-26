@@ -1,0 +1,18 @@
+- Info
+  - **title, description => visible in Endpoints Portal**
+  - license, contact, terms of service
+- Paths
+  - Configurable tag content and format
+- Parameters
+  - **common parameters (global and per-path) => make spec shorter**
+  - range for ints (minimum, maximum)
+  - cardinality (minItems, maxItems)
+  - other repeated param features (uniqueItems, default values)
+  - empty value parameters
+  - headers in params
+- Models
+  - required properties (need new annotation property)
+- Responses
+  - **schema for Google JSON error format as default for errors**
+  - **error code descriptions** => use introspection to analyze throws of subclasses of ServiceException
+  - headers in response

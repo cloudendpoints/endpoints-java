@@ -36,7 +36,8 @@ public class IssuerUtil {
     ApiIssuerConfigs.Builder builder = ApiIssuerConfigs.builder();
     for (ApiIssuer issuerConfig : issuerConfigs) {
       builder.addIssuer(
-          new IssuerConfig(issuerConfig.name(), issuerConfig.issuer(), issuerConfig.jwksUri()));
+          new IssuerConfig(issuerConfig.name(), issuerConfig.issuer(), issuerConfig.jwksUri(),
+              issuerConfig.authorizationUrl(), issuerConfig.useScopesInAuthFlow()));
     }
     return builder.build();
   }

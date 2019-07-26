@@ -17,6 +17,7 @@ package com.google.api.server.spi.testing;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.CollectionResponse;
 
 import java.util.Collection;
@@ -86,6 +87,30 @@ public class ArrayEndpoint {
   public ListContainer getListOfString() {
     return null;
   }
+
+  @ApiMethod
+  public void setListOfString(@Named("list") List<String> list) {}
+
+  @ApiMethod
+  public void setListOfBooleans(@Named("list") List<Boolean> list, @Named("array") boolean[] array) {}
+
+  @ApiMethod
+  public void setListOfIntegers(@Named("list") List<Integer> list, @Named("array") int[] array) {}
+
+  @ApiMethod
+  public void setListOfLongs(@Named("list") List<Long> list, @Named("array") long[] array) {}
+
+  @ApiMethod
+  public void setListOfFloats(@Named("list") List<Float> list, @Named("array") float[] array) {}
+
+  @ApiMethod
+  public void setListOfDoubles(@Named("list") List<Double> list, @Named("array") double[] array) {}
+
+  @ApiMethod
+  public void setListOfByteArrays(@Named("list") List<byte[]> list, @Named("array") byte[][] array) {}
+
+  @ApiMethod
+  public void setListOfEnums(@Named("list") List<TestEnum> list) {}
 
   public static class ListContainer {
     public List<StringValue> strings;

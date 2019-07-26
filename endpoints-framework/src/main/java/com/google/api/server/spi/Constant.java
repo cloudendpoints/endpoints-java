@@ -55,18 +55,23 @@ public final class Constant {
   public static final String SKIP_CLIENT_ID_CHECK = "*";
 
   /**
-   * Root URL of discovery doc generation API.  This is on a host that Endpoints project owns so
-   * that even if producer has not picked an App Engine app host, this call can still succeed.
-   */
-  public static final String DISCOVERY_GEN_ROOT = "https://webapis-discovery.appspot.com/_ah/api";
-
-  /**
    * Friendly name to refer to Google ID token authentication with accounts.google.com issuer.
    */
-  public static final String GOOGLE_ID_TOKEN_NAME = "google_id_token";
+  public static final String GOOGLE_ID_TOKEN_ALT = "google_id_token_legacy";
 
   /**
    * Google ID token authentication variant with https://accounts.google.com issuer.
    */
-  public static final String GOOGLE_ID_TOKEN_NAME_HTTPS = "google_id_token_https";
+  public static final String GOOGLE_ID_TOKEN_NAME = "google_id_token";
+
+  /**
+   * Google JWKS URI
+   */
+  public static final String GOOGLE_JWKS_URI = "https://www.googleapis.com/oauth2/v1/certs";
+
+  /**
+   * Google OAuth2 authentication URL 
+   */
+  public static final String GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+  
 }

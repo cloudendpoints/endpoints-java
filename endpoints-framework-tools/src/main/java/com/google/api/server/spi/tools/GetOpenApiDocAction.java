@@ -121,7 +121,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
     SwaggerContext swaggerContext = new SwaggerContext()
         .setHostname(hostname)
         .setBasePath(basePath);
-    Swagger swagger = generator.writeSwagger(apiConfigs, true, swaggerContext);
+    Swagger swagger = generator.writeSwagger(apiConfigs, swaggerContext);
     String swaggerStr = Json.mapper().writer(new EndpointsPrettyPrinter())
         .writeValueAsString(swagger);
     if (outputToDisk) {

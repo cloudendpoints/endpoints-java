@@ -6,6 +6,12 @@
   },
   "host": "swagger-test.appspot.com",
   "basePath": "/api",
+  "tags": [
+    {
+      "name": "foo:v1",
+      "description": "Just Foo Things"
+    }
+  ],
   "schemes": [
     "https"
   ],
@@ -18,6 +24,9 @@
   "paths": {
     "/foo/v1/foos": {
       "get": {
+        "tags": [
+          "foo:v1"
+        ],
         "description": "list desc",
         "operationId": "FooV1ListFoos",
         "parameters": [
@@ -50,14 +59,21 @@
         },
         "security": [
           {
-            "google_id_token-3a26ea04": []
+            "google_id_token-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           },
           {
-            "google_id_token_https-3a26ea04": []
+            "google_id_token_legacy-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           }
         ]
       },
       "post": {
+        "tags": [
+          "foo:v1"
+        ],
         "operationId": "FooV1Toplevel",
         "parameters": [],
         "responses": {
@@ -70,16 +86,23 @@
         },
         "security": [
           {
-            "google_id_token-3a26ea04": []
+            "google_id_token-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           },
           {
-            "google_id_token_https-3a26ea04": []
+            "google_id_token_legacy-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           }
         ]
       }
     },
     "/foo/v1/foos/{id}": {
       "get": {
+        "tags": [
+          "foo:v1"
+        ],
         "description": "get desc",
         "operationId": "FooV1GetFoo",
         "parameters": [
@@ -101,14 +124,21 @@
         },
         "security": [
           {
-            "google_id_token-3a26ea04": []
+            "google_id_token-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           },
           {
-            "google_id_token_https-3a26ea04": []
+            "google_id_token_legacy-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           }
         ]
       },
       "post": {
+        "tags": [
+          "foo:v1"
+        ],
         "description": "update desc",
         "operationId": "FooV1UpdateFoo",
         "parameters": [
@@ -138,14 +168,21 @@
         },
         "security": [
           {
-            "google_id_token-3a26ea04": []
+            "google_id_token-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           },
           {
-            "google_id_token_https-3a26ea04": []
+            "google_id_token_legacy-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           }
         ]
       },
       "put": {
+        "tags": [
+          "foo:v1"
+        ],
         "description": "create desc",
         "operationId": "FooV1CreateFoo",
         "parameters": [
@@ -175,14 +212,21 @@
         },
         "security": [
           {
-            "google_id_token-3a26ea04": []
+            "google_id_token-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           },
           {
-            "google_id_token_https-3a26ea04": []
+            "google_id_token_legacy-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           }
         ]
       },
       "delete": {
+        "tags": [
+          "foo:v1"
+        ],
         "description": "delete desc",
         "operationId": "FooV1DeleteFoo",
         "parameters": [
@@ -204,10 +248,14 @@
         },
         "security": [
           {
-            "google_id_token-3a26ea04": []
+            "google_id_token-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           },
           {
-            "google_id_token_https-3a26ea04": []
+            "google_id_token_legacy-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
           }
         ]
       }
@@ -216,22 +264,36 @@
   "securityDefinitions": {
     "google_id_token-3a26ea04": {
       "type": "oauth2",
-      "authorizationUrl": "",
+      "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
       "flow": "implicit",
-      "x-google-issuer": "accounts.google.com",
+      "x-google-issuer": "https://accounts.google.com",
       "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
       "x-google-audiences": "audience"
     },
-    "google_id_token_https-3a26ea04": {
+    "google_id_token_legacy-3a26ea04": {
       "type": "oauth2",
-      "authorizationUrl": "",
+      "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
       "flow": "implicit",
-      "x-google-issuer": "https://accounts.google.com",
+      "x-google-issuer": "accounts.google.com",
       "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
       "x-google-audiences": "audience"
     }
   },
   "definitions": {
+    "CollectionResponse_FooDescription": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FooDescription"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
     "FooDescription": {
       "type": "object",
       "properties": {
@@ -251,20 +313,6 @@
           "type": "integer",
           "format": "int32",
           "description": "description of value"
-        }
-      }
-    },
-    "CollectionResponse_FooDescription": {
-      "type": "object",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FooDescription"
-          }
-        },
-        "nextPageToken": {
-          "type": "string"
         }
       }
     }

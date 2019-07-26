@@ -23,19 +23,19 @@ public class ApiIssuerConfigsTest {
   public void asMap() {
     assertThat(ApiIssuerConfigs.builder().build().asMap()).isEmpty();
     ApiIssuerConfigs configs = ApiIssuerConfigs.builder()
-        .addIssuer(new IssuerConfig("issuerName", "issuer", "jwks"))
+        .addIssuer(new IssuerConfig("issuerName", "issuer", "jwks", "authUrl", true))
         .build();
     assertThat(configs.asMap()).containsExactly(
-        "issuerName", new IssuerConfig("issuerName", "issuer", "jwks"));
+        "issuerName", new IssuerConfig("issuerName", "issuer", "jwks", "authUrl", true));
   }
 
   @Test
   public void equals() {
     ApiIssuerConfigs configs1 = ApiIssuerConfigs.builder()
-        .addIssuer(new IssuerConfig("issuerName", "issuer", "jwks"))
+        .addIssuer(new IssuerConfig("issuerName", "issuer", "jwks", "authUrl", true))
         .build();
     ApiIssuerConfigs configs2 = ApiIssuerConfigs.builder()
-        .addIssuer(new IssuerConfig("issuerName", "issuer", "jwks"))
+        .addIssuer(new IssuerConfig("issuerName", "issuer", "jwks", "authUrl", true))
         .build();
     assertThat(configs1).isEqualTo(configs2);
     assertThat(configs1).isNotEqualTo(ApiIssuerConfigs.UNSPECIFIED);

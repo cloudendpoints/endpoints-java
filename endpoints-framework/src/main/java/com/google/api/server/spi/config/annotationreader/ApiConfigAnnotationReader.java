@@ -31,19 +31,21 @@ import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.model.ApiClassConfig;
+import com.google.api.server.spi.config.model.ApiClassConfig.MethodConfigMap;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiIssuerAudienceConfig;
 import com.google.api.server.spi.config.model.ApiIssuerConfigs;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -158,15 +160,15 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     if (api != null) {
       readApi(new ApiAnnotationConfig(config), api);
       readApiAuth(new ApiAuthAnnotationConfig(config.getAuthConfig()),
-          (Annotation) getAnnotationProperty(api, "auth"));
+          getAnnotationProperty(api, "auth"));
       readApiFrontendLimits(new ApiFrontendLimitsAnnotationConfig(config.getFrontendLimitsConfig()),
-          (Annotation) getAnnotationProperty(api, "frontendLimits"));
+          getAnnotationProperty(api, "frontendLimits"));
       readApiCacheControl(new ApiCacheControlAnnotationConfig(config.getCacheControlConfig()),
-          (Annotation) getAnnotationProperty(api, "cacheControl"));
+          getAnnotationProperty(api, "cacheControl"));
       readApiNamespace(new ApiNamespaceAnnotationConfig(config.getNamespaceConfig()),
-          (Annotation) getAnnotationProperty(api, "namespace"));
+          getAnnotationProperty(api, "namespace"));
       readSerializers(config.getSerializationConfig(),
-          (Class<? extends Transformer<?, ?>>[]) getAnnotationProperty(api, "transformers"));
+          getAnnotationProperty(api, "transformers"));
     }
 
     if (apiClass != null) {
@@ -178,40 +180,40 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
 
   private void readApi(ApiAnnotationConfig config, Annotation api)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-    config.setIsAbstractIfSpecified((AnnotationBoolean) getAnnotationProperty(api, "isAbstract"));
-    config.setRootIfNotEmpty((String) getAnnotationProperty(api, "root"));
+    config.setIsAbstractIfSpecified(getAnnotationProperty(api, "isAbstract"));
+    config.setRootIfNotEmpty(getAnnotationProperty(api, "root"));
 
-    config.setNameIfNotEmpty((String) getAnnotationProperty(api, "name"));
-    config.setCanonicalNameIfNotEmpty((String) getAnnotationProperty(api, "canonicalName"));
+    config.setNameIfNotEmpty(getAnnotationProperty(api, "name"));
+    config.setCanonicalNameIfNotEmpty(getAnnotationProperty(api, "canonicalName"));
 
-    config.setVersionIfNotEmpty((String) getAnnotationProperty(api, "version"));
-    config.setTitleIfNotEmpty((String) getAnnotationProperty(api, "title"));
-    config.setDescriptionIfNotEmpty((String) getAnnotationProperty(api, "description"));
-    config.setDocumentationLinkIfNotEmpty((String) getAnnotationProperty(api, "documentationLink"));
+    config.setVersionIfNotEmpty(getAnnotationProperty(api, "version"));
+    config.setTitleIfNotEmpty(getAnnotationProperty(api, "title"));
+    config.setDescriptionIfNotEmpty(getAnnotationProperty(api, "description"));
+    config.setDocumentationLinkIfNotEmpty(getAnnotationProperty(api, "documentationLink"));
     config.setIsDefaultVersionIfSpecified(
-        (AnnotationBoolean) getAnnotationProperty(api, "defaultVersion"));
+        getAnnotationProperty(api, "defaultVersion"));
     config.setIsDiscoverableIfSpecified(
-        (AnnotationBoolean) getAnnotationProperty(api, "discoverable"));
+        getAnnotationProperty(api, "discoverable"));
     config.setUseDatastoreIfSpecified(
-        (AnnotationBoolean) getAnnotationProperty(api, "useDatastoreForAdditionalConfig"));
+        getAnnotationProperty(api, "useDatastoreForAdditionalConfig"));
 
-    config.setBackendRootIfNotEmpty((String) getAnnotationProperty(api, "backendRoot"));
+    config.setBackendRootIfNotEmpty(getAnnotationProperty(api, "backendRoot"));
 
-    config.setResourceIfNotEmpty((String) getAnnotationProperty(api, "resource"));
-    config.setAuthLevelIfSpecified((AuthLevel) getAnnotationProperty(api, "authLevel"));
-    config.setScopesIfSpecified((String[]) getAnnotationProperty(api, "scopes"));
-    config.setAudiencesIfSpecified((String[]) getAnnotationProperty(api, "audiences"));
+    config.setResourceIfNotEmpty(getAnnotationProperty(api, "resource"));
+    config.setAuthLevelIfSpecified(getAnnotationProperty(api, "authLevel"));
+    config.setScopesIfSpecified(getAnnotationProperty(api, "scopes"));
+    config.setAudiencesIfSpecified(getAnnotationProperty(api, "audiences"));
     config.setIssuersIfSpecified(getIssuerConfigs(api));
     config.setIssuerAudiencesIfSpecified(getIssuerAudiences(api));
-    config.setClientIdsIfSpecified((String[]) getAnnotationProperty(api, "clientIds"));
+    config.setClientIdsIfSpecified(getAnnotationProperty(api, "clientIds"));
     config.setAuthenticatorsIfSpecified(
         this.<Class<? extends Authenticator>[]>getAnnotationProperty(api, "authenticators"));
     config.setPeerAuthenticatorsIfSpecified(this
         .<Class<? extends PeerAuthenticator>[]>getAnnotationProperty(api, "peerAuthenticators"));
     config.setApiKeyRequiredIfSpecified(
-        (AnnotationBoolean) this.getAnnotationProperty(api, "apiKeyRequired"));
+        this.getAnnotationProperty(api, "apiKeyRequired"));
     config.setApiLimitMetrics(
-        (ApiLimitMetric[]) this.getAnnotationProperty(api, "limitDefinitions"));
+        this.getAnnotationProperty(api, "limitDefinitions"));
   }
 
   private ApiIssuerConfigs getIssuerConfigs(Annotation annotation)
@@ -239,22 +241,22 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
   protected void readApiAuth(ApiAuthAnnotationConfig config, Annotation auth)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
     config.setAllowCookieAuthIfSpecified(
-        (AnnotationBoolean) getAnnotationProperty(auth, "allowCookieAuth"));
-    config.setBlockedRegionsIfNotEmpty((String[]) getAnnotationProperty(auth, "blockedRegions"));
+        getAnnotationProperty(auth, "allowCookieAuth"));
+    config.setBlockedRegionsIfNotEmpty(getAnnotationProperty(auth, "blockedRegions"));
   }
 
   private void readApiFrontendLimits(ApiFrontendLimitsAnnotationConfig config,
       Annotation frontendLimits) throws NoSuchMethodException, IllegalAccessException,
           InvocationTargetException {
     config.setUnregisteredUserQpsIfSpecified(
-        (Integer) getAnnotationProperty(frontendLimits, "unregisteredUserQps"));
+        getAnnotationProperty(frontendLimits, "unregisteredUserQps"));
     config.setUnregisteredQpsIfSpecified(
-        (Integer) getAnnotationProperty(frontendLimits, "unregisteredQps"));
+        getAnnotationProperty(frontendLimits, "unregisteredQps"));
     config.setUnregisteredDailyIfSpecified(
-        (Integer) getAnnotationProperty(frontendLimits, "unregisteredDaily"));
+        getAnnotationProperty(frontendLimits, "unregisteredDaily"));
 
     readApiFrontendLimitRules(config,
-        (Annotation[]) getAnnotationProperty(frontendLimits, "rules"));
+        getAnnotationProperty(frontendLimits, "rules"));
   }
 
   private void readSerializers(
@@ -266,15 +268,15 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
 
   private void readApiCacheControl(ApiCacheControlAnnotationConfig config, Annotation cacheControl)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-    config.setTypeIfNotEmpty((String) getAnnotationProperty(cacheControl, "type"));
-    config.setMaxAgeIfSpecified((Integer) getAnnotationProperty(cacheControl, "maxAge"));
+    config.setTypeIfNotEmpty(getAnnotationProperty(cacheControl, "type"));
+    config.setMaxAgeIfSpecified(getAnnotationProperty(cacheControl, "maxAge"));
   }
 
   protected void readApiNamespace(ApiNamespaceAnnotationConfig config, Annotation namespace)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-    config.setOwnerDomainIfNotEmpty((String) getAnnotationProperty(namespace, "ownerDomain"));
-    config.setOwnerNameIfNotEmpty((String) getAnnotationProperty(namespace, "ownerName"));
-    config.setPackagePathIfNotEmpty((String) getAnnotationProperty(namespace, "packagePath"));
+    config.setOwnerDomainIfNotEmpty(getAnnotationProperty(namespace, "ownerDomain"));
+    config.setOwnerNameIfNotEmpty(getAnnotationProperty(namespace, "ownerName"));
+    config.setPackagePathIfNotEmpty(getAnnotationProperty(namespace, "packagePath"));
   }
 
   private void readApiFrontendLimitRules(ApiFrontendLimitsAnnotationConfig config,
@@ -282,9 +284,9 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
           InvocationTargetException {
     for (Annotation rule : rules) {
       String match = getAnnotationProperty(rule, "match");
-      int qps = (Integer) getAnnotationProperty(rule, "qps");
-      int userQps = (Integer) getAnnotationProperty(rule, "userQps");
-      int daily = (Integer) getAnnotationProperty(rule, "daily");
+      int qps = getAnnotationProperty(rule, "qps");
+      int userQps = getAnnotationProperty(rule, "userQps");
+      int daily = getAnnotationProperty(rule, "daily");
       String analyticsId = getAnnotationProperty(rule, "analyticsId");
       config.getConfig().addRule(match, qps, userQps, daily, analyticsId);
     }
@@ -292,20 +294,20 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
 
   private void readApiClass(ApiClassAnnotationConfig config, Annotation apiClass)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-    config.setResourceIfNotEmpty((String) getAnnotationProperty(apiClass, "resource"));
-    config.setAuthLevelIfSpecified((AuthLevel) getAnnotationProperty(apiClass, "authLevel"));
-    config.setScopesIfSpecified((String[]) getAnnotationProperty(apiClass, "scopes"));
-    config.setAudiencesIfSpecified((String[]) getAnnotationProperty(apiClass, "audiences"));
+    config.setResourceIfNotEmpty(getAnnotationProperty(apiClass, "resource"));
+    config.setAuthLevelIfSpecified(getAnnotationProperty(apiClass, "authLevel"));
+    config.setScopesIfSpecified(getAnnotationProperty(apiClass, "scopes"));
+    config.setAudiencesIfSpecified(getAnnotationProperty(apiClass, "audiences"));
     config.setIssuerAudiencesIfSpecified(getIssuerAudiences(apiClass));
-    config.setClientIdsIfSpecified((String[]) getAnnotationProperty(apiClass, "clientIds"));
+    config.setClientIdsIfSpecified(getAnnotationProperty(apiClass, "clientIds"));
     config.setAuthenticatorsIfSpecified(
         this.<Class<? extends Authenticator>[]>getAnnotationProperty(apiClass, "authenticators"));
     config.setPeerAuthenticatorsIfSpecified(this.<
         Class<? extends PeerAuthenticator>[]>getAnnotationProperty(apiClass, "peerAuthenticators"));
     config.setUseDatastoreIfSpecified(
-        (AnnotationBoolean) getAnnotationProperty(apiClass, "useDatastoreForAdditionalConfig"));
+        getAnnotationProperty(apiClass, "useDatastoreForAdditionalConfig"));
     config.setApiKeyRequiredIfSpecified(
-        (AnnotationBoolean) this.getAnnotationProperty(apiClass, "apiKeyRequired"));
+        this.getAnnotationProperty(apiClass, "apiKeyRequired"));
   }
 
   private void readEndpointMethods(Class<?> endpointClass,
@@ -313,55 +315,59 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
       throws IllegalArgumentException, SecurityException, IllegalAccessException,
           InvocationTargetException, NoSuchMethodException {
     MethodHierarchyReader methodReader = new MethodHierarchyReader(endpointClass);
-    Iterable<List<EndpointMethod>> methods = methodReader.getEndpointOverrides();
+    Iterable<Collection<EndpointMethod>> methods = methodReader.getEndpointOverrides();
 
-    for (List<EndpointMethod> overrides : methods) {
-      readEndpointMethod(methodConfigMap, overrides);
+    for (Collection<EndpointMethod> overrides : methods) {
+      readEndpointMethod(methodConfigMap, overrides,
+          endpointClass.getAnnotation(Deprecated.class) != null);
     }
   }
 
-  private void readEndpointMethod(ApiClassConfig.MethodConfigMap methodConfigMap,
-      List<EndpointMethod> overrides)
+  private void readEndpointMethod(MethodConfigMap methodConfigMap,
+      Collection<EndpointMethod> overrides, boolean deprecated)
       throws IllegalArgumentException, SecurityException, IllegalAccessException,
           InvocationTargetException, NoSuchMethodException {
     Class<? extends Annotation> apiMethodClass = annotationTypes.get("ApiMethod");
 
-    final EndpointMethod finalMethod = overrides.get(0);
+    final EndpointMethod finalMethod = overrides.iterator().next();
     ApiMethodConfig methodConfig = methodConfigMap.getOrCreate(finalMethod);
 
     readMethodRequestParameters(finalMethod, methodConfig);
 
     // Process overrides in reverse order.
-    for (EndpointMethod method : Lists.reverse(overrides)) {
+    for (EndpointMethod method : Lists.reverse(ImmutableList.copyOf(overrides))) {
+      ApiMethodAnnotationConfig config = new ApiMethodAnnotationConfig(methodConfig);
       Annotation apiMethod = method.getMethod().getAnnotation(apiMethodClass);
       if (apiMethod != null) {
-        readApiMethodInstance(new ApiMethodAnnotationConfig(methodConfig), apiMethod);
+        readApiMethodInstance(config, apiMethod);
       }
+      methodConfig.setDeprecated(deprecated 
+          || method.getMethod().getAnnotation(Deprecated.class) != null);
     }
   }
 
   private void readApiMethodInstance(ApiMethodAnnotationConfig config, Annotation apiMethod)
       throws IllegalArgumentException, SecurityException, IllegalAccessException,
           InvocationTargetException, NoSuchMethodException {
-    config.setNameIfNotEmpty((String) getAnnotationProperty(apiMethod, "name"));
-    config.setDescriptionIfNotEmpty((String) getAnnotationProperty(apiMethod, "description"));
-    config.setPathIfNotEmpty((String) getAnnotationProperty(apiMethod, "path"));
-    config.setHttpMethodIfNotEmpty((String) getAnnotationProperty(apiMethod, "httpMethod"));
-    config.setAuthLevelIfSpecified((AuthLevel) getAnnotationProperty(apiMethod, "authLevel"));
-    config.setScopesIfSpecified((String[]) getAnnotationProperty(apiMethod, "scopes"));
-    config.setAudiencesIfSpecified((String[]) getAnnotationProperty(apiMethod, "audiences"));
+    config.setNameIfNotEmpty(getAnnotationProperty(apiMethod, "name"));
+    config.setDescriptionIfNotEmpty(getAnnotationProperty(apiMethod, "description"));
+    config.setPathIfNotEmpty(getAnnotationProperty(apiMethod, "path"));
+    config.setHttpMethodIfNotEmpty(getAnnotationProperty(apiMethod, "httpMethod"));
+    config.setAuthLevelIfSpecified(getAnnotationProperty(apiMethod, "authLevel"));
+    config.setScopesIfSpecified(getAnnotationProperty(apiMethod, "scopes"));
+    config.setAudiencesIfSpecified(getAnnotationProperty(apiMethod, "audiences"));
     config.setIssuerAudiencesIfSpecified(getIssuerAudiences(apiMethod));
-    config.setClientIdsIfSpecified((String[]) getAnnotationProperty(apiMethod, "clientIds"));
+    config.setClientIdsIfSpecified(getAnnotationProperty(apiMethod, "clientIds"));
     config.setAuthenticatorsIfSpecified(
         this.<Class<? extends Authenticator>[]>getAnnotationProperty(apiMethod, "authenticators"));
     config.setPeerAuthenticatorsIfSpecified(this.<
         Class<? extends PeerAuthenticator>[]>getAnnotationProperty(apiMethod,
         "peerAuthenticators"));
-    config.setIgnoredIfSpecified((AnnotationBoolean) getAnnotationProperty(apiMethod, "ignored"));
+    config.setIgnoredIfSpecified(getAnnotationProperty(apiMethod, "ignored"));
     config.setApiKeyRequiredIfSpecified(
-        (AnnotationBoolean) this.getAnnotationProperty(apiMethod, "apiKeyRequired"));
+        this.getAnnotationProperty(apiMethod, "apiKeyRequired"));
     config.setMetricCosts(
-        (ApiMetricCost[]) getAnnotationProperty(apiMethod, "metricCosts"));
+        getAnnotationProperty(apiMethod, "metricCosts"));
   }
 
   private void readMethodRequestParameters(EndpointMethod endpointMethod,

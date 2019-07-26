@@ -15,7 +15,7 @@
  */
 package com.google.api.server.spi.config.model;
 
-import com.google.common.collect.ImmutableListMultimap;
+import com.google.api.server.spi.Constant;
 import com.google.common.collect.ImmutableMap;
 
 import com.google.common.collect.ImmutableSet;
@@ -51,8 +51,9 @@ public class ApiIssuerAudienceConfig {
     return issuerAudiences.isEmpty();
   }
 
-  public boolean hasIssuer(String issuer) {
-    return issuerAudiences.containsKey(issuer);
+  public boolean hasGoogleIssuer() {
+    return issuerAudiences.containsKey(Constant.GOOGLE_ID_TOKEN_NAME) 
+        || issuerAudiences.containsKey(Constant.GOOGLE_ID_TOKEN_ALT);
   }
 
   public ImmutableSet<String> getIssuerNames() {

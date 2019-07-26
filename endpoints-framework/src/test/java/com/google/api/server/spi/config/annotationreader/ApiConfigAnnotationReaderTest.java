@@ -105,6 +105,7 @@ import java.util.Map;
 
 /**
  * Tests for {@link ApiConfigAnnotationReader}.
+ * TODO test deprecation
  */
 @RunWith(JUnit4.class)
 public class ApiConfigAnnotationReaderTest {

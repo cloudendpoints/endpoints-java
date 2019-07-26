@@ -6,6 +6,11 @@
   },
   "host": "myapi.appspot.com",
   "basePath": "/_ah/api",
+  "tags": [
+    {
+      "name": "absolutepath:v1"
+    }
+  ],
   "schemes": [
     "https"
   ],
@@ -18,6 +23,9 @@
   "paths": {
     "/absolutepath/v1/absolutepathmethod": {
       "post": {
+        "tags": [
+          "absolutepath:v1"
+        ],
         "operationId": "AbsolutepathV1AbsolutePath",
         "parameters": [],
         "responses": {
@@ -29,6 +37,9 @@
     },
     "/absolutepath/v1/create": {
       "post": {
+        "tags": [
+          "absolutepath:v1"
+        ],
         "operationId": "AbsolutepathV1CreateFoo",
         "parameters": [],
         "responses": {

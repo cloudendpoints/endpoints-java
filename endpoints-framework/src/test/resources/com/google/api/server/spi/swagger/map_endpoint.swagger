@@ -6,6 +6,11 @@
   },
   "host": "myapi.appspot.com",
   "basePath": "/_ah/api",
+  "tags": [
+    {
+      "name": "myapi:v1"
+    }
+  ],
   "schemes": [
     "https"
   ],
@@ -18,13 +23,19 @@
   "paths": {
     "/myapi/v1/getDateTimeKeyMap": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetDateTimeKeyMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_DateTime_String"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -32,6 +43,9 @@
     },
     "/myapi/v1/getMapOfStrings": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetMapOfStrings",
         "parameters": [],
         "responses": {
@@ -46,13 +60,19 @@
     },
     "/myapi/v1/getStringCollectionMap": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetStringCollectionMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/JsonMap"
+              "type": "object",
+              "additionalProperties": {
+                "type": "object"
+              }
             }
           }
         }
@@ -60,13 +80,19 @@
     },
     "/myapi/v1/map_boolean_string": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetBooleanKeyMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_Boolean_String"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -74,13 +100,19 @@
     },
     "/myapi/v1/map_datetime_string": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetDateKeyMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_DateTime_String"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -88,13 +120,19 @@
     },
     "/myapi/v1/map_float_string": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetFloatKeyMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_Float_String"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -102,13 +140,19 @@
     },
     "/myapi/v1/map_integer_string": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetIntKeyMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_Integer_String"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -116,13 +160,19 @@
     },
     "/myapi/v1/map_long_string": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetLongKeyMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_Long_String"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -130,13 +180,19 @@
     },
     "/myapi/v1/map_string_baz": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetBazMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_String_Baz"
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/Baz"
+              }
             }
           }
         }
@@ -144,13 +200,19 @@
     },
     "/myapi/v1/map_string_foo": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetFooMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_String_Foo"
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/Foo"
+              }
             }
           }
         }
@@ -158,13 +220,20 @@
     },
     "/myapi/v1/map_string_integer": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetIntMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_String_Integer"
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "format": "int32"
+              }
             }
           }
         }
@@ -172,13 +241,22 @@
     },
     "/myapi/v1/map_string_map_string_foo": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetFooMapMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_String_Map_String_Foo"
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/definitions/Foo"
+                }
+              }
             }
           }
         }
@@ -186,13 +264,19 @@
     },
     "/myapi/v1/map_string_string": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetStringMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_String_String"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -200,13 +284,19 @@
     },
     "/myapi/v1/map_string_stringcollection": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetStringArrayMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/JsonMap"
+              "type": "object",
+              "additionalProperties": {
+                "type": "object"
+              }
             }
           }
         }
@@ -214,13 +304,19 @@
     },
     "/myapi/v1/map_string_stringvalue": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetStringValueMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_String_StringValue"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -228,13 +324,19 @@
     },
     "/myapi/v1/map_testenum_string": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetEnumKeyMap",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_TestEnum_String"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -242,6 +344,9 @@
     },
     "/myapi/v1/mapendpoint": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetMapService",
         "parameters": [],
         "responses": {
@@ -256,13 +361,20 @@
     },
     "/myapi/v1/mapsubclass": {
       "get": {
+        "tags": [
+          "myapi:v1"
+        ],
         "operationId": "MyapiV1GetMapSubclass",
         "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
             "schema": {
-              "$ref": "#/definitions/Map_Boolean_Integer"
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "format": "int32"
+              }
             }
           }
         }
@@ -270,91 +382,6 @@
     }
   },
   "definitions": {
-    "Map_Boolean_String": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "Map_Float_String": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "Foo": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
-    "Map_Integer_String": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "Map_TestEnum_String": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "Map_Boolean_Integer": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "integer",
-        "format": "int32"
-      }
-    },
-    "JsonMap": {
-      "type": "object"
-    },
-    "Map_String_StringValue": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "MapContainer": {
-      "type": "object",
-      "properties": {
-        "stringMap": {
-          "$ref": "#/definitions/Map_String_StringValue"
-        }
-      }
-    },
-    "Map_String_Integer": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "integer",
-        "format": "int32"
-      }
-    },
-    "Map_String_Baz": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Baz"
-      }
-    },
-    "Map_String_Map_String_Foo": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Map_String_Foo"
-      }
-    },
-    "Map_String_String": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
     "Baz": {
       "type": "object",
       "properties": {
@@ -369,47 +396,105 @@
         }
       }
     },
-    "Map_Long_String": {
+    "Foo": {
       "type": "object",
-      "additionalProperties": {
-        "type": "string"
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "JsonMap": {
+      "type": "object"
+    },
+    "MapContainer": {
+      "type": "object",
+      "properties": {
+        "stringMap": {
+          "type": "object",
+          "description": "A map of string values",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
       }
     },
     "MapEndpoint": {
       "type": "object",
       "properties": {
         "bazMap": {
-          "$ref": "#/definitions/Map_String_Baz"
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Baz"
+          }
         },
         "booleanKeyMap": {
-          "$ref": "#/definitions/Map_Boolean_String"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "dateKeyMap": {
-          "$ref": "#/definitions/Map_DateTime_String"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "dateTimeKeyMap": {
-          "$ref": "#/definitions/Map_DateTime_String"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "enumKeyMap": {
-          "$ref": "#/definitions/Map_TestEnum_String"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "floatKeyMap": {
-          "$ref": "#/definitions/Map_Float_String"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "fooMap": {
-          "$ref": "#/definitions/Map_String_Foo"
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Foo"
+          }
         },
         "fooMapMap": {
-          "$ref": "#/definitions/Map_String_Map_String_Foo"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/definitions/Foo"
+            }
+          }
         },
         "intKeyMap": {
-          "$ref": "#/definitions/Map_Integer_String"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "intMap": {
-          "$ref": "#/definitions/Map_String_Integer"
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
         },
         "longKeyMap": {
-          "$ref": "#/definitions/Map_Long_String"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "mapOfStrings": {
           "$ref": "#/definitions/MapContainer"
@@ -418,34 +503,37 @@
           "$ref": "#/definitions/MapEndpoint"
         },
         "mapSubclass": {
-          "$ref": "#/definitions/Map_Boolean_Integer"
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
         },
         "stringArrayMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
         },
         "stringCollectionMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
         },
         "stringMap": {
-          "$ref": "#/definitions/Map_String_String"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "stringValueMap": {
-          "$ref": "#/definitions/Map_String_StringValue"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
-      }
-    },
-    "Map_String_Foo": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/Foo"
-      }
-    },
-    "Map_DateTime_String": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
       }
     }
   }
 }
-

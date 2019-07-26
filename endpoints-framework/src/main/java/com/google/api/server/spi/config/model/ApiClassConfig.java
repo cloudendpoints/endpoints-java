@@ -174,7 +174,7 @@ public class ApiClassConfig {
   public void setIssuerAudiences(ApiIssuerAudienceConfig issuerAudiences) {
     Preconditions.checkNotNull(issuerAudiences, "issuerAudiences should never be null");
     this.issuerAudiences = issuerAudiences;
-    if (issuerAudiences.hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME)) {
+    if (issuerAudiences.hasGoogleIssuer()) {
       getApiConfig().ensureGoogleIssuer();
     }
   }

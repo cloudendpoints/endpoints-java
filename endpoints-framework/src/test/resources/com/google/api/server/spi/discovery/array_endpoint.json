@@ -211,6 +211,218 @@
           "scopes": [
             "https://www.googleapis.com/auth/userinfo.email"
           ]
+        },
+        "setListOfBooleans": {
+          "httpMethod": "POST",
+          "id": "myapi.arrayEndpoint.setListOfBooleans",
+          "parameterOrder": [
+            "list",
+            "array"
+          ],
+          "parameters": {
+            "list": {
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "boolean"
+            },
+            "array": {
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "boolean"
+            }
+          },
+          "path": "setListOfBooleans/{list}/{array}",
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "setListOfByteArrays": {
+          "httpMethod": "POST",
+          "id": "myapi.arrayEndpoint.setListOfByteArrays",
+          "parameterOrder": [
+            "list",
+            "array"
+          ],
+          "parameters": {
+            "list": {
+              "format": "byte",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "string"
+            },
+            "array": {
+              "format": "byte",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "setListOfByteArrays/{list}/{array}",
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "setListOfDoubles": {
+          "httpMethod": "POST",
+          "id": "myapi.arrayEndpoint.setListOfDoubles",
+          "parameterOrder": [
+            "list",
+            "array"
+          ],
+          "parameters": {
+            "list": {
+              "format": "double",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "number"
+            },
+            "array": {
+              "format": "double",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "number"
+            }
+          },
+          "path": "setListOfDoubles/{list}/{array}",
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "setListOfEnums": {
+          "httpMethod": "POST",
+          "id": "myapi.arrayEndpoint.setListOfEnums",
+          "parameterOrder": [
+            "list"
+          ],
+          "parameters": {
+            "list": {
+              "enum": [
+                "VALUE1",
+                "value_2"
+              ],
+              "enumDescriptions": [
+                "",
+                ""
+              ],
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "setListOfEnums/{list}",
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "setListOfFloats": {
+          "httpMethod": "POST",
+          "id": "myapi.arrayEndpoint.setListOfFloats",
+          "parameterOrder": [
+            "list",
+            "array"
+          ],
+          "parameters": {
+            "list": {
+              "format": "float",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "number"
+            },
+            "array": {
+              "format": "float",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "number"
+            }
+          },
+          "path": "setListOfFloats/{list}/{array}",
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "setListOfIntegers": {
+          "httpMethod": "POST",
+          "id": "myapi.arrayEndpoint.setListOfIntegers",
+          "parameterOrder": [
+            "list",
+            "array"
+          ],
+          "parameters": {
+            "list": {
+              "format": "int32",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "integer"
+            },
+            "array": {
+              "format": "int32",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "integer"
+            }
+          },
+          "path": "setListOfIntegers/{list}/{array}",
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "setListOfLongs": {
+          "httpMethod": "POST",
+          "id": "myapi.arrayEndpoint.setListOfLongs",
+          "parameterOrder": [
+            "list",
+            "array"
+          ],
+          "parameters": {
+            "list": {
+              "format": "int64",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "string"
+            },
+            "array": {
+              "format": "int64",
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "setListOfLongs/{list}/{array}",
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
+        },
+        "setListOfString": {
+          "httpMethod": "POST",
+          "id": "myapi.arrayEndpoint.setListOfString",
+          "parameterOrder": [
+            "list"
+          ],
+          "parameters": {
+            "list": {
+              "location": "path",
+              "repeated": true,
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "setListOfString/{list}",
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
         }
       }
     }
@@ -274,6 +486,12 @@
         },
         "integersResponse": {
           "$ref": "CollectionResponse_Integer"
+        },
+        "listOfEnums": {
+          "items": {
+            "$ref": "TestEnum"
+          },
+          "type": "array"
         },
         "listOfString": {
           "$ref": "ListContainer"
@@ -437,6 +655,18 @@
         }
       },
       "type": "object"
+    },
+    "TestEnum": {
+      "enum": [
+        "VALUE1",
+        "value_2"
+      ],
+      "enumDescriptions": [
+        "",
+        ""
+      ],
+      "id": "TestEnum",
+      "type": "string"
     }
   },
   "servicePath": "myapi/v1/",

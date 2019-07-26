@@ -32,6 +32,7 @@ import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.FieldType;
 import com.google.api.server.spi.config.model.Schema;
 import com.google.api.server.spi.config.model.Schema.Field;
+import com.google.api.server.spi.config.model.Schema.SchemaReference;
 import com.google.api.server.spi.config.model.SchemaRepository;
 import com.google.api.server.spi.config.model.Types;
 import com.google.api.server.spi.config.validation.ApiConfigValidator;
@@ -46,6 +47,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -53,12 +56,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import io.swagger.models.ExternalDocs;
 import io.swagger.models.Info;
 import io.swagger.models.Model;
 import io.swagger.models.ModelImpl;
@@ -68,10 +74,12 @@ import io.swagger.models.RefModel;
 import io.swagger.models.Response;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
+import io.swagger.models.Tag;
 import io.swagger.models.auth.ApiKeyAuthDefinition;
 import io.swagger.models.auth.In;
 import io.swagger.models.auth.OAuth2Definition;
 import io.swagger.models.auth.SecuritySchemeDefinition;
+import io.swagger.models.parameters.AbstractSerializableParameter;
 import io.swagger.models.parameters.BodyParameter;
 import io.swagger.models.parameters.PathParameter;
 import io.swagger.models.parameters.QueryParameter;
@@ -85,7 +93,10 @@ import io.swagger.models.properties.DoubleProperty;
 import io.swagger.models.properties.FloatProperty;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.LongProperty;
+import io.swagger.models.properties.MapProperty;
+import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
+import io.swagger.models.properties.PropertyBuilder;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.StringProperty;
 
@@ -162,6 +173,10 @@ public class SwaggerGenerator {
           .put(FieldType.INT64, LongProperty.class)
           .put(FieldType.STRING, StringProperty.class)
           .build();
+  //expected "additionalProperties: true" for free-from objects is not possible with Java API
+  //using an object property with empty properties is semantically identical
+  private static final ObjectProperty FREE_FORM_PROPERTY = new ObjectProperty()
+      .properties(Collections.emptyMap());
 
   private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
       new Function<ApiConfig, ApiKey>() {
@@ -171,14 +186,13 @@ public class SwaggerGenerator {
         }
       };
 
-  public Swagger writeSwagger(Iterable<ApiConfig> configs, boolean writeInternal,
-      SwaggerContext context) throws ApiConfigException {
+  public Swagger writeSwagger(Iterable<ApiConfig> configs, SwaggerContext context)
+      throws ApiConfigException {
     try {
       TypeLoader typeLoader = new TypeLoader(SwaggerGenerator.class.getClassLoader());
       SchemaRepository repo = new SchemaRepository(typeLoader);
       GenerationContext genCtx = new GenerationContext();
       genCtx.validator = new ApiConfigValidator(typeLoader, repo);
-      genCtx.writeInternal = writeInternal;
       genCtx.schemata = new SchemaRepository(typeLoader);
       return writeSwagger(configs, context, genCtx);
     } catch (ClassNotFoundException e) {
@@ -203,6 +217,12 @@ public class SwaggerGenerator {
     for (ApiKey apiKey : configsByKey.keySet()) {
       writeApi(apiKey, configsByKey.get(apiKey), swagger, genCtx);
     }
+    //reorder paths by string order to have consistent output
+    Builder<String, Path> builder = ImmutableSortedMap.naturalOrder();
+    for (Entry<String, Path> pathEntry : swagger.getPaths().entrySet()) {
+      builder.put(pathEntry);
+    }
+    swagger.paths(builder.build());
     writeQuotaDefinitions(swagger, genCtx);
     return swagger;
   }
@@ -244,13 +264,32 @@ public class SwaggerGenerator {
         addNonConflictingApiLimitMetric(genCtx.limitMetrics, limitMetric);
       }
       writeApiClass(apiConfig, swagger, genCtx);
+      swagger.tag(getTag(apiConfig));
     }
     List<Schema> schemas = genCtx.schemata.getAllSchemaForApi(apiKey);
     for (Schema schema : schemas) {
-      if (schema.enumValues().isEmpty()) {
+      if (isNotInlined(schema)) {
         getOrCreateDefinitionMap(swagger).put(schema.name(), convertToSwaggerSchema(schema));
       }
     }
+  }
+
+  //enum and map schemas are inlined, shouldn't be in the model definitions
+  private boolean isNotInlined(Schema schema) {
+    return schema.enumValues().isEmpty() && schema.mapValueSchema() == null;
+  }
+
+  private Tag getTag(ApiConfig apiConfig) {
+    Tag tag = new Tag().name(getTagName(apiConfig));
+    String description = apiConfig.getDescription();
+    if (!Strings.isEmptyOrWhitespace(description)) {
+      tag.description(description);
+    }
+    String documentationLink = apiConfig.getDocumentationLink();
+    if (!Strings.isEmptyOrWhitespace(documentationLink)) {
+      tag.externalDocs(new ExternalDocs().url(documentationLink));
+    }
+    return tag;
   }
 
   private void addNonConflictingApiLimitMetric(
@@ -282,21 +321,28 @@ public class SwaggerGenerator {
     Path path = getOrCreatePath(swagger, methodConfig);
     Operation operation = new Operation();
     operation.setOperationId(getOperationId(apiConfig, methodConfig));
+    operation.setTags(Collections.singletonList(getTagName(apiConfig)));
     operation.setDescription(methodConfig.getDescription());
+    operation.setDeprecated(methodConfig.isDeprecated() ? true : null);
     Collection<String> pathParameters = methodConfig.getPathParameters();
     for (ApiParameterConfig parameterConfig : methodConfig.getParameterConfigs()) {
       switch (parameterConfig.getClassification()) {
         case API_PARAMETER:
           boolean isPathParameter = pathParameters.contains(parameterConfig.getName());
-          SerializableParameter parameter =
+          AbstractSerializableParameter parameter =
               isPathParameter ? new PathParameter() : new QueryParameter();
           parameter.setName(parameterConfig.getName());
           parameter.setDescription(parameterConfig.getDescription());
+          String defaultValue = parameterConfig.getDefaultValue();
+          if (!Strings.isEmptyOrWhitespace(defaultValue)) {
+            parameter.setDefaultValue(defaultValue);
+          }
           boolean required = isPathParameter || (!parameterConfig.getNullable()
-              && parameterConfig.getDefaultValue() == null);
+              && defaultValue == null);
           if (parameterConfig.isRepeated()) {
             TypeToken<?> t = parameterConfig.getRepeatedItemSerializedType();
             parameter.setType("array");
+            parameter.setCollectionFormat("multi");
             Property p = getSwaggerArrayProperty(t);
             if (parameterConfig.isEnum()) {  // TODO: Not sure if this is the right check
               ((StringProperty) p).setEnum(getEnumValues(t));
@@ -320,7 +366,7 @@ public class SwaggerGenerator {
           Schema schema = genCtx.schemata.getOrAdd(requestType, apiConfig);
           BodyParameter bodyParameter = new BodyParameter();
           bodyParameter.setName("body");
-          bodyParameter.setSchema(new RefModel(schema.name()).asDefault(schema.name()));
+          bodyParameter.setSchema(getSchema(schema));
           operation.addParameter(bodyParameter);
           break;
         case UNKNOWN:
@@ -334,7 +380,7 @@ public class SwaggerGenerator {
       TypeToken<?> returnType =
           ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), apiConfig);
       Schema schema = genCtx.schemata.getOrAdd(returnType, apiConfig);
-      response.setResponseSchema(new RefModel(schema.name()).asDefault(schema.name()));
+      response.setResponseSchema(getSchema(schema));
     }
     operation.response(200, response);
     writeAuthConfig(swagger, methodConfig, operation);
@@ -359,6 +405,17 @@ public class SwaggerGenerator {
     addDefinedMetricCosts(genCtx.limitMetrics, operation, methodConfig.getMetricCosts());
   }
 
+  private Model getSchema(Schema schema) {
+    if (SchemaRepository.isJsonMapSchema(schema)) {
+      return new ModelImpl().additionalProperties(FREE_FORM_PROPERTY);
+    }
+    Field mapField = schema.mapValueSchema();
+    if (mapField != null) {
+      return new ModelImpl().additionalProperties(convertToSwaggerProperty(mapField));
+    }
+    return new RefModel(schema.name()).asDefault(schema.name());
+  }
+
   private void writeAuthConfig(Swagger swagger, ApiMethodConfig methodConfig, Operation operation)
       throws ApiConfigException {
     ApiIssuerAudienceConfig issuerAudiences = methodConfig.getIssuerAudiences();
@@ -368,12 +425,15 @@ public class SwaggerGenerator {
     if (issuerAudiencesIsEmpty && legacyAudiencesIsEmpty) {
       return;
     }
+    ImmutableList<String> scopes = ImmutableList
+        .copyOf(methodConfig.getScopeExpression().getAllScopes());
     if (!issuerAudiencesIsEmpty) {
       for (String issuer : issuerAudiences.getIssuerNames()) {
         ImmutableSet<String> audiences = issuerAudiences.getAudiences(issuer);
         IssuerConfig issuerConfig = methodConfig.getApiConfig().getIssuers().getIssuer(issuer);
         String fullIssuer = addNonConflictingSecurityDefinition(swagger, issuerConfig, audiences);
-        operation.addSecurity(fullIssuer, ImmutableList.<String>of());
+        operation.addSecurity(fullIssuer, issuerConfig.isUseScopesInAuthFlow() ? scopes : 
+            Collections.emptyList());
       }
     }
     if (!legacyAudiencesIsEmpty) {
@@ -382,8 +442,8 @@ public class SwaggerGenerator {
           swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER, legacyAudienceSet);
       String fullAltIssuer = addNonConflictingSecurityDefinition(
           swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT, legacyAudienceSet);
-      operation.addSecurity(fullIssuer, ImmutableList.<String>of());
-      operation.addSecurity(fullAltIssuer, ImmutableList.<String>of());
+      operation.addSecurity(fullIssuer, scopes);
+      operation.addSecurity(fullAltIssuer, scopes);
     }
   }
 
@@ -412,6 +472,7 @@ public class SwaggerGenerator {
       }
       docSchema.setProperties(fields);
     }
+    //map schema should be inlined, but handling anyway 
     if (schema.mapValueSchema() != null) {
       docSchema.setAdditionalProperties(convertToSwaggerProperty(schema.mapValueSchema()));
     }
@@ -428,13 +489,18 @@ public class SwaggerGenerator {
         //cannot happen, as Property subclasses are guaranteed to have a default constructor
       }
     } else {
+      SchemaReference schemaReference = f.schemaReference();
       if (f.type() == FieldType.OBJECT) {
-        String name = f.schemaReference().get().name();
-        p = new RefProperty(name).asDefault(name);
+        if (schemaReference.type().isSubtypeOf(Map.class)) {
+          p = inlineMapProperty(schemaReference);
+        } else {
+          String name = schemaReference.get().name();
+          p = new RefProperty(name).asDefault(name);
+        }
       } else if (f.type() == FieldType.ARRAY) {
         p = new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
       } else if (f.type() == FieldType.ENUM) {
-        p = new StringProperty()._enum(getEnumValues(f.schemaReference().type()));
+        p = new StringProperty()._enum(getEnumValues(schemaReference.type()));
       }
     }
     if (p == null) {
@@ -447,10 +513,30 @@ public class SwaggerGenerator {
     return p;
   }
 
+  private MapProperty inlineMapProperty(SchemaReference schemaReference) {
+    Schema schema = schemaReference.repository()
+        .get(schemaReference.type(), schemaReference.apiConfig());
+    Field mapField = schema.mapValueSchema();
+    if (SchemaRepository.isJsonMapSchema(schema)
+      || mapField == null) { //map field should not be null for non-JsonMap schema, handling anyway
+      return new MapProperty(FREE_FORM_PROPERTY);
+    }
+    return new MapProperty(convertToSwaggerProperty(mapField));
+  }
+
+  private static String getTagName(ApiConfig apiConfig) {
+    String tag = apiConfig.getName() + ":" + apiConfig.getVersion();
+    String resource = apiConfig.getApiClassConfig().getResource();
+    if (!Strings.isEmptyOrWhitespace(resource)) {
+      tag += "." + CONVERTER.convert(resource);
+    }
+    return tag;
+  }
+
   private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig) {
     return FluentIterable.of(apiConfig.getName(), apiConfig.getVersion(),
-        apiConfig.getResource(), apiConfig.getApiClassConfig().getResource(),
-        methodConfig.getEndpointMethodName()).transform(CONVERTER).join(JOINER);
+        apiConfig.getApiClassConfig().getResource(), methodConfig.getEndpointMethodName())
+        .transform(CONVERTER).join(JOINER);
   }
 
   private static Property getSwaggerArrayProperty(TypeToken<?> typeToken) {
@@ -468,7 +554,10 @@ public class SwaggerGenerator {
     } else if (type == Double.class || type == Double.TYPE) {
       return new DoubleProperty();
     } else if (type == byte[].class) {
-      return new ByteArrayProperty();
+      ByteArrayProperty property = new ByteArrayProperty();
+      //this will add a base64 pattern to the property
+      return PropertyBuilder.build(property.getType(), property.getFormat(),
+          Collections.emptyMap());
     } else if (type.isEnum()) {
       return new StringProperty();
     }
@@ -491,7 +580,8 @@ public class SwaggerGenerator {
 
   private static SecuritySchemeDefinition toScheme(
       IssuerConfig issuerConfig, ImmutableSet<String> audiences) {
-    OAuth2Definition tokenDef = new OAuth2Definition().implicit("");
+    OAuth2Definition tokenDef = new OAuth2Definition()
+        .implicit(issuerConfig.getAuthorizationUrl());
     tokenDef.setVendorExtension("x-google-issuer", issuerConfig.getIssuer());
     if (!com.google.common.base.Strings.isNullOrEmpty(issuerConfig.getJwksUri())) {
       tokenDef.setVendorExtension("x-google-jwks_uri", issuerConfig.getJwksUri());
@@ -535,6 +625,7 @@ public class SwaggerGenerator {
     return issuerPlusHash;
   }
 
+  //TODO add title and description
   public static class SwaggerContext {
     private Scheme scheme = Scheme.HTTPS;
     private String hostname = "myapi.appspot.com";
@@ -581,7 +672,6 @@ public class SwaggerGenerator {
   private static class GenerationContext {
     private final Map<String, ApiLimitMetricConfig> limitMetrics = new TreeMap<>();
     private ApiConfigValidator validator;
-    private boolean writeInternal;
     private SchemaRepository schemata;
   }
 }

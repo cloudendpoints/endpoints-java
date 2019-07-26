@@ -15,16 +15,20 @@
  */
 package com.google.api.server.spi;
 
+import com.google.api.server.spi.EndpointMethod.ResolvedSignature;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +46,7 @@ public class MethodHierarchyReader {
   private final Class<?> endpointClass;
   // Map from method signatures to a list of method overrides for that signature (ordered
   // subclass -> superclass).
-  private ListMultimap<EndpointMethod.ResolvedSignature, EndpointMethod> endpointMethods;
+  private Multimap<ResolvedSignature, EndpointMethod> endpointMethods;
 
   /**
    * Constructs a {@code MethodHierarchyReader} for the given class type.
@@ -60,8 +64,8 @@ public class MethodHierarchyReader {
 
   private void readMethodHierarchyIfNecessary() {
     if (endpointMethods == null) {
-      ImmutableListMultimap.Builder<EndpointMethod.ResolvedSignature, EndpointMethod> builder =
-          ImmutableListMultimap.builder();
+      ImmutableMultimap.Builder<EndpointMethod.ResolvedSignature, EndpointMethod> builder =
+          ImmutableMultimap.builder();
       buildServiceMethods(builder, TypeToken.of(endpointClass));
       endpointMethods = builder.build();
     }
@@ -72,24 +76,10 @@ public class MethodHierarchyReader {
    *
    * @param overrides A list of method overrides ordered subclass -> superclass.
    */
-  private EndpointMethod getLeafMethod(List<EndpointMethod> overrides) {
+  private EndpointMethod getLeafMethod(Collection<EndpointMethod> overrides) {
     // Because the list is ordered subclass -> superclass, index 0 will always contain the leaf
     // subclass implementation.
-    return overrides.get(0);
-  }
-
-  /**
-   * Returns {@link ListMultimap#asMap multimap.asMap()}, with its type
-   * corrected from {@code Map<K, Collection<V>>} to {@code Map<K, List<V>>}.
-   */
-  // Copied from com.google.common.collect.Multimaps.  We can't use the actual method from
-  // that class as appengine build magic gives us an older version of guava that doesn't yet have
-  // this method.
-  // TODO: Switch to Multimaps.asMap() once it becomes available in appengine.
-  @SuppressWarnings("unchecked")
-  // safe by specification of ListMultimap.asMap()
-  private static <K, V> Map<K, List<V>> asMap(ListMultimap<K, V> multimap) {
-    return (Map<K, List<V>>) (Map<K, ?>) multimap.asMap();
+    return overrides.iterator().next();
   }
 
   /**
@@ -99,7 +89,7 @@ public class MethodHierarchyReader {
   public Iterable<Method> getLeafMethods() {
     readMethodHierarchyIfNecessary();
     ImmutableList.Builder<Method> builder = ImmutableList.builder();
-    for (List<EndpointMethod> overrides : asMap(endpointMethods).values()) {
+    for (Collection<EndpointMethod> overrides : endpointMethods.asMap().values()) {
       builder.add(getLeafMethod(overrides).getMethod());
     }
     return builder.build();
@@ -113,7 +103,7 @@ public class MethodHierarchyReader {
   public Iterable<EndpointMethod> getLeafEndpointMethods() {
     readMethodHierarchyIfNecessary();
     ImmutableList.Builder<EndpointMethod> builder = ImmutableList.builder();
-    for (List<EndpointMethod> overrides : asMap(endpointMethods).values()) {
+    for (Collection<EndpointMethod> overrides : endpointMethods.asMap().values()) {
       builder.add(getLeafMethod(overrides));
     }
     return builder.build();
@@ -127,7 +117,7 @@ public class MethodHierarchyReader {
   public Iterable<List<Method>> getMethodOverrides() {
     readMethodHierarchyIfNecessary();
     ImmutableList.Builder<List<Method>> builder = ImmutableList.builder();
-    for (List<EndpointMethod> overrides : asMap(endpointMethods).values()) {
+    for (Collection<EndpointMethod> overrides : endpointMethods.asMap().values()) {
       ImmutableList.Builder<Method> methodBuilder = ImmutableList.builder();
       for (EndpointMethod method : overrides) {
         methodBuilder.add(method.getMethod());
@@ -142,9 +132,9 @@ public class MethodHierarchyReader {
    * Bridge methods are ignored.  For each method, all valid method implementations are included,
    * ordered subclass to superclass.  Methods are stored in the EndpointMethod container.
    */
-  public Iterable<List<EndpointMethod>> getEndpointOverrides() {
+  public Iterable<Collection<EndpointMethod>> getEndpointOverrides() {
     readMethodHierarchyIfNecessary();
-    return asMap(endpointMethods).values();
+    return endpointMethods.asMap().values();
   }
 
   /**
@@ -155,7 +145,7 @@ public class MethodHierarchyReader {
   public Map<String, Method> getNameToLeafMethodMap() {
     readMethodHierarchyIfNecessary();
     ImmutableMap.Builder<String, Method> builder = ImmutableMap.builder();
-    for (List<EndpointMethod> overrides : asMap(endpointMethods).values()) {
+    for (Collection<EndpointMethod> overrides : endpointMethods.asMap().values()) {
       Method leafMethod = getLeafMethod(overrides).getMethod();
       builder.put(leafMethod.getName(), leafMethod);
     }
@@ -170,7 +160,7 @@ public class MethodHierarchyReader {
   public ListMultimap<String, EndpointMethod> getNameToEndpointOverridesMap() {
     readMethodHierarchyIfNecessary();
     ImmutableListMultimap.Builder<String, EndpointMethod> builder = ImmutableListMultimap.builder();
-    for (List<EndpointMethod> overrides : asMap(endpointMethods).values()) {
+    for (Collection<EndpointMethod> overrides : endpointMethods.asMap().values()) {
       builder.putAll(getLeafMethod(overrides).getMethod().getName(), overrides);
     }
     return builder.build();
@@ -183,13 +173,14 @@ public class MethodHierarchyReader {
    * @param serviceType is the class object being inspected for service methods
    */
   private void buildServiceMethods(
-      ImmutableListMultimap.Builder<EndpointMethod.ResolvedSignature, EndpointMethod> builder,
+      ImmutableMultimap.Builder<EndpointMethod.ResolvedSignature, EndpointMethod> builder,
       TypeToken<?> serviceType) {
     for (TypeToken<?> typeToken : serviceType.getTypes().classes()) {
       Class<?> serviceClass = typeToken.getRawType();
       if (Object.class.equals(serviceClass)) {
         return;
       }
+      //getDeclaredMethods returns methods in random order, so must not assume any specific order
       for (Method method : serviceClass.getDeclaredMethods()) {
         if (!isServiceMethod(method)) {
           continue;

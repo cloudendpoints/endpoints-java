@@ -280,4 +280,9 @@ public class SchemaRepository {
       builder.setArrayItemSchema(arrayItemBuilder.build());
     }
   }
+  
+  public static boolean isJsonMapSchema(Schema schema) {
+    return schema == MAP_SCHEMA;
+  }
+  
 }

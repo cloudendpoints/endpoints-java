@@ -10,14 +10,19 @@ import java.util.Objects;
  */
 public class ApiIssuerConfigs {
   static final String UNSPECIFIED_NAME = "_unspecified_issuer_name";
+
+  //according to https://developers.google.com/identity/protocols/OpenIDConnect#server-flow
+  //issuer can be either with or without https:// prefix
   public static final IssuerConfig GOOGLE_ID_TOKEN_ISSUER = new IssuerConfig(
-      Constant.GOOGLE_ID_TOKEN_NAME, "accounts.google.com",
-      "https://www.googleapis.com/oauth2/v1/certs");
+      Constant.GOOGLE_ID_TOKEN_NAME, "https://accounts.google.com",
+      Constant.GOOGLE_JWKS_URI,
+      Constant.GOOGLE_AUTH_URL, true);
   public static final IssuerConfig GOOGLE_ID_TOKEN_ISSUER_ALT = new IssuerConfig(
-      Constant.GOOGLE_ID_TOKEN_NAME_HTTPS, "https://accounts.google.com",
-      "https://www.googleapis.com/oauth2/v1/certs");
+      Constant.GOOGLE_ID_TOKEN_ALT, "accounts.google.com",
+      Constant.GOOGLE_JWKS_URI,
+      Constant.GOOGLE_AUTH_URL, true);
   public static final ApiIssuerConfigs UNSPECIFIED = builder()
-      .addIssuer(new IssuerConfig(UNSPECIFIED_NAME, null, null))
+      .addIssuer(new IssuerConfig(UNSPECIFIED_NAME, null, null, "", false))
       .build();
   public static final ApiIssuerConfigs EMPTY = builder().build();
   private final ImmutableMap<String, IssuerConfig> issuerConfigs;
@@ -43,8 +48,7 @@ public class ApiIssuerConfigs {
   }
 
   public ApiIssuerConfigs withGoogleIdToken() {
-    if (hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME) 
-        && hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME_HTTPS)) {
+    if (hasIssuer(Constant.GOOGLE_ID_TOKEN_NAME) && hasIssuer(Constant.GOOGLE_ID_TOKEN_ALT)) {
       return this;
     }
     Builder builder = builder();
@@ -74,11 +78,16 @@ public class ApiIssuerConfigs {
     private final String name;
     private final String issuer;
     private final String jwksUri;
+    private final String authorizationUrl;
+    private final boolean useScopesInAuthFlow;
 
-    public IssuerConfig(String name, String issuer, String jwksUri) {
+    public IssuerConfig(String name, String issuer, String jwksUri, String authorizationUrl, 
+        boolean useScopesInAuthFlow) {
       this.name = name;
       this.issuer = issuer;
       this.jwksUri = jwksUri;
+      this.authorizationUrl = authorizationUrl;
+      this.useScopesInAuthFlow = useScopesInAuthFlow;
     }
 
     public String getName() {
@@ -93,12 +102,22 @@ public class ApiIssuerConfigs {
       return jwksUri;
     }
 
+    public String getAuthorizationUrl() {
+      return authorizationUrl;
+    }
+
+    public boolean isUseScopesInAuthFlow() {
+      return useScopesInAuthFlow;
+    }
+
     @Override
     public boolean equals(Object o) {
       return o != null && o instanceof IssuerConfig
           && Objects.equals(name, ((IssuerConfig) o).name)
           && Objects.equals(issuer, ((IssuerConfig) o).issuer)
-          && Objects.equals(jwksUri, ((IssuerConfig) o).jwksUri);
+          && Objects.equals(jwksUri, ((IssuerConfig) o).jwksUri)
+          && Objects.equals(authorizationUrl, ((IssuerConfig) o).authorizationUrl)
+          && Objects.equals(useScopesInAuthFlow, ((IssuerConfig) o).useScopesInAuthFlow);
     }
 
     @Override

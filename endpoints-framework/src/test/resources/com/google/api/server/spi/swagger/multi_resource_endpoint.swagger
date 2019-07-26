@@ -6,6 +6,17 @@
   },
   "host": "swagger-test.appspot.com",
   "basePath": "/api",
+  "tags": [
+    {
+      "name": "multiresource:v1"
+    },
+    {
+      "name": "multiresource:v1.Resource1"
+    },
+    {
+      "name": "multiresource:v1.Resource2"
+    }
+  ],
   "schemes": [
     "https"
   ],
@@ -18,6 +29,9 @@
   "paths": {
     "/multiresource/v1/noresource": {
       "get": {
+        "tags": [
+          "multiresource:v1"
+        ],
         "operationId": "MultiresourceV1Get",
         "parameters": [],
         "responses": {
@@ -32,6 +46,9 @@
     },
     "/multiresource/v1/resource1": {
       "get": {
+        "tags": [
+          "multiresource:v1.Resource1"
+        ],
         "operationId": "MultiresourceV1Resource1Get",
         "parameters": [],
         "responses": {
@@ -46,6 +63,9 @@
     },
     "/multiresource/v1/resource2": {
       "get": {
+        "tags": [
+          "multiresource:v1.Resource2"
+        ],
         "operationId": "MultiresourceV1Resource2Get",
         "parameters": [],
         "responses": {

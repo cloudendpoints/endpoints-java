@@ -35,6 +35,7 @@ import org.junit.runners.JUnit4;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +85,7 @@ public class MethodHierarchyReaderTest {
     }
   }
 
-  private void verifyOverrides(Method method, List<EndpointMethod> overrides) {
+  private void verifyOverrides(Method method, Collection<EndpointMethod> overrides) {
     TestEndpoint.ExpectedMethod expectedMethod =
         TestEndpoint.ExpectedMethod.fromName(method.getName());
 
@@ -92,7 +93,7 @@ public class MethodHierarchyReaderTest {
       assertEquals("Wrong number of overrides for method: " + method.getName(), 2,
           overrides.size());
       assertEquals("Overridden " + method.getName() + " is wrong class.",
-          TestEndpointSuperclass.class, overrides.get(1).getMethod().getDeclaringClass());
+          TestEndpointSuperclass.class, Iterables.get(overrides, 1).getMethod().getDeclaringClass());
     } else {
       assertEquals("Wrong number of overrides for method: " + method.getName(), 1,
           overrides.size());
@@ -112,11 +113,11 @@ public class MethodHierarchyReaderTest {
 
   @Test
   public void testGetEndpointOverrides() {
-    Iterable<List<EndpointMethod>> methods = methodReader.getEndpointOverrides();
+    Iterable<Collection<EndpointMethod>> methods = methodReader.getEndpointOverrides();
 
     TestHelper helper = new TestHelper(Iterables.size(methods));
-    for (List<EndpointMethod> overrides : methods) {
-      Method method = overrides.get(0).getMethod();
+    for (Collection<EndpointMethod> overrides : methods) {
+      Method method = overrides.iterator().next().getMethod();
       helper.verifySingleMethod(method);
       verifyOverrides(method, overrides);
     }
