@@ -22,7 +22,7 @@ import com.google.api.server.spi.ServiceException;
  */
 public class InternalServerErrorException extends ServiceException {
 
-  private static final int CODE = 500;
+  public static final int CODE = 500;
 
   public InternalServerErrorException(String message) {
     super(CODE, message);

@@ -22,7 +22,7 @@ import com.google.api.server.spi.ServiceException;
  */
 public class ConflictException extends ServiceException {
 
-  private static final int CODE = 409;
+  public static final int CODE = 409;
 
   public ConflictException(String message) {
     super(CODE, message);

@@ -15,17 +15,28 @@
  */
 package com.google.api.server.spi.config.model;
 
-import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.EndpointMethod;
+import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
 import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiParameterConfig.Classification;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
+import com.google.api.server.spi.response.BadRequestException;
+import com.google.api.server.spi.response.ConflictException;
+import com.google.api.server.spi.response.ErrorMap;
+import com.google.api.server.spi.response.ForbiddenException;
+import com.google.api.server.spi.response.InternalServerErrorException;
+import com.google.api.server.spi.response.NotFoundException;
+import com.google.api.server.spi.response.ServiceUnavailableException;
+import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -44,6 +55,17 @@ import java.util.regex.Pattern;
  * @author Eric Orth
  */
 public class ApiMethodConfig {
+
+  private static final Map<? extends Class<? extends ServiceException>, Integer>
+      KNOWN_EXCEPTION_CODES = ImmutableMap.<Class<? extends ServiceException>, Integer>builder()
+      .put(BadRequestException.class, BadRequestException.CODE)
+      .put(ForbiddenException.class, ForbiddenException.CODE)
+      .put(ServiceUnavailableException.class, ServiceUnavailableException.CODE)
+      .put(UnauthorizedException.class, UnauthorizedException.CODE)
+      .put(NotFoundException.class, NotFoundException.CODE)
+      .put(ConflictException.class, ConflictException.CODE)
+      .put(InternalServerErrorException.class, InternalServerErrorException.CODE)
+      .build();
 
   private enum RestMethod {
     LIST("list", "GET") {
@@ -159,6 +181,7 @@ public class ApiMethodConfig {
   private boolean deprecated = false;
   private Boolean apiKeyRequired;
   private TypeToken<?> returnType;
+  private Class<?>[] exceptionTypes;
   private List<ApiMetricCostConfig> metricCosts;
 
   private final TypeLoader typeLoader;
@@ -231,6 +254,7 @@ public class ApiMethodConfig {
     ignored = false;
     apiKeyRequired = null;
     returnType = endpointMethod.getReturnType();
+    exceptionTypes = endpointMethod.getMethod().getExceptionTypes();
     metricCosts = ImmutableList.of();
   }
 
@@ -517,6 +541,24 @@ public class ApiMethodConfig {
 
   public TypeToken<?> getReturnType() {
     return returnType;
+  }
+
+  public Map<Integer, String> getErrorCodesAndDescriptions() {
+    ErrorMap errorMap = new ErrorMap();
+    Map<Integer, String> descriptionByCode = Maps.newLinkedHashMap();
+    for (Class<?> exceptionType : exceptionTypes) {
+      //TODO support custom exception types by either:
+      // - introspecting the CODE static field (convention)
+      // - introducing a new annotation for Exceptions
+      Integer code = KNOWN_EXCEPTION_CODES.get(exceptionType);
+      if (code != null) {
+        String reason = errorMap.getReason(code);
+        if (reason != null) {
+          descriptionByCode.put(code, reason);
+        }
+      }
+    }
+    return descriptionByCode;
   }
 
   /**

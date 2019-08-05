@@ -1,0 +1,155 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "swagger-test.appspot.com"
+  },
+  "host": "swagger-test.appspot.com",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "exceptions:v1"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/exceptions/v1/doesNotThrow": {
+      "post": {
+        "tags": [
+          "exceptions:v1"
+        ],
+        "operationId": "ExceptionsV1DoesNotThrow",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "A successful response"
+          }
+        }
+      }
+    },
+    "/exceptions/v1/throwsMultipleExceptions": {
+      "post": {
+        "tags": [
+          "exceptions:v1"
+        ],
+        "operationId": "ExceptionsV1ThrowsMultipleExceptions",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "A successful response"
+          },
+          "400": {
+            "description": "badRequest",
+            "schema": {
+              "$ref": "#/definitions/GoogleJsonErrorContainer"
+            }
+          },
+          "409": {
+            "description": "conflict",
+            "schema": {
+              "$ref": "#/definitions/GoogleJsonErrorContainer"
+            }
+          }
+        }
+      }
+    },
+    "/exceptions/v1/throwsNotFoundException": {
+      "post": {
+        "tags": [
+          "exceptions:v1"
+        ],
+        "operationId": "ExceptionsV1ThrowsNotFoundException",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "A successful response"
+          },
+          "404": {
+            "description": "notFound",
+            "schema": {
+              "$ref": "#/definitions/GoogleJsonErrorContainer"
+            }
+          }
+        }
+      }
+    },
+    "/exceptions/v1/throwsServiceException": {
+      "post": {
+        "tags": [
+          "exceptions:v1"
+        ],
+        "operationId": "ExceptionsV1ThrowsServiceException",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "A successful response"
+          }
+        }
+      }
+    },
+    "/exceptions/v1/throwsUnknownException": {
+      "post": {
+        "tags": [
+          "exceptions:v1"
+        ],
+        "operationId": "ExceptionsV1ThrowsUnknownException",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "A successful response"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "GoogleJsonErrorContainer": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string"
+                  },
+                  "locationType": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

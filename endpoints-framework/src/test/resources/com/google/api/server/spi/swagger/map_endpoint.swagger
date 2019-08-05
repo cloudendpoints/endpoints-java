@@ -71,7 +71,8 @@
             "schema": {
               "type": "object",
               "additionalProperties": {
-                "type": "object"
+                "type": "object",
+                "properties": {}
               }
             }
           }
@@ -295,7 +296,8 @@
             "schema": {
               "type": "object",
               "additionalProperties": {
-                "type": "object"
+                "type": "object",
+                "properties": {}
               }
             }
           }
@@ -510,16 +512,10 @@
           }
         },
         "stringArrayMap": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object"
-          }
+          "$ref": "#/definitions/JsonMap"
         },
         "stringCollectionMap": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object"
-          }
+          "$ref": "#/definitions/JsonMap"
         },
         "stringMap": {
           "type": "object",

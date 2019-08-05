@@ -1,10 +1,10 @@
 - Info
-  - **title, description => visible in Endpoints Portal**
+  - **title, description => expose in CLI tasks**
   - license, contact, terms of service
 - Paths
   - Configurable tag content and format
 - Parameters
-  - **common parameters (global and per-path) => make spec shorter**
+  - **common parameters (global and per-path) => expose in CLI tasks**
   - range for ints (minimum, maximum)
   - cardinality (minItems, maxItems)
   - other repeated param features (uniqueItems, default values)
@@ -13,6 +13,5 @@
 - Models
   - required properties (need new annotation property)
 - Responses
-  - **schema for Google JSON error format as default for errors**
-  - **error code descriptions** => use introspection to analyze throws of subclasses of ServiceException
+  - use introspection or new annotation to describe usage of any subclasses of ServiceException
   - headers in response

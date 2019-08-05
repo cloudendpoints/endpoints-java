@@ -22,6 +22,7 @@ import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_SU
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.IoUtil;
 import com.google.api.server.spi.ServiceContext;
+import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -31,11 +32,15 @@ import com.google.api.server.spi.config.ApiIssuerAudience;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiConfig;
+import com.google.api.server.spi.response.BadRequestException;
+import com.google.api.server.spi.response.ConflictException;
+import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.server.spi.swagger.SwaggerGenerator.SwaggerContext;
 import com.google.api.server.spi.testing.AbsoluteCommonPathEndpoint;
 import com.google.api.server.spi.testing.AbsolutePathEndpoint;
 import com.google.api.server.spi.testing.ArrayEndpoint;
 import com.google.api.server.spi.testing.EnumEndpoint;
+import com.google.api.server.spi.testing.FooCommonParamsEndpoint;
 import com.google.api.server.spi.testing.FooDescriptionEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.LimitMetricsEndpoint;
@@ -84,6 +89,37 @@ public class SwaggerGeneratorTest {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
     Swagger expected = readExpectedAsSwagger("foo_endpoint.swagger");
+    checkSwagger(expected, swagger);
+  }
+  
+  @Test
+  public void testWriteSwagger_FooEndpointParameterCombineParamSamePath() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), 
+        FooCommonParamsEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context
+      .setCombineCommonParametersInSamePath(true));
+    Swagger expected = readExpectedAsSwagger("foo_endpoint_combine_params_same_path.swagger");
+    checkSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_FooEndpointParameterExtractParamRef() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), 
+        FooCommonParamsEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context
+        .setExtractCommonParametersAsRefs(true));
+    Swagger expected = readExpectedAsSwagger("foo_endpoint_extract_param_refs.swagger");
+    checkSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_FooEndpointParameterCombineAllParam() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), 
+        FooCommonParamsEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context
+        .setExtractCommonParametersAsRefs(true)
+        .setCombineCommonParametersInSamePath(true));
+    Swagger expected = readExpectedAsSwagger("foo_endpoint_combine_all_params.swagger");
     checkSwagger(expected, swagger);
   }
 
@@ -256,6 +292,34 @@ public class SwaggerGeneratorTest {
     checkSwagger(expected, swagger);
   }
 
+  @Test
+  public void testWriteSwagger_ErrorAsDefaultResponse() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), ExceptionEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context
+        .setAddGoogleJsonErrorAsDefaultResponse(true));
+    Swagger expected = readExpectedAsSwagger("error_codes_default_response.swagger");
+    checkSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_ServiceExceptionErrorCodes() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), ExceptionEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context
+        .setAddErrorCodesForServiceExceptions(true));
+    Swagger expected = readExpectedAsSwagger("error_codes_service_exceptions.swagger");
+    checkSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_AllErrors() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), ExceptionEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context
+        .setAddGoogleJsonErrorAsDefaultResponse(true)
+        .setAddErrorCodesForServiceExceptions(true));
+    Swagger expected = readExpectedAsSwagger("error_codes_all.swagger");
+    checkSwagger(expected, swagger);
+  }
+
   private Swagger getSwagger(Class<?> serviceClass, SwaggerContext context)
       throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), serviceClass);
@@ -335,4 +399,23 @@ public class SwaggerGeneratorTest {
     @ApiMethod(audiences = {"audience2"})
     public void overrideAudience() { }
   }
+
+  @Api(name = "exceptions", version = "v1")
+  private static class ExceptionEndpoint {
+    @ApiMethod
+    public void doesNotThrow() { }
+
+    @ApiMethod
+    public void throwsServiceException() throws ServiceException { }
+
+    @ApiMethod
+    public void throwsNotFoundException() throws NotFoundException { }
+
+    @ApiMethod
+    public void throwsMultipleExceptions() throws BadRequestException, ConflictException { }
+
+    @ApiMethod
+    public void throwsUnknownException() throws IllegalStateException { }
+  }
+  
 }
