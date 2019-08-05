@@ -1,0 +1,179 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "swagger-test.appspot.com"
+  },
+  "host": "swagger-test.appspot.com",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "multipleScopes:v1"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/multipleScopes/v1/noOverride": {
+      "post": {
+        "tags": [
+          "multipleScopes:v1"
+        ],
+        "operationId": "MultipleScopesV1NoOverride",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": [
+              "https://mail.google.com/"
+            ]
+          },
+          {
+            "google_id_token_legacy-3a26ea04": [
+              "https://mail.google.com/"
+            ]
+          }
+        ]
+      }
+    },
+    "/multipleScopes/v1/overrideAudience": {
+      "post": {
+        "tags": [
+          "multipleScopes:v1"
+        ],
+        "operationId": "MultipleScopesV1OverrideAudience",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "google_id_token-ab656ae": [
+              "https://mail.google.com/"
+            ]
+          },
+          {
+            "google_id_token_legacy-ab656ae": [
+              "https://mail.google.com/"
+            ]
+          }
+        ]
+      }
+    },
+    "/multipleScopes/v1/scopeOverride": {
+      "post": {
+        "tags": [
+          "multipleScopes:v1"
+        ],
+        "operationId": "MultipleScopesV1ScopeOverride",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
+          },
+          {
+            "google_id_token_legacy-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
+          }
+        ]
+      }
+    },
+    "/multipleScopes/v1/unknownScope": {
+      "post": {
+        "tags": [
+          "multipleScopes:v1"
+        ],
+        "operationId": "MultipleScopesV1UnknownScope",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response"
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": [
+              "unknownScope"
+            ]
+          },
+          {
+            "google_id_token_legacy-3a26ea04": [
+              "unknownScope"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "google_id_token-3a26ea04": {
+      "type": "oauth2",
+      "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "flow": "implicit",
+      "scopes": {
+        "https://mail.google.com/": "Read, send, delete, and manage your email",
+        "unknownScope": "unknownScope",
+        "https://www.googleapis.com/auth/userinfo.email": "View your email address"
+      },
+      "x-google-issuer": "https://accounts.google.com",
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
+      "x-google-audiences": "audience"
+    },
+    "google_id_token-ab656ae": {
+      "type": "oauth2",
+      "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "flow": "implicit",
+      "scopes": {
+        "https://mail.google.com/": "Read, send, delete, and manage your email"
+      },
+      "x-google-issuer": "https://accounts.google.com",
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
+      "x-google-audiences": "audience2"
+    },
+    "google_id_token_legacy-3a26ea04": {
+      "type": "oauth2",
+      "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "flow": "implicit",
+      "scopes": {
+        "https://mail.google.com/": "Read, send, delete, and manage your email",
+        "unknownScope": "unknownScope",
+        "https://www.googleapis.com/auth/userinfo.email": "View your email address"
+      },
+      "x-google-issuer": "accounts.google.com",
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
+      "x-google-audiences": "audience"
+    },
+    "google_id_token_legacy-ab656ae": {
+      "type": "oauth2",
+      "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "flow": "implicit",
+      "scopes": {
+        "https://mail.google.com/": "Read, send, delete, and manage your email"
+      },
+      "x-google-issuer": "accounts.google.com",
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
+      "x-google-audiences": "audience2"
+    }
+  }
+}
