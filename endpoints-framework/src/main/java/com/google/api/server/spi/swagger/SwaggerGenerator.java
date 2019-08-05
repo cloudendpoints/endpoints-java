@@ -376,13 +376,15 @@ public class SwaggerGenerator {
       }
     }
     Response response = new Response().description("A successful response");
+    int responseCode = 204;
     if (methodConfig.hasResourceInResponse()) {
+      responseCode = 200;
       TypeToken<?> returnType =
           ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), apiConfig);
       Schema schema = genCtx.schemata.getOrAdd(returnType, apiConfig);
       response.setResponseSchema(getSchema(schema));
     }
-    operation.response(200, response);
+    operation.response(responseCode, response);
     writeAuthConfig(swagger, methodConfig, operation);
     if (methodConfig.isApiKeyRequired()) {
       List<Map<String, List<String>>> security = operation.getSecurity();

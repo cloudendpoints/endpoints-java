@@ -271,7 +271,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         }
@@ -310,7 +310,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         }
@@ -347,7 +347,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         }
@@ -376,7 +376,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         }
@@ -413,7 +413,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         }
@@ -450,7 +450,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         }
@@ -487,7 +487,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         }
@@ -512,7 +512,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         }

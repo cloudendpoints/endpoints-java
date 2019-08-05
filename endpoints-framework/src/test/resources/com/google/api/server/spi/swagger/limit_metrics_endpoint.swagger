@@ -51,7 +51,7 @@
         "operationId": "LimitsV1CustomFoo",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         },

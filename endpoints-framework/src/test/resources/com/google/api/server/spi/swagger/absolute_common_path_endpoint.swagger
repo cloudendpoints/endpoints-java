@@ -29,7 +29,7 @@
         "operationId": "AbsolutepathV1AbsolutePath",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         }
