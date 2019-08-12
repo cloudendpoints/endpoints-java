@@ -214,10 +214,6 @@ public abstract class EndpointsToolAction extends Action {
     return getOptionOrDefault(buildSystemOption, DEFAULT_BUILD_SYSTEM);
   }
 
-  protected String getFormat(Option formatOption) {
-    return getOptionOrDefault(formatOption, DEFAULT_FORMAT);
-  }
-
   protected boolean getDebug(Option debugOption) {
     return debugOption.getValue() != null;
   }
@@ -407,13 +403,6 @@ public abstract class EndpointsToolAction extends Action {
   }
 
   /**
-   * Return the example string which will be displayed in the usage.
-   */
-  public String getExampleString() {
-    return exampleString;
-  }
-
-  /**
    * Set the example string which will be displayed in the usage.
    */
   public void setExampleString(String exampleString) {
@@ -467,6 +456,17 @@ public abstract class EndpointsToolAction extends Action {
       return new EndpointsOption(shortName, longName, false, true, placeHolderValue, description);
     }
 
+    public static EndpointsOption makeVisibleFlagOption(
+        @Nullable String longName,
+        @Nullable String description) {
+      return new EndpointsOption(null, longName, true, true, null, description) {
+        @Override
+        public void apply() {
+          getValues().add("true");
+        }
+      };
+    }
+        
     public static EndpointsOption makeInvisibleFlagOption(
         @Nullable String shortName,
         @Nullable String longName) {

@@ -45,6 +45,8 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
   private String basePath;
   private List<String> serviceClassNames;
   private boolean outputToDisk;
+  private boolean addGoogleJsonErrorAsDefaultResponse;
+  private boolean addErrorCodesForServiceExceptionsOption;
 
   @Override
   protected void addTestAction(Map<String, EndpointsToolAction> actions) {
@@ -53,12 +55,21 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
       @Override
       public String genOpenApiDoc(
           URL[] classPath, String outputFilePath, String hostname, String basePath,
+          String title, String description,
+          boolean addGoogleJsonErrorAsDefaultResponse,
+          boolean addErrorCodesForServiceExceptionsOption,
+          boolean extractCommonParametersAsRefsOption,
+          boolean combineCommonParametersInSamePathOption,
           List<String> serviceClassNames, boolean outputToDisk) {
         GetOpenApiDocActionTest.this.classPath = classPath;
         GetOpenApiDocActionTest.this.outputFilePath = outputFilePath;
         GetOpenApiDocActionTest.this.basePath = basePath;
         GetOpenApiDocActionTest.this.serviceClassNames = serviceClassNames;
         GetOpenApiDocActionTest.this.outputToDisk = outputToDisk;
+        GetOpenApiDocActionTest.this.addGoogleJsonErrorAsDefaultResponse 
+            = addGoogleJsonErrorAsDefaultResponse;
+        GetOpenApiDocActionTest.this.addErrorCodesForServiceExceptionsOption 
+            = addErrorCodesForServiceExceptionsOption;
         return null;
       }
 
@@ -84,7 +95,9 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
   public void testGetOpenApiDoc() throws Exception {
     tool.execute(
         new String[]{GetOpenApiDocAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT),
-            "classPath", option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir", "MyService",
+            "classPath", option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir", 
+            option("addGoogleJsonErrorAsDefaultResponse", false),
+            "MyService",
             "MyService2"});
     assertFalse(usagePrinted);
     assertThat(Lists.newArrayList(classPath))
@@ -95,6 +108,8 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
                 .toURL());
     assertEquals("outputDir", outputFilePath);
     assertEquals(EndpointsToolAction.DEFAULT_BASE_PATH, basePath);
+    assertTrue(addGoogleJsonErrorAsDefaultResponse);
+    assertFalse(addErrorCodesForServiceExceptionsOption);
     assertStringsEqual(Arrays.asList("MyService", "MyService2"), serviceClassNames);
     assertTrue(outputToDisk);
   }
