@@ -29,6 +29,7 @@ import com.google.api.server.spi.config.model.ApiLimitMetricConfig;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiMetricCostConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
+import com.google.api.server.spi.config.model.AuthScopeRepository;
 import com.google.api.server.spi.config.model.FieldType;
 import com.google.api.server.spi.config.model.Schema;
 import com.google.api.server.spi.config.model.Schema.Field;
@@ -62,7 +63,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Info;
@@ -433,17 +436,19 @@ public class SwaggerGenerator {
       for (String issuer : issuerAudiences.getIssuerNames()) {
         ImmutableSet<String> audiences = issuerAudiences.getAudiences(issuer);
         IssuerConfig issuerConfig = methodConfig.getApiConfig().getIssuers().getIssuer(issuer);
-        String fullIssuer = addNonConflictingSecurityDefinition(swagger, issuerConfig, audiences);
-        operation.addSecurity(fullIssuer, issuerConfig.isUseScopesInAuthFlow() ? scopes : 
-            Collections.emptyList());
+        List<String> requiredScopes = issuerConfig.isUseScopesInAuthFlow() ? scopes :
+            Collections.emptyList();
+        String fullIssuer = addNonConflictingSecurityDefinition(swagger, issuerConfig, audiences, 
+            requiredScopes);
+        operation.addSecurity(fullIssuer, requiredScopes);
       }
     }
     if (!legacyAudiencesIsEmpty) {
       ImmutableSet<String> legacyAudienceSet = ImmutableSet.copyOf(legacyAudiences);
       String fullIssuer = addNonConflictingSecurityDefinition(
-          swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER, legacyAudienceSet);
+          swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER, legacyAudienceSet, scopes);
       String fullAltIssuer = addNonConflictingSecurityDefinition(
-          swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT, legacyAudienceSet);
+          swagger, ApiIssuerConfigs.GOOGLE_ID_TOKEN_ISSUER_ALT, legacyAudienceSet, scopes);
       operation.addSecurity(fullIssuer, scopes);
       operation.addSecurity(fullAltIssuer, scopes);
     }
@@ -580,7 +585,7 @@ public class SwaggerGenerator {
     return new ArrayList<>(Types.getEnumValuesAndDescriptions((TypeToken<Enum<?>>) t).keySet());
   }
 
-  private static SecuritySchemeDefinition toScheme(
+  private static OAuth2Definition toScheme(
       IssuerConfig issuerConfig, ImmutableSet<String> audiences) {
     OAuth2Definition tokenDef = new OAuth2Definition()
         .implicit(issuerConfig.getAuthorizationUrl());
@@ -611,20 +616,39 @@ public class SwaggerGenerator {
     return securityDefinitions;
   }
 
-  private static String addNonConflictingSecurityDefinition(
-      Swagger swagger, IssuerConfig issuerConfig, ImmutableSet<String> audiences)
+  private static String addNonConflictingSecurityDefinition(Swagger swagger,
+      IssuerConfig issuerConfig, ImmutableSet<String> audiences, List<String> scopes)
       throws ApiConfigException {
     Map<String, SecuritySchemeDefinition> securityDefinitions =
         getOrCreateSecurityDefinitionMap(swagger);
     String issuerPlusHash = String.format("%s-%x", issuerConfig.getName(), audiences.hashCode());
-    SecuritySchemeDefinition existingDef = securityDefinitions.get(issuerConfig.getName());
-    SecuritySchemeDefinition newDef = toScheme(issuerConfig, audiences);
-    if (existingDef != null && !existingDef.equals(newDef)) {
-      throw new ApiConfigException(
-          "Multiple conflicting definitions found for issuer " + issuerConfig.getName());
+    OAuth2Definition newDef = toScheme(issuerConfig, audiences);
+    SecuritySchemeDefinition existingDef = securityDefinitions.get(issuerPlusHash);
+    if (existingDef != null) {
+      checkExistingDefinition(issuerConfig.getName(), newDef, existingDef);
     }
-    swagger.securityDefinition(issuerPlusHash, newDef);
+    OAuth2Definition def = existingDef != null ? (OAuth2Definition) existingDef : newDef;
+    scopes.forEach(scope -> def.addScope(scope, AuthScopeRepository.getDescription(scope)));
+    swagger.securityDefinition(issuerPlusHash, def);
     return issuerPlusHash;
+  }
+
+  private static void checkExistingDefinition(String defName, OAuth2Definition newDef,
+      SecuritySchemeDefinition existingDef) throws ApiConfigException {
+    if (!(existingDef instanceof OAuth2Definition)) {
+      throw new ApiConfigException(
+          "Conflicting definition types found for issuer " + defName);
+    }
+    OAuth2Definition existingOAuth2Def = (OAuth2Definition) existingDef;
+    boolean propertiesMatchExceptScope = Stream.<Function<OAuth2Definition, Object>>of(
+        OAuth2Definition::getType, OAuth2Definition::getAuthorizationUrl,
+        OAuth2Definition::getFlow, OAuth2Definition::getTokenUrl,
+        OAuth2Definition::getDescription, OAuth2Definition::getVendorExtensions)
+        .allMatch(getter -> Objects.equals(getter.apply(existingOAuth2Def), getter.apply(newDef)));
+    if (!propertiesMatchExceptScope) {
+      throw new ApiConfigException(
+          "Conflicting OAuth2 definitions found for issuer " + defName);
+    }
   }
 
   //TODO add title and description

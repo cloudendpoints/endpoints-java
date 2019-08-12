@@ -258,6 +258,9 @@
       "type": "oauth2",
       "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
       "flow": "implicit",
+      "scopes": {
+        "https://www.googleapis.com/auth/userinfo.email": "View your email address"
+      },
       "x-google-issuer": "https://accounts.google.com",
       "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
       "x-google-audiences": "audience"
@@ -266,6 +269,9 @@
       "type": "oauth2",
       "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
       "flow": "implicit",
+      "scopes": {
+        "https://www.googleapis.com/auth/userinfo.email": "View your email address"
+      },
       "x-google-issuer": "accounts.google.com",
       "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
       "x-google-audiences": "audience"

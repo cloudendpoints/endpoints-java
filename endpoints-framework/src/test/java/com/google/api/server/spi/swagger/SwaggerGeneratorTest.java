@@ -187,6 +187,15 @@ public class SwaggerGeneratorTest {
   }
 
   @Test
+  public void testWriteSwagger_MultipleScopes() throws Exception {
+    ApiConfig config =
+        configLoader.loadConfiguration(ServiceContext.create(), MultipleScopesEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
+    Swagger expected = readExpectedAsSwagger("multiple_scopes.swagger");
+    checkSwagger(expected, swagger);
+  }
+
+  @Test
   public void testWriteSwagger_ApiKeys() throws Exception {
     ApiConfig config =
         configLoader.loadConfiguration(ServiceContext.create(), ApiKeysEndpoint.class);
@@ -310,5 +319,20 @@ public class SwaggerGeneratorTest {
             @ApiIssuerAudience(name = "auth0", audiences = "auth0audmethod")
         })
     public void apiKeyWithAuth() { }
+  }
+
+  @Api(name = "multipleScopes",
+      version = "v1",
+      audiences = {"audience"},
+      scopes = "https://mail.google.com/")
+  private static class MultipleScopesEndpoint {
+    @ApiMethod
+    public void noOverride() { }
+    @ApiMethod(scopes = Constant.API_EMAIL_SCOPE)
+    public void scopeOverride() { }
+    @ApiMethod(scopes = "unknownScope")
+    public void unknownScope() { }
+    @ApiMethod(audiences = {"audience2"})
+    public void overrideAudience() { }
   }
 }

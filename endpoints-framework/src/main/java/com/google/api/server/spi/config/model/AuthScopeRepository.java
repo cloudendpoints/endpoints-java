@@ -36,6 +36,10 @@ public class AuthScopeRepository {
       throw new IllegalStateException("Cannot load scope descriptions from " + fileName, e);
     }
   }
+  
+  public static String getDescription(String scope) {
+    return MoreObjects.firstNonNull(GOOGLE_SCOPE_DESCRIPTIONS.get(scope), scope);
+  }
 
   private final SortedMap<String, String> descriptionsByScope = new TreeMap<>();
 
@@ -46,8 +50,7 @@ public class AuthScopeRepository {
 
   public void add(AuthScopeExpression scopeExpression) {
     for (String scope : scopeExpression.getAllScopes()) {
-      String description = MoreObjects.firstNonNull(GOOGLE_SCOPE_DESCRIPTIONS.get(scope), scope);
-      descriptionsByScope.put(scope, description);
+      descriptionsByScope.put(scope, getDescription(scope));
     }
   }
 
