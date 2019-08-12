@@ -393,15 +393,16 @@
     }
   },
   "definitions": {
-    
-    "JsonMap": {
-      "type": "object"
-    },
     "MapContainer": {
       "type": "object",
       "properties": {
         "stringMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "description": "A map of string values",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         }
       }
     },
@@ -409,37 +410,81 @@
       "type": "object",
       "properties": {
         "bazMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "booleanKeyMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "dateKeyMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "dateTimeKeyMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "enumKeyMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "floatKeyMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "fooMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "fooMapMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "intKeyMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "intMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "longKeyMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "mapOfStrings": {
           "$ref": "#/definitions/MapContainer"
@@ -448,19 +493,39 @@
           "$ref": "#/definitions/MapEndpoint"
         },
         "mapSubclass": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "stringArrayMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "stringCollectionMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "stringMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "stringValueMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         }
       }
     }

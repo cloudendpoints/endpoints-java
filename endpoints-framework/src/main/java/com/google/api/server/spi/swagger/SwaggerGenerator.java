@@ -350,16 +350,24 @@ public class SwaggerGenerator {
     }
     List<Schema> schemas = genCtx.schemata.getAllSchemaForApi(apiKey);
     for (Schema schema : schemas) {
-      if (!isInlined(schema)) {
-        getOrCreateDefinitionMap(swagger).put(schema.name(), convertToSwaggerSchema(schema));
+      //enum, maps and some explicitly listed models should be inlined
+      if (isEnumModel(schema) || isMapModel(schema) || isInlinedModel(schema)) {
+        continue;
       }
+      getOrCreateDefinitionMap(swagger).put(schema.name(), convertToSwaggerSchema(schema));
     }
   }
 
-  //enum and map schemas are inlined, shouldn't be in the model definitions
-  private boolean isInlined(Schema schema) {
-    return !schema.enumValues().isEmpty() || schema.mapValueSchema() != null 
-        || INLINED_MODEL_NAMES.contains(schema.name());
+  private boolean isEnumModel(Schema schema) {
+    return !schema.enumValues().isEmpty();
+  }
+
+  private boolean isMapModel(Schema schema) {
+    return SchemaRepository.isJsonMapSchema(schema) || schema.mapValueSchema() != null;
+  }
+
+  private boolean isInlinedModel(Schema schema) {
+    return INLINED_MODEL_NAMES.contains(schema.name());
   }
 
   private Tag getTag(ApiConfig apiConfig) {
@@ -601,12 +609,13 @@ public class SwaggerGenerator {
     } else {
       SchemaReference schemaReference = f.schemaReference();
       if (f.type() == FieldType.OBJECT) {
-        if (INLINED_MODEL_NAMES.contains(schemaReference.get().name())) {
+        Schema schema = schemaReference.get();
+        if (isInlinedModel(schema)) {
           p = inlineObjectProperty(schemaReference);
-        } else if (schemaReference.get().mapValueSchema() != null) {
+        } else if (isMapModel(schema)) {
           p = inlineMapProperty(schemaReference);
         } else {
-          String name = schemaReference.get().name();
+          String name = schema.name();
           p = new RefProperty(name).asDefault(name);
         }
       } else if (f.type() == FieldType.ARRAY) {

@@ -410,9 +410,6 @@
         }
       }
     },
-    "JsonMap": {
-      "type": "object"
-    },
     "MapContainer": {
       "type": "object",
       "properties": {
@@ -512,10 +509,18 @@
           }
         },
         "stringArrayMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "stringCollectionMap": {
-          "$ref": "#/definitions/JsonMap"
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {}
+          }
         },
         "stringMap": {
           "type": "object",
