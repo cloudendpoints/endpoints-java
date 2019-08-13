@@ -58,6 +58,80 @@
         ]
       }
     },
+    "/foo/v1/fooos/{n}": {
+      "get": {
+        "tags": [
+          "foo:v1"
+        ],
+        "operationId": "FooV1ListFooosInPath",
+        "parameters": [
+          {
+            "name": "n",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_Foo"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
+          },
+          {
+            "google_id_token_legacy-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
+          }
+        ]
+      }
+    },
+    "/foo/v1/fooosNotRequired": {
+      "get": {
+        "tags": [
+          "foo:v1"
+        ],
+        "operationId": "FooV1ListFooosNotRequired",
+        "parameters": [
+          {
+            "name": "n",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse_Foo"
+            }
+          }
+        },
+        "security": [
+          {
+            "google_id_token-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
+          },
+          {
+            "google_id_token_legacy-3a26ea04": [
+              "https://www.googleapis.com/auth/userinfo.email"
+            ]
+          }
+        ]
+      }
+    },
     "/foo/v1/foos": {
       "get": {
         "tags": [

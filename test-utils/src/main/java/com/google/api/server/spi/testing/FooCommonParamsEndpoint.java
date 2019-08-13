@@ -19,6 +19,7 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.response.CollectionResponse;
 
 @Api(
@@ -32,6 +33,16 @@ import com.google.api.server.spi.response.CollectionResponse;
 public class FooCommonParamsEndpoint extends FooEndpoint  {
   @ApiMethod(name = "fooo.list", path = "fooos", httpMethod = HttpMethod.GET)
   public CollectionResponse<Foo> listFooos(@Named("n") Integer n) {
+    return null;
+  }
+
+  @ApiMethod(path = "fooos/{n}", httpMethod = HttpMethod.GET)
+  public CollectionResponse<Foo> listFooosInPath(@Named("n") Integer n) {
+    return null;
+  }
+  
+  @ApiMethod(path = "fooosNotRequired", httpMethod = HttpMethod.GET)
+  public CollectionResponse<Foo> listFooosNotRequired(@Named("n") @Nullable Integer n) {
     return null;
   }
 }

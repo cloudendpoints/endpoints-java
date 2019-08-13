@@ -48,6 +48,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -56,24 +57,9 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
 import com.google.common.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Info;
 import io.swagger.models.Model;
@@ -110,6 +96,24 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.PropertyBuilder;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.StringProperty;
+
+import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeMap;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Generates a {@link Swagger} object representing a set of {@link ApiConfig} objects.
@@ -251,7 +255,7 @@ public class SwaggerGenerator {
       return;
     }
     
-    Multimap<String, Parameter> paramNameCounter = HashMultimap.create();
+    Map<String, Multiset<Parameter>> paramNameCounter = new LinkedHashMap<>();
     Multimap<Parameter, Path> specLevelParameters = HashMultimap.create();
     Map<Path, Multimap<Parameter, Operation>> pathLevelParameters = Maps.newHashMap();
     
@@ -260,7 +264,11 @@ public class SwaggerGenerator {
       Multimap<Parameter, Operation> parameters = HashMultimap.create();
       path.getOperations().forEach(operation -> {
         operation.getParameters().forEach(parameter -> {
-          paramNameCounter.put(parameter.getName(), parameter);
+          Multiset<Parameter> counter = Optional
+              .ofNullable(paramNameCounter.get(parameter.getName()))
+              .orElse(HashMultiset.create());
+          counter.add(parameter);
+          paramNameCounter.put(parameter.getName(), counter);
           specLevelParameters.put(parameter, path);
           parameters.put(parameter, operation);
         });
@@ -271,18 +279,24 @@ public class SwaggerGenerator {
     if (context.extractCommonParametersAsRefs) {
       //combine common spec-level params (only if more than one path)
       specLevelParameters.asMap().forEach((parameter, paths) -> {
-        //parameters used in more than one path are replaced by refs, only if they have unique names
-        if (paths.size() > 1 && paramNameCounter.get(parameter.getName()).size() == 1) {
-          swagger.addParameter(parameter.getName(), parameter);
-          swagger.getPaths().values().forEach(path -> path.getOperations().forEach(operation -> {
-            List<Parameter> opParameters = operation.getParameters();
-            if (opParameters.contains(parameter)) {
-              opParameters.add(new RefParameter(parameter.getName())
-                  .asDefault(parameter.getName()));
-              opParameters.remove(parameter);
-            }
-          }));
-          pathLevelParameters.values().forEach(pathParameters -> pathParameters.removeAll(parameter));
+        //parameters used in more than one path are replaced
+        if (paths.size() > 1) {
+          //if multiple params are named the same, only replace the one with the most occurrences
+          //TODO add param name suffix depending on "in" and "required" values to deduplicate
+          Multiset<Parameter> paramCounter = Multisets
+              .copyHighestCountFirst(paramNameCounter.get(parameter.getName()));
+          if (paramCounter.iterator().next().equals(parameter)) {
+            swagger.addParameter(parameter.getName(), parameter);
+            swagger.getPaths().values().forEach(path -> path.getOperations().forEach(operation -> {
+              List<Parameter> opParameters = operation.getParameters();
+              if (opParameters.contains(parameter)) {
+                opParameters.add(new RefParameter(parameter.getName())
+                    .asDefault(parameter.getName()));
+                opParameters.remove(parameter);
+              }
+            }));
+            pathLevelParameters.values().forEach(pathParameters -> pathParameters.removeAll(parameter));
+          }
         }
       });
     }
@@ -298,7 +312,8 @@ public class SwaggerGenerator {
           }
         });
         //nullify empty parameters at path level
-        //TODO deserialization recreates an empty list on null, but could save size
+        //TODO deserialization with standard Swagger lib recreates an empty list on null value,
+        // causing comparisons in tests to fail. But could save some size on the final document.
         /*path.getOperations().forEach(operation -> {
           List<Parameter> parameters = operation.getParameters();
           if (parameters != null && parameters.isEmpty()) {
