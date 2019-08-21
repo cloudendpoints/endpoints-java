@@ -22,7 +22,7 @@ import com.google.api.server.spi.ServiceException;
  */
 public class ServiceUnavailableException extends ServiceException {
 
-  private static final int CODE = 503;
+  public static final int CODE = 503;
 
   public ServiceUnavailableException(String message) {
     super(CODE, message);

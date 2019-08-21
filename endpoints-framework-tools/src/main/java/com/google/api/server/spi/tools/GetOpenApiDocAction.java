@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.tools;
 
+import static com.google.api.server.spi.tools.EndpointsToolAction.EndpointsOption.makeVisibleFlagOption;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.api.server.spi.ServiceContext;
@@ -52,6 +53,20 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
   private Option warOption = makeWarOption();
   private Option hostnameOption = makeHostnameOption();
   private Option basePathOption = makeBasePathOption();
+  private Option titleOption = makeTitleOption();
+  private Option descriptionOption = makeDescriptionOption();
+  private Option addGoogleJsonErrorAsDefaultResponseOption = makeVisibleFlagOption(
+      "addGoogleJsonErrorAsDefaultResponse", "Add GoogleJsonError as default response"
+  );
+  private Option addErrorCodesForServiceExceptionsOption = makeVisibleFlagOption(
+      "addErrorCodesForServiceExceptions", "Add GoogleJsonError for codes in ServiceExceptions"
+  );
+  private Option extractCommonParametersAsRefsOption = makeVisibleFlagOption(
+      "extractCommonParametersAsRefs", "Extract common parameters as refs at specification level"
+  );
+  private Option combineCommonParametersInSamePathOption = makeVisibleFlagOption(
+      "combineCommonParametersInSamePath", "Combine common parameters in same path"
+  );
 
   public GetOpenApiDocAction() {
     this(NAME, true);
@@ -60,11 +75,34 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
   protected GetOpenApiDocAction(String alias, boolean displayHelp) {
     super(alias);
     setOptions(
-        Arrays.asList(classPathOption, outputOption, warOption, hostnameOption, basePathOption));
+        Arrays.asList(classPathOption, outputOption, warOption, hostnameOption, basePathOption,
+            titleOption, descriptionOption, 
+            addGoogleJsonErrorAsDefaultResponseOption, addErrorCodesForServiceExceptionsOption,
+            extractCommonParametersAsRefsOption, combineCommonParametersInSamePathOption));
     setShortDescription("Generates an OpenAPI document");
     setExampleString("<Endpoints tool> " + getNames()[0]
         + " com.google.devrel.samples.ttt.spi.BoardV1 com.google.devrel.samples.ttt.spi.ScoresV1");
     setHelpDisplayNeeded(displayHelp);
+  }
+
+  private static Option makeTitleOption() {
+    return EndpointsOption.makeVisibleNonFlagOption(
+        "t",
+        "title",
+        "TITLE",
+        "Sets the title for the generated document. Default is the app's host.");
+  }
+
+  private static Option makeDescriptionOption() {
+    return EndpointsOption.makeVisibleNonFlagOption(
+        "d",
+        "description",
+        "DESCRIPTION",
+        "Sets the description for the generated document. Is empty by default.");
+  }
+  
+  private static boolean getBooleanOptionValue(Option option) {
+    return option.getValue() != null;
   }
 
   @Override
@@ -81,7 +119,14 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
     }
     genOpenApiDoc(computeClassPath(warPath, getClassPath(classPathOption)),
         getOpenApiOutputPath(outputOption), getHostname(hostnameOption, warPath),
-        getBasePath(basePathOption), serviceClassNames, true);
+        getBasePath(basePathOption), 
+        getOptionOrDefault(titleOption, null),
+        getOptionOrDefault(descriptionOption, null),
+        getBooleanOptionValue(addGoogleJsonErrorAsDefaultResponseOption),
+        getBooleanOptionValue(addErrorCodesForServiceExceptionsOption),
+        getBooleanOptionValue(extractCommonParametersAsRefsOption),
+        getBooleanOptionValue(combineCommonParametersInSamePathOption),
+        serviceClassNames, true);
     return true;
   }
 
@@ -98,6 +143,9 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
    */
   public String genOpenApiDoc(
       URL[] classPath, String outputFilePath, String hostname, String basePath,
+      String title, String description,
+      boolean addGoogleJsonErrorAsDefaultResponse, boolean addErrorCodesForServiceExceptionsOption,
+      boolean extractCommonParametersAsRefsOption, boolean combineCommonParametersInSamePathOption,
       List<String> serviceClassNames, boolean outputToDisk)
       throws ClassNotFoundException, IOException, ApiConfigException {
     File outputFile = new File(outputFilePath);
@@ -120,7 +168,13 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
     SwaggerGenerator generator = new SwaggerGenerator();
     SwaggerContext swaggerContext = new SwaggerContext()
         .setHostname(hostname)
-        .setBasePath(basePath);
+        .setBasePath(basePath)
+        .setTitle(title)
+        .setDescription(description)
+        .setAddErrorCodesForServiceExceptions(addGoogleJsonErrorAsDefaultResponse)
+        .setAddErrorCodesForServiceExceptions(addErrorCodesForServiceExceptionsOption)
+        .setExtractCommonParametersAsRefs(extractCommonParametersAsRefsOption)
+        .setCombineCommonParametersInSamePath(combineCommonParametersInSamePathOption);
     Swagger swagger = generator.writeSwagger(apiConfigs, swaggerContext);
     String swaggerStr = Json.mapper().writer(new EndpointsPrettyPrinter())
         .writeValueAsString(swagger);

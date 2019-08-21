@@ -22,7 +22,7 @@ import com.google.api.server.spi.ServiceException;
  */
 public class NotFoundException extends ServiceException {
 
-  private static final int CODE = 404;
+  public static final int CODE = 404;
 
   public NotFoundException(String message) {
     super(CODE, message);

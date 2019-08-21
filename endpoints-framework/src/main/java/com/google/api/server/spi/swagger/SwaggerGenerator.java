@@ -15,6 +15,8 @@
  */
 package com.google.api.server.spi.swagger;
 
+import com.google.api.client.googleapis.json.GoogleJsonError;
+import com.google.api.client.googleapis.json.GoogleJsonErrorContainer;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.TypeLoader;
@@ -43,30 +45,21 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
 import com.google.common.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.stream.Stream;
-
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Info;
 import io.swagger.models.Model;
@@ -84,9 +77,10 @@ import io.swagger.models.auth.OAuth2Definition;
 import io.swagger.models.auth.SecuritySchemeDefinition;
 import io.swagger.models.parameters.AbstractSerializableParameter;
 import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.Parameter;
 import io.swagger.models.parameters.PathParameter;
 import io.swagger.models.parameters.QueryParameter;
-import io.swagger.models.parameters.SerializableParameter;
+import io.swagger.models.parameters.RefParameter;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.BooleanProperty;
 import io.swagger.models.properties.ByteArrayProperty;
@@ -102,6 +96,24 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.PropertyBuilder;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.StringProperty;
+
+import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeMap;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Generates a {@link Swagger} object representing a set of {@link ApiConfig} objects.
@@ -180,7 +192,11 @@ public class SwaggerGenerator {
   //using an object property with empty properties is semantically identical
   private static final ObjectProperty FREE_FORM_PROPERTY = new ObjectProperty()
       .properties(Collections.emptyMap());
-
+  //some well-known types should be inlined to avoid polluting model namespace
+  private static final ImmutableSet<String> INLINED_MODEL_NAMES = ImmutableSet.of(
+      GoogleJsonError.class.getSimpleName(), GoogleJsonError.ErrorInfo.class.getSimpleName()
+  );
+  
   private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
       new Function<ApiConfig, ApiKey>() {
         @Override
@@ -215,10 +231,13 @@ public class SwaggerGenerator {
         .host(context.hostname)
         .basePath(context.basePath)
         .info(new Info()
-            .title(context.hostname)
-            .version(context.docVersion));
+            .title(context.title != null ? context.title : context.hostname)
+            .description(context.description)
+            .version(context.docVersion)
+            //TODO contact, license, termsOfService could be configured
+        );
     for (ApiKey apiKey : configsByKey.keySet()) {
-      writeApi(apiKey, configsByKey.get(apiKey), swagger, genCtx);
+      writeApi(apiKey, configsByKey.get(apiKey), swagger, context, genCtx);
     }
     //reorder paths by string order to have consistent output
     Builder<String, Path> builder = ImmutableSortedMap.naturalOrder();
@@ -226,8 +245,83 @@ public class SwaggerGenerator {
       builder.put(pathEntry);
     }
     swagger.paths(builder.build());
+    combineCommonParameters(swagger, context);
     writeQuotaDefinitions(swagger, genCtx);
     return swagger;
+  }
+
+  private void combineCommonParameters(Swagger swagger, SwaggerContext context) {
+    if (!context.extractCommonParametersAsRefs && !context.combineCommonParametersInSamePath) {
+      return;
+    }
+    
+    Map<String, Multiset<Parameter>> paramNameCounter = new LinkedHashMap<>();
+    Multimap<Parameter, Path> specLevelParameters = HashMultimap.create();
+    Map<Path, Multimap<Parameter, Operation>> pathLevelParameters = Maps.newHashMap();
+    
+    //collect parameters on all operations
+    swagger.getPaths().values().forEach(path -> {
+      Multimap<Parameter, Operation> parameters = HashMultimap.create();
+      path.getOperations().forEach(operation -> {
+        operation.getParameters().forEach(parameter -> {
+          Multiset<Parameter> counter = Optional
+              .ofNullable(paramNameCounter.get(parameter.getName()))
+              .orElse(HashMultiset.create());
+          counter.add(parameter);
+          paramNameCounter.put(parameter.getName(), counter);
+          specLevelParameters.put(parameter, path);
+          parameters.put(parameter, operation);
+        });
+        pathLevelParameters.put(path, parameters);
+      });
+    });
+    
+    if (context.extractCommonParametersAsRefs) {
+      //combine common spec-level params (only if more than one path)
+      specLevelParameters.asMap().forEach((parameter, paths) -> {
+        //parameters used in more than one path are replaced
+        if (paths.size() > 1) {
+          //if multiple params are named the same, only replace the one with the most occurrences
+          //TODO add param name suffix depending on "in" and "required" values to deduplicate
+          Multiset<Parameter> paramCounter = Multisets
+              .copyHighestCountFirst(paramNameCounter.get(parameter.getName()));
+          if (paramCounter.iterator().next().equals(parameter)) {
+            swagger.addParameter(parameter.getName(), parameter);
+            swagger.getPaths().values().forEach(path -> path.getOperations().forEach(operation -> {
+              List<Parameter> opParameters = operation.getParameters();
+              if (opParameters.contains(parameter)) {
+                opParameters.add(new RefParameter(parameter.getName())
+                    .asDefault(parameter.getName()));
+                opParameters.remove(parameter);
+              }
+            }));
+            pathLevelParameters.values().forEach(pathParameters -> pathParameters.removeAll(parameter));
+          }
+        }
+      });
+    }
+    
+    if (context.combineCommonParametersInSamePath) {
+      //combine remaining common path-level params
+      pathLevelParameters.forEach((path, parameterMap) -> {
+        parameterMap.asMap().forEach((parameter, operations) -> {
+          //if parameter is used in all operations, replace it
+          if (operations.size() == path.getOperations().size()) {
+            path.addParameter(parameter);
+            operations.forEach(operation -> operation.getParameters().remove(parameter));
+          }
+        });
+        //nullify empty parameters at path level
+        //TODO deserialization with standard Swagger lib recreates an empty list on null value,
+        // causing comparisons in tests to fail. But could save some size on the final document.
+        /*path.getOperations().forEach(operation -> {
+          List<Parameter> parameters = operation.getParameters();
+          if (parameters != null && parameters.isEmpty()) {
+            operation.setParameters(null);
+          }
+        });*/
+      });
+    }
   }
 
   private void writeQuotaDefinitions(Swagger swagger, GenerationContext genCtx) {
@@ -258,7 +352,7 @@ public class SwaggerGenerator {
   }
 
   private void writeApi(ApiKey apiKey, ImmutableList<? extends ApiConfig> apiConfigs,
-      Swagger swagger, GenerationContext genCtx)
+      Swagger swagger, SwaggerContext context, GenerationContext genCtx)
       throws ApiConfigException {
     // TODO: This may result in duplicate validations in the future if made available online
     genCtx.validator.validate(apiConfigs);
@@ -266,20 +360,29 @@ public class SwaggerGenerator {
       for (ApiLimitMetricConfig limitMetric : apiConfig.getApiLimitMetrics()) {
         addNonConflictingApiLimitMetric(genCtx.limitMetrics, limitMetric);
       }
-      writeApiClass(apiConfig, swagger, genCtx);
+      writeApiClass(apiConfig, swagger, context, genCtx);
       swagger.tag(getTag(apiConfig));
     }
     List<Schema> schemas = genCtx.schemata.getAllSchemaForApi(apiKey);
     for (Schema schema : schemas) {
-      if (isNotInlined(schema)) {
-        getOrCreateDefinitionMap(swagger).put(schema.name(), convertToSwaggerSchema(schema));
+      //enum, maps and some explicitly listed models should be inlined
+      if (isEnumModel(schema) || isMapModel(schema) || isInlinedModel(schema)) {
+        continue;
       }
+      getOrCreateDefinitionMap(swagger).put(schema.name(), convertToSwaggerSchema(schema));
     }
   }
 
-  //enum and map schemas are inlined, shouldn't be in the model definitions
-  private boolean isNotInlined(Schema schema) {
-    return schema.enumValues().isEmpty() && schema.mapValueSchema() == null;
+  private boolean isEnumModel(Schema schema) {
+    return !schema.enumValues().isEmpty();
+  }
+
+  private boolean isMapModel(Schema schema) {
+    return SchemaRepository.isJsonMapSchema(schema) || schema.mapValueSchema() != null;
+  }
+
+  private boolean isInlinedModel(Schema schema) {
+    return INLINED_MODEL_NAMES.contains(schema.name());
   }
 
   private Tag getTag(ApiConfig apiConfig) {
@@ -307,20 +410,19 @@ public class SwaggerGenerator {
     limitMetrics.put(limitMetric.name(), limitMetric);
   }
 
-  private void writeApiClass(ApiConfig apiConfig, Swagger swagger,
+  private void writeApiClass(ApiConfig apiConfig, Swagger swagger, SwaggerContext context,
       GenerationContext genCtx) throws ApiConfigException {
     Map<EndpointMethod, ApiMethodConfig> methodConfigs = apiConfig.getApiClassConfig().getMethods();
     for (Map.Entry<EndpointMethod, ApiMethodConfig> methodConfig : methodConfigs.entrySet()) {
       if (!methodConfig.getValue().isIgnored()) {
         ApiMethodConfig config = methodConfig.getValue();
-        writeApiMethod(config, apiConfig, swagger, genCtx);
+        writeApiMethod(config, apiConfig, swagger, context, genCtx);
       }
     }
   }
 
-  private void writeApiMethod(
-      ApiMethodConfig methodConfig, ApiConfig apiConfig, Swagger swagger, GenerationContext genCtx)
-      throws ApiConfigException {
+  private void writeApiMethod(ApiMethodConfig methodConfig, ApiConfig apiConfig, Swagger swagger,
+      SwaggerContext context, GenerationContext genCtx) throws ApiConfigException {
     Path path = getOrCreatePath(swagger, methodConfig);
     Operation operation = new Operation();
     operation.setOperationId(getOperationId(apiConfig, methodConfig));
@@ -388,6 +490,30 @@ public class SwaggerGenerator {
       response.setResponseSchema(getSchema(schema));
     }
     operation.response(responseCode, response);
+
+    boolean addGoogleJsonErrorAsDefaultResponse = context.addGoogleJsonErrorAsDefaultResponse;
+    boolean addErrorCodesForServiceExceptions = context.addErrorCodesForServiceExceptions;
+    if (addGoogleJsonErrorAsDefaultResponse || addErrorCodesForServiceExceptions) {
+      //add error response model only if necessary
+      Supplier<Model> errorModelSupplier = Suppliers.memoize(() -> getSchema(genCtx.schemata
+          .getOrAdd(TypeToken.of(GoogleJsonErrorContainer.class), apiConfig)));
+      if (addErrorCodesForServiceExceptions) {
+        //add error code specific to the exceptions thrown by the method
+        Map<Integer, String> errorCodes = methodConfig.getErrorCodesAndDescriptions();
+        for (Entry<Integer, String> entry : errorCodes.entrySet()) {
+          operation.response(entry.getKey(), new Response()
+              .description(entry.getValue())
+              .responseSchema(errorModelSupplier.get()));
+        }
+      }
+      if (addGoogleJsonErrorAsDefaultResponse) {
+        //add GoogleJsonError as the default response
+        operation.defaultResponse(new Response()
+            .description("A failed response")
+            .responseSchema(errorModelSupplier.get()));
+      }
+    }
+    
     writeAuthConfig(swagger, methodConfig, operation);
     if (methodConfig.isApiKeyRequired()) {
       List<Map<String, List<String>>> security = operation.getSecurity();
@@ -498,10 +624,13 @@ public class SwaggerGenerator {
     } else {
       SchemaReference schemaReference = f.schemaReference();
       if (f.type() == FieldType.OBJECT) {
-        if (schemaReference.type().isSubtypeOf(Map.class)) {
+        Schema schema = schemaReference.get();
+        if (isInlinedModel(schema)) {
+          p = inlineObjectProperty(schemaReference);
+        } else if (isMapModel(schema)) {
           p = inlineMapProperty(schemaReference);
         } else {
-          String name = schemaReference.get().name();
+          String name = schema.name();
           p = new RefProperty(name).asDefault(name);
         }
       } else if (f.type() == FieldType.ARRAY) {
@@ -520,9 +649,15 @@ public class SwaggerGenerator {
     return p;
   }
 
+  private Property inlineObjectProperty(SchemaReference schemaReference) {
+    Schema schema = schemaReference.get();
+    Map<String, Property> properties = Maps
+        .transformValues(schema.fields(), this::convertToSwaggerProperty);
+    return new ObjectProperty(ImmutableMap.copyOf(properties));
+  }
+
   private MapProperty inlineMapProperty(SchemaReference schemaReference) {
-    Schema schema = schemaReference.repository()
-        .get(schemaReference.type(), schemaReference.apiConfig());
+    Schema schema = schemaReference.get();
     Field mapField = schema.mapValueSchema();
     if (SchemaRepository.isJsonMapSchema(schema)
       || mapField == null) { //map field should not be null for non-JsonMap schema, handling anyway
@@ -651,12 +786,17 @@ public class SwaggerGenerator {
     }
   }
 
-  //TODO add title and description
   public static class SwaggerContext {
     private Scheme scheme = Scheme.HTTPS;
     private String hostname = "myapi.appspot.com";
     private String basePath = "/_ah/api";
     private String docVersion = "1.0.0";
+    private String title;
+    private String description;
+    private boolean addGoogleJsonErrorAsDefaultResponse;
+    private boolean addErrorCodesForServiceExceptions;
+    private boolean extractCommonParametersAsRefs;
+    private boolean combineCommonParametersInSamePath;
 
     public SwaggerContext setApiRoot(String apiRoot) {
       try {
@@ -691,6 +831,36 @@ public class SwaggerGenerator {
 
     public SwaggerContext setDocVersion(String docVersion) {
       this.docVersion = docVersion;
+      return this;
+    }
+
+    public SwaggerContext setTitle(String title) {
+      this.title = title;
+      return this;
+    }
+
+    public SwaggerContext setDescription(String description) {
+      this.description = description;
+      return this;
+    }
+
+    public SwaggerContext setAddGoogleJsonErrorAsDefaultResponse(boolean addGoogleJsonErrorAsDefaultResponse) {
+      this.addGoogleJsonErrorAsDefaultResponse = addGoogleJsonErrorAsDefaultResponse;
+      return this;
+    }
+
+    public SwaggerContext setAddErrorCodesForServiceExceptions(boolean addErrorCodesForServiceExceptions) {
+      this.addErrorCodesForServiceExceptions = addErrorCodesForServiceExceptions;
+      return this;
+    }
+
+    public SwaggerContext setExtractCommonParametersAsRefs(boolean extractCommonParametersAsRefs) {
+      this.extractCommonParametersAsRefs = extractCommonParametersAsRefs;
+      return this;
+    }
+
+    public SwaggerContext setCombineCommonParametersInSamePath(boolean combineCommonParametersInSamePath) {
+      this.combineCommonParametersInSamePath = combineCommonParametersInSamePath;
       return this;
     }
   }

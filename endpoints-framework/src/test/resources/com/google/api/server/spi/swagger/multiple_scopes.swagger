@@ -29,7 +29,7 @@
         "operationId": "MultipleScopesV1NoOverride",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         },
@@ -55,7 +55,7 @@
         "operationId": "MultipleScopesV1OverrideAudience",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         },
@@ -81,7 +81,7 @@
         "operationId": "MultipleScopesV1ScopeOverride",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         },
@@ -107,7 +107,7 @@
         "operationId": "MultipleScopesV1UnknownScope",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": "A successful response"
           }
         },

@@ -60,13 +60,12 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
   private Option classPathOption = makeClassPathOption();
   private Option outputOption = makeOutputOption();
   private Option warOption = makeWarOption();
-  private Option debugOption = makeDebugOption();
   private Option hostnameOption = makeHostnameOption();
   private Option basePathOption = makeBasePathOption();
 
   public GetDiscoveryDocAction() {
     super(NAME);
-    setOptions(Arrays.asList(classPathOption, outputOption, warOption, debugOption, hostnameOption,
+    setOptions(Arrays.asList(classPathOption, outputOption, warOption, hostnameOption,
         basePathOption));
     setShortDescription("Generates discovery documents");
     setExampleString("<Endpoints tool> get-discovery-doc "

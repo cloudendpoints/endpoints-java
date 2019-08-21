@@ -71,7 +71,8 @@
             "schema": {
               "type": "object",
               "additionalProperties": {
-                "type": "object"
+                "type": "object",
+                "properties": {}
               }
             }
           }
@@ -295,7 +296,8 @@
             "schema": {
               "type": "object",
               "additionalProperties": {
-                "type": "object"
+                "type": "object",
+                "properties": {}
               }
             }
           }
@@ -408,9 +410,6 @@
         }
       }
     },
-    "JsonMap": {
-      "type": "object"
-    },
     "MapContainer": {
       "type": "object",
       "properties": {
@@ -512,13 +511,15 @@
         "stringArrayMap": {
           "type": "object",
           "additionalProperties": {
-            "type": "object"
+            "type": "object",
+            "properties": {}
           }
         },
         "stringCollectionMap": {
           "type": "object",
           "additionalProperties": {
-            "type": "object"
+            "type": "object",
+            "properties": {}
           }
         },
         "stringMap": {

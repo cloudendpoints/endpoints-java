@@ -29,7 +29,7 @@ public class UnauthorizedException extends ServiceException {
   public static final String AUTH_SCHEME_BEARER = "Bearer";
   private static final Map<String, String> GOOGLE_REALM =
       ImmutableMap.of("realm", "\"https://accounts.google.com/\"");
-  private static final int CODE = 401;
+  public static final int CODE = 401;
 
   private final String authScheme;
   private final Map<String, String> params;

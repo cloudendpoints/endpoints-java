@@ -22,7 +22,7 @@ import com.google.api.server.spi.ServiceException;
  */
 public class BadRequestException extends ServiceException {
 
-  private static final int CODE = 400;
+  public static final int CODE = 400;
 
   public BadRequestException(String message) {
     super(CODE, message);

@@ -22,7 +22,7 @@ import com.google.api.server.spi.ServiceException;
  */
 public class ForbiddenException extends ServiceException {
 
-  private static final int CODE = 403;
+  public static final int CODE = 403;
 
   public ForbiddenException(String message) {
     super(CODE, message);
