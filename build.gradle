@@ -86,6 +86,10 @@ def configureMaven(project, projectName, projectDescription) {
             authentication(userName: ossrhUsername, password: ossrhPassword)
           }
 
+          snapshotRepository(url: "https://aodocs.jfrog.io/aodocs/aodocs-java-snapshot/") {
+            authentication(userName: ossrhUsername, password: ossrhPassword)
+          }
+          
           pom.project {
             name projectName
             description projectDescription
