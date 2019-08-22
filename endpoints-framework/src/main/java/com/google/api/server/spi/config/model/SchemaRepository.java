@@ -2,15 +2,18 @@ package com.google.api.server.spi.config.model;
 
 import com.google.api.client.util.Maps;
 import com.google.api.server.spi.TypeLoader;
+import com.google.api.server.spi.config.Description;
 import com.google.api.server.spi.config.ResourcePropertySchema;
 import com.google.api.server.spi.config.ResourceSchema;
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.jsonwriter.JacksonResourceSchemaProvider;
 import com.google.api.server.spi.config.jsonwriter.ResourceSchemaProvider;
+import com.google.api.server.spi.config.model.Schema.Builder;
 import com.google.api.server.spi.config.model.Schema.Field;
 import com.google.api.server.spi.config.model.Schema.SchemaReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -121,7 +124,7 @@ public class SchemaRepository {
   }
 
   private Schema getOrCreateTypeForConfig(
-      TypeToken type, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
+      TypeToken<?> type, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
     type = ApiAnnotationIntrospector.getSchemaType(type, config);
     Schema schema = typesForConfig.get(type);
     ApiKey key = config.getApiKey().withoutRoot();
@@ -139,54 +142,64 @@ public class SchemaRepository {
     TypeToken<?> arrayItemType = Types.getArrayItemType(type);
     if (typeLoader.isSchemaType(type)) {
       throw new IllegalArgumentException("Can't add a primitive type as a resource");
-    } else if (arrayItemType != null) {
-      Field.Builder arrayItemSchema = Field.builder().setName(ARRAY_UNUSED_MSG);
-      fillInFieldInformation(arrayItemSchema, arrayItemType, null, typesForConfig, config);
-      schema = Schema.builder()
-          .setName(Types.getSimpleName(type, config.getSerializationConfig()))
-          .setType("object")
-          .addField("items", Field.builder()
-              .setName("items")
-              .setType(FieldType.ARRAY)
-              .setArrayItemSchema(arrayItemSchema.build())
-              .build())
-          .build();
-      typesForConfig.put(type, schema);
-      schemaByApiKeys.put(key, schema);
-      return schema;
-    } else if (Types.isObject(type)) {
-      typesForConfig.put(type, ANY_SCHEMA);
-      schemaByApiKeys.put(key, ANY_SCHEMA);
-      return ANY_SCHEMA;
-    } else if (Types.isMapType(type)) {
-      schema = MAP_SCHEMA;
-      final TypeToken<Map<?, ?>> mapSupertype = type.getSupertype(Map.class);
-      final boolean hasConcreteKeyValue = Types.isConcreteType(mapSupertype.getType());
-      boolean forceJsonMapSchema = EndpointsFlag.MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA.isEnabled();
-      if (hasConcreteKeyValue && !forceJsonMapSchema) {
-        schema = createMapSchema(mapSupertype, typesForConfig, config).or(schema);
-      }
-      typesForConfig.put(type, schema);
-      schemaByApiKeys.put(key, schema);
-      return schema;
-    } else if (Types.isEnumType(type)) {
-      Map<String, String> valuesAndDescriptions = Types.getEnumValuesAndDescriptions(type);
-      Schema.Builder builder = Schema.builder()
-          .setName(Types.getSimpleName(type, config.getSerializationConfig()))
-          .setType("string");
-      for (Entry<String, String> entry : valuesAndDescriptions.entrySet()) {
-        builder.addEnumValue(entry.getKey());
-        builder.addEnumDescription(entry.getValue());
-      }
-      schema = builder.build();
-      typesForConfig.put(type, schema);
-      schemaByApiKeys.put(key, schema);
-      return schema;
     } else {
-      schema = createBeanSchema(type, typesForConfig, config);
-      typesForConfig.put(type, schema);
-      schemaByApiKeys.put(key, schema);
-      return schema;
+      String simpleName = Types.getSimpleName(type, config.getSerializationConfig());
+      if (arrayItemType != null) {
+        Field.Builder arrayItemSchema = Field.builder().setName(ARRAY_UNUSED_MSG);
+        fillInFieldInformation(arrayItemSchema, arrayItemType, typesForConfig, config);
+        Field arrayField = arrayItemSchema.build();
+        Builder builder = Schema.builder()
+            .setName(simpleName)
+            .setType("object")
+            .addField("items", Field.builder()
+                .setName("items")
+                .setType(FieldType.ARRAY)
+                .setArrayItemSchema(arrayField)
+                .build());
+        SchemaReference itemSchema = arrayField.schemaReference();
+        if (itemSchema != null) {
+          builder.setDescription("An ordered list of " + itemSchema.get().name());
+        }
+        schema = builder.build();
+        typesForConfig.put(type, schema);
+        schemaByApiKeys.put(key, schema);
+        return schema;
+      } else if (Types.isObject(type)) {
+        typesForConfig.put(type, ANY_SCHEMA);
+        schemaByApiKeys.put(key, ANY_SCHEMA);
+        return ANY_SCHEMA;
+      } else if (Types.isMapType(type)) {
+        schema = MAP_SCHEMA;
+        final TypeToken<Map<?, ?>> mapSupertype = ((TypeToken) type).getSupertype(Map.class);
+        final boolean hasConcreteKeyValue = Types.isConcreteType(mapSupertype.getType());
+        boolean forceJsonMapSchema = EndpointsFlag.MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA.isEnabled();
+        if (hasConcreteKeyValue && !forceJsonMapSchema) {
+          schema = createMapSchema(mapSupertype, typesForConfig, config).or(schema);
+        }
+        typesForConfig.put(type, schema);
+        schemaByApiKeys.put(key, schema);
+        return schema;
+      } else if (Types.isEnumType(type)) {
+        Map<String, String> valuesAndDescriptions 
+            = Types.getEnumValuesAndDescriptions((TypeToken<Enum<?>>) type);
+        Schema.Builder builder = Schema.builder()
+            .setName(simpleName)
+            .setType("string");
+        setSchemaDescription(type, builder);
+        for (Entry<String, String> entry : valuesAndDescriptions.entrySet()) {
+          builder.addEnumValue(entry.getKey());
+          builder.addEnumDescription(entry.getValue());
+        }
+        schema = builder.build();
+        typesForConfig.put(type, schema);
+        schemaByApiKeys.put(key, schema);
+        return schema;
+      } else {
+        schema = createBeanSchema(type, typesForConfig, config);
+        typesForConfig.put(type, schema);
+        schemaByApiKeys.put(key, schema);
+        return schema;
+      }
     }
   }
 
@@ -237,8 +250,14 @@ public class SchemaRepository {
         .setName(Types.getSimpleName(mapType, config.getSerializationConfig()))
         .setType("object");
     Field.Builder fieldBuilder = Field.builder().setName(MAP_UNUSED_MSG);
-    fillInFieldInformation(fieldBuilder, valueSchemaType, null, typesForConfig, config);
-    return Optional.of(builder.setMapValueSchema(fieldBuilder.build()).build());
+    fillInFieldInformation(fieldBuilder, valueSchemaType, typesForConfig, config);
+    Field mapValueField = fieldBuilder.build();
+    SchemaReference valueSchema = mapValueField.schemaReference();
+    if (valueSchema != null) {
+      builder.setDescription(
+          String.format("A collection of name / %s pairs", valueSchema.get().name()));
+    }
+    return Optional.of(builder.setMapValueSchema(mapValueField).build());
   }
 
   private Schema createBeanSchema(
@@ -246,15 +265,17 @@ public class SchemaRepository {
     Schema.Builder builder = Schema.builder()
         .setName(Types.getSimpleName(type, config.getSerializationConfig()))
         .setType("object");
+    setSchemaDescription(type, builder);
     ResourceSchema schema = resourceSchemaProvider.getResourceSchema(type, config);
     for (Entry<String, ResourcePropertySchema> entry : schema.getProperties().entrySet()) {
       String propertyName = entry.getKey();
       ResourcePropertySchema propertySchema = entry.getValue();
       TypeToken<?> propertyType = propertySchema.getType();
       if (propertyType != null) {
-        Field.Builder fieldBuilder = Field.builder().setName(propertyName);
-        fillInFieldInformation(fieldBuilder, propertyType, propertySchema.getDescription(),
-            typesForConfig, config);
+        Field.Builder fieldBuilder = Field.builder()
+            .setName(propertyName)
+            .setDescription(propertySchema.getDescription());
+        fillInFieldInformation(fieldBuilder, propertyType, typesForConfig, config);
         builder.addField(propertyName, fieldBuilder.build());
       }
     }
@@ -262,10 +283,9 @@ public class SchemaRepository {
   }
 
   private void fillInFieldInformation(Field.Builder builder, TypeToken<?> fieldType,
-      String description, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
+      Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
     FieldType ft = FieldType.fromType(fieldType);
     builder.setType(ft);
-    builder.setDescription(description);
     if (ft == FieldType.OBJECT || ft == FieldType.ENUM) {
       getOrCreateTypeForConfig(fieldType, typesForConfig, config);
       builder.setSchemaReference(SchemaReference.create(this, config, fieldType));
@@ -274,10 +294,16 @@ public class SchemaRepository {
       fillInFieldInformation(
           arrayItemBuilder,
           ApiAnnotationIntrospector.getSchemaType(Types.getArrayItemType(fieldType), config),
-          null,
           typesForConfig,
           config);
       builder.setArrayItemSchema(arrayItemBuilder.build());
+    }
+  }
+
+  private void setSchemaDescription(TypeToken<?> type, Builder builder) {
+    Description description = type.getRawType().getAnnotation(Description.class);
+    if (description != null && !Strings.isNullOrEmpty(description.value())) {
+      builder.setDescription(description.value());
     }
   }
   

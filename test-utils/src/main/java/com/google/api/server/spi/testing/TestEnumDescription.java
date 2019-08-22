@@ -17,6 +17,7 @@ package com.google.api.server.spi.testing;
 
 import com.google.api.server.spi.config.Description;
 
+@Description("A list of enum values")
 public enum TestEnumDescription {
   @Description("description of value1")
   VALUE1,

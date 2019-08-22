@@ -97,6 +97,7 @@ public class SchemaRepositoryTest {
     Schema schema = repo.getOrAdd(methodConfig.getReturnType(), config);
     assertThat(schema).isEqualTo(Schema.builder()
         .setName("Map_String_TestEnum")
+        .setDescription("A collection of name / TestEnum pairs")
         .setType("object")
         .setMapValueSchema(Field.builder()
             .setName(SchemaRepository.MAP_UNUSED_MSG)
@@ -138,6 +139,7 @@ public class SchemaRepositoryTest {
     Schema expectedSchema = Schema.builder()
         .setName("Map_String_Map_String_String")
         .setType("object")
+        .setDescription("A collection of name / Map_String_String pairs")
         .setMapValueSchema(Field.builder()
             .setName(SchemaRepository.MAP_UNUSED_MSG)
             .setType(FieldType.OBJECT)

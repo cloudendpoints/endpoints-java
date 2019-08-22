@@ -21,14 +21,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to specify the description of an API parameter or enum constants.
+ * Annotation to specify the description of a method parameter, enum type, enum constant or
+ * resource (type used as request body).
+ * If used on an enum type, the description will only be used for the Discovery format (OpenAPI
+ * will inline enum values, as the semantics is poorer).
  * The description will be ignored if the annotation is used on resource fields.
  */
-@Target({ElementType.PARAMETER, ElementType.FIELD})
+@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
   /**
-   * The parameter description.
+   * A description.
    */
   String value() default "";
 }

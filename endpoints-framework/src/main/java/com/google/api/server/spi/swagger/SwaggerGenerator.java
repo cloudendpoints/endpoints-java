@@ -469,9 +469,11 @@ public class SwaggerGenerator {
         case RESOURCE:
           TypeToken<?> requestType = parameterConfig.getSchemaBaseType();
           Schema schema = genCtx.schemata.getOrAdd(requestType, apiConfig);
-          BodyParameter bodyParameter = new BodyParameter();
-          bodyParameter.setName("body");
-          bodyParameter.setSchema(getSchema(schema));
+          BodyParameter bodyParameter = new BodyParameter()
+              .name(schema.name())
+              .description(parameterConfig.getDescription())
+              .schema(getSchema(schema));
+          bodyParameter.setRequired(true);
           operation.addParameter(bodyParameter);
           break;
         case UNKNOWN:
@@ -608,7 +610,10 @@ public class SwaggerGenerator {
 
   private Model convertToSwaggerSchema(Schema schema) {
     ModelImpl docSchema = new ModelImpl().type("object");
-    Map<String, Property> fields = new TreeMap<>();
+    String description = schema.description();
+    if (!Strings.isEmptyOrWhitespace(description)) {
+      docSchema.description(description);
+    }
     if (!schema.fields().isEmpty()) {
       for (Field f : schema.fields().values()) {
         fields.put(f.name(), convertToSwaggerProperty(f));
