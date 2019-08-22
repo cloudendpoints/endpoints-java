@@ -446,8 +446,10 @@ public class SwaggerGenerator {
               && defaultValue == null);
           if (parameterConfig.isRepeated()) {
             TypeToken<?> t = parameterConfig.getRepeatedItemSerializedType();
-            parameter.setType("array");
-            parameter.setCollectionFormat("multi");
+            parameter.type("array")
+                //RestServletRequestParamReader uses "," as a separator for repeated path params 
+                // => csv, but reads multiple occurrences of query parameters => multi
+                .collectionFormat(isPathParameter ? "csv" : "multi");
             Property p = getSwaggerArrayProperty(t);
             if (parameterConfig.isEnum()) {  // TODO: Not sure if this is the right check
               ((StringProperty) p).setEnum(getEnumValues(t));
