@@ -495,22 +495,18 @@ public class SwaggerGenerator {
     boolean addErrorCodesForServiceExceptions = context.addErrorCodesForServiceExceptions;
     if (addGoogleJsonErrorAsDefaultResponse || addErrorCodesForServiceExceptions) {
       //add error response model only if necessary
-      Supplier<Model> errorModelSupplier = Suppliers.memoize(() -> getSchema(genCtx.schemata
-          .getOrAdd(TypeToken.of(GoogleJsonErrorContainer.class), apiConfig)));
       if (addErrorCodesForServiceExceptions) {
         //add error code specific to the exceptions thrown by the method
-        Map<Integer, String> errorCodes = methodConfig.getErrorCodesAndDescriptions();
-        for (Entry<Integer, String> entry : errorCodes.entrySet()) {
-          operation.response(entry.getKey(), new Response()
-              .description(entry.getValue())
-              .responseSchema(errorModelSupplier.get()));
+        List<ErrorResponse> errorCodes = methodConfig.getErrorReponses();
+        for (ErrorResponse error : errorCodes) {
+          operation.response(error.code, 
+              getOrCreateErrorModelRef(swagger, apiConfig, genCtx, error.name, error.description));
         }
       }
       if (addGoogleJsonErrorAsDefaultResponse) {
         //add GoogleJsonError as the default response
-        operation.defaultResponse(new Response()
-            .description("A failed response")
-            .responseSchema(errorModelSupplier.get()));
+        operation.defaultResponse(
+            getOrCreateErrorModelRef(swagger, apiConfig, genCtx, null,null));
       }
     }
     
@@ -534,6 +530,20 @@ public class SwaggerGenerator {
     }
     path.set(methodConfig.getHttpMethod().toLowerCase(), operation);
     addDefinedMetricCosts(genCtx.limitMetrics, operation, methodConfig.getMetricCosts());
+  }
+
+  private RefResponse getOrCreateErrorModelRef(Swagger swagger, ApiConfig apiConfig, 
+      GenerationContext genCtx, String name, String description) {
+    Model schema = getSchema(genCtx.schemata
+        .getOrAdd(TypeToken.of(GoogleJsonErrorContainer.class), apiConfig));
+    if (swagger.getResponses() == null) {
+      swagger.setResponses(new TreeMap<>());
+    }
+    String ref = Optional.ofNullable(name).orElse("DefaultError");
+    swagger.response(ref, new Response()
+            .description(Optional.ofNullable(description).orElse("A failed response"))
+            .responseSchema(schema));
+    return new RefResponse(RefType.RESPONSE.getInternalPrefix() + ref);
   }
 
   private Model getSchema(Schema schema) {
