@@ -233,6 +233,9 @@ public class SwaggerGenerator {
             .version(context.docVersion)
             //TODO contact, license, termsOfService could be configured
         );
+    if (!Strings.isEmptyOrWhitespace(context.apiName)) {
+      swagger.vendorExtension("x-google-api-name", context.apiName);
+    }
     for (ApiKey apiKey : configsByKey.keySet()) {
       writeApi(apiKey, configsByKey.get(apiKey), swagger, context, genCtx);
     }
@@ -376,7 +379,7 @@ public class SwaggerGenerator {
             .put(METRIC_NAME_KEY, limitMetric.name())
             .put(METRIC_VALUE_TYPE_KEY, METRIC_VALUE_TYPE)
             .put(METRIC_KIND_KEY, METRIC_KIND);
-        if (limitMetric.displayName() != null && !"".equals(limitMetric.displayName())) {
+        if (!Strings.isEmptyOrWhitespace(limitMetric.displayName())) {
           builder.put(LIMIT_DISPLAY_NAME_KEY, limitMetric.displayName());
         }
         metrics.add(builder.build());
@@ -860,32 +863,17 @@ public class SwaggerGenerator {
     private String docVersion = "1.0.0";
     private String title;
     private String description;
+    private String apiName;
     private boolean addGoogleJsonErrorAsDefaultResponse;
     private boolean addErrorCodesForServiceExceptions;
     private boolean extractCommonParametersAsRefs;
     private boolean combineCommonParametersInSamePath;
 
-    public SwaggerContext setApiRoot(String apiRoot) {
-      try {
-        URL url = new URL(apiRoot);
-        hostname = url.getHost();
-        if (("http".equals(url.getProtocol()) && url.getPort() != 80 && url.getPort() != -1)
-            || ("https".equals(url.getProtocol()) && url.getPort() != 443 && url.getPort() != -1)) {
-          hostname += ":" + url.getPort();
-        }
-        basePath = Strings.stripTrailingSlash(url.getPath());
-        setScheme(url.getProtocol());
-        return this;
-      } catch (MalformedURLException e) {
-        throw new IllegalArgumentException(e);
-      }
-    }
-
     public SwaggerContext setScheme(String scheme) {
       this.scheme = "http".equals(scheme) ? Scheme.HTTP : Scheme.HTTPS;
       return this;
     }
-
+    
     public SwaggerContext setHostname(String hostname) {
       this.hostname = hostname;
       return this;
@@ -908,6 +896,11 @@ public class SwaggerGenerator {
 
     public SwaggerContext setDescription(String description) {
       this.description = description;
+      return this;
+    }
+
+    public SwaggerContext setApiName(String apiName) {
+      this.apiName = apiName;
       return this;
     }
 

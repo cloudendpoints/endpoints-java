@@ -2,10 +2,10 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "localhost:8080"
+    "title": "myapi.appspot.com"
   },
-  "host": "localhost:8080",
-  "basePath": "/api",
+  "host": "myapi.appspot.com",
+  "basePath": "/_ah/api",
   "tags": [
     {
       "name": "foo:v1",
@@ -16,7 +16,7 @@
     }
   ],
   "schemes": [
-    "http"
+    "https"
   ],
   "consumes": [
     "application/json"
@@ -303,5 +303,6 @@
         }
       }
     }
-  }
+  },
+  "x-google-api-name": "customApiName"
 }

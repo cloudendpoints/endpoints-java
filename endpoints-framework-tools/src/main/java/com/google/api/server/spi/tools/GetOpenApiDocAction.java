@@ -55,6 +55,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
   private Option basePathOption = makeBasePathOption();
   private Option titleOption = makeTitleOption();
   private Option descriptionOption = makeDescriptionOption();
+  private Option apiNameOption = makeApiNameOption();
   private Option addGoogleJsonErrorAsDefaultResponseOption = makeVisibleFlagOption(
       "addGoogleJsonErrorAsDefaultResponse", "Add GoogleJsonError as default response"
   );
@@ -76,7 +77,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
     super(alias);
     setOptions(
         Arrays.asList(classPathOption, outputOption, warOption, hostnameOption, basePathOption,
-            titleOption, descriptionOption, 
+            titleOption, descriptionOption, apiNameOption,
             addGoogleJsonErrorAsDefaultResponseOption, addErrorCodesForServiceExceptionsOption,
             extractCommonParametersAsRefsOption, combineCommonParametersInSamePathOption));
     setShortDescription("Generates an OpenAPI document");
@@ -100,6 +101,14 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
         "DESCRIPTION",
         "Sets the description for the generated document. Is empty by default.");
   }
+
+  private static Option makeApiNameOption() {
+    return EndpointsOption.makeVisibleNonFlagOption(
+        "a",
+        "apiName",
+        "API_NAME",
+        "Sets the api name. Endpoints Management will use hostname if not defined.");
+  }
   
   private static boolean getBooleanOptionValue(Option option) {
     return option.getValue() != null;
@@ -122,6 +131,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
         getBasePath(basePathOption), 
         getOptionOrDefault(titleOption, null),
         getOptionOrDefault(descriptionOption, null),
+        getOptionOrDefault(apiNameOption, null),
         getBooleanOptionValue(addGoogleJsonErrorAsDefaultResponseOption),
         getBooleanOptionValue(addErrorCodesForServiceExceptionsOption),
         getBooleanOptionValue(extractCommonParametersAsRefsOption),
@@ -143,7 +153,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
    */
   public String genOpenApiDoc(
       URL[] classPath, String outputFilePath, String hostname, String basePath,
-      String title, String description,
+      String title, String description, String apiName,
       boolean addGoogleJsonErrorAsDefaultResponse, boolean addErrorCodesForServiceExceptionsOption,
       boolean extractCommonParametersAsRefsOption, boolean combineCommonParametersInSamePathOption,
       List<String> serviceClassNames, boolean outputToDisk)
@@ -171,6 +181,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
         .setBasePath(basePath)
         .setTitle(title)
         .setDescription(description)
+        .setApiName(apiName)
         .setAddErrorCodesForServiceExceptions(addGoogleJsonErrorAsDefaultResponse)
         .setAddErrorCodesForServiceExceptions(addErrorCodesForServiceExceptionsOption)
         .setExtractCommonParametersAsRefs(extractCommonParametersAsRefsOption)

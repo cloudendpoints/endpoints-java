@@ -75,7 +75,9 @@ import io.swagger.util.Json;
 public class SwaggerGeneratorTest {
   private final SwaggerGenerator generator = new SwaggerGenerator();
   private final SwaggerContext context = new SwaggerContext()
-      .setApiRoot("https://swagger-test.appspot.com/api");
+      .setScheme("https")
+      .setHostname("swagger-test.appspot.com")
+      .setBasePath("/api");
   private final ObjectMapper mapper = Json.mapper();
   private ApiConfigLoader configLoader;
 
@@ -136,10 +138,10 @@ public class SwaggerGeneratorTest {
   }
 
   @Test
-  public void testWriteSwagger_FooEndpointLocalhost() throws Exception {
+  public void testWriteSwagger_FooEndpointWithApiName() throws Exception {
     Swagger swagger = getSwagger(
-        FooEndpoint.class, new SwaggerContext().setApiRoot("http://localhost:8080/api"));
-    Swagger expected = readExpectedAsSwagger("foo_endpoint_localhost.swagger");
+        FooEndpoint.class, new SwaggerContext().setApiName("customApiName"));
+    Swagger expected = readExpectedAsSwagger("foo_endpoint_api_name.swagger");
     checkSwagger(expected, swagger);
   }
 
