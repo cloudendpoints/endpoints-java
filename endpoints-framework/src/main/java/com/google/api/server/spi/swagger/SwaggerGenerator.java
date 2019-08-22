@@ -239,12 +239,6 @@ public class SwaggerGenerator {
     for (ApiKey apiKey : configsByKey.keySet()) {
       writeApi(apiKey, configsByKey.get(apiKey), swagger, context, genCtx);
     }
-    //reorder paths by string order to have consistent output
-    Builder<String, Path> builder = ImmutableSortedMap.naturalOrder();
-    for (Entry<String, Path> pathEntry : swagger.getPaths().entrySet()) {
-      builder.put(pathEntry);
-    }
-    swagger.paths(builder.build());
     combineCommonParameters(swagger, context);
     normalizeOperationParameters(swagger);
     writeQuotaDefinitions(swagger, genCtx);
@@ -440,20 +434,19 @@ public class SwaggerGenerator {
   private void writeApiMethod(ApiMethodConfig methodConfig, ApiConfig apiConfig, Swagger swagger,
       SwaggerContext context, GenerationContext genCtx) throws ApiConfigException {
     Path path = getOrCreatePath(swagger, methodConfig);
-    Operation operation = new Operation();
-    operation.setOperationId(getOperationId(apiConfig, methodConfig));
-    operation.setTags(Collections.singletonList(getTagName(apiConfig)));
-    operation.setDescription(methodConfig.getDescription());
-    operation.setDeprecated(methodConfig.isDeprecated() ? true : null);
+    Operation operation = new Operation()
+      .operationId(getOperationId(apiConfig, methodConfig))
+      .tags(Collections.singletonList(getTagName(apiConfig)))
+      .description(methodConfig.getDescription())
+      .deprecated(methodConfig.isDeprecated() ? true : null);
     Collection<String> pathParameters = methodConfig.getPathParameters();
     for (ApiParameterConfig parameterConfig : methodConfig.getParameterConfigs()) {
+      boolean isPathParameter = pathParameters.contains(parameterConfig.getName());
       switch (parameterConfig.getClassification()) {
         case API_PARAMETER:
-          boolean isPathParameter = pathParameters.contains(parameterConfig.getName());
           AbstractSerializableParameter parameter =
               isPathParameter ? new PathParameter() : new QueryParameter();
-          parameter.setName(parameterConfig.getName());
-          parameter.setDescription(parameterConfig.getDescription());
+          parameter.name(parameterConfig.getName()).description(parameterConfig.getDescription());
           String defaultValue = parameterConfig.getDefaultValue();
           if (!Strings.isEmptyOrWhitespace(defaultValue)) {
             parameter.setDefaultValue(defaultValue);
@@ -468,19 +461,19 @@ public class SwaggerGenerator {
                 .collectionFormat(isPathParameter ? "csv" : "multi");
             Property p = getSwaggerArrayProperty(t);
             if (parameterConfig.isEnum()) {  // TODO: Not sure if this is the right check
-              ((StringProperty) p).setEnum(getEnumValues(t));
+              ((StringProperty) p)._enum(getEnumValues(t));
             }
-            parameter.setItems(p);
+            parameter.items(p);
           } else if (parameterConfig.isEnum()) {
-            parameter.setType("string");
-            parameter.setEnum(getEnumValues(parameterConfig.getType()));
-            parameter.setRequired(required);
+            parameter.type("string")
+                ._enum(getEnumValues(parameterConfig.getType()))
+                .required(required);
           } else {
-            parameter.setType(
-                TYPE_TO_STRING_MAP.get(parameterConfig.getSchemaBaseType().getType()));
-            parameter.setFormat(
-                TYPE_TO_FORMAT_MAP.get(parameterConfig.getSchemaBaseType().getType()));
-            parameter.setRequired(required);
+            parameter.type(
+                TYPE_TO_STRING_MAP.get(parameterConfig.getSchemaBaseType().getType()))
+                .format(
+                    TYPE_TO_FORMAT_MAP.get(parameterConfig.getSchemaBaseType().getType()))
+                .required(required);
           }
           operation.parameter(parameter);
           break;
@@ -507,7 +500,7 @@ public class SwaggerGenerator {
       TypeToken<?> returnType =
           ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), apiConfig);
       Schema schema = genCtx.schemata.getOrAdd(returnType, apiConfig);
-      response.setResponseSchema(getSchema(schema));
+      response.responseSchema(getSchema(schema));
     }
     operation.response(responseCode, response);
 
@@ -574,7 +567,7 @@ public class SwaggerGenerator {
     if (mapField != null) {
       return new ModelImpl().additionalProperties(convertToSwaggerProperty(mapField));
     }
-    return new RefModel(schema.name()).asDefault(schema.name());
+    return new RefModel(RefType.DEFINITION.getInternalPrefix() + schema.name());
   }
 
   private void writeAuthConfig(Swagger swagger, ApiMethodConfig methodConfig, Operation operation)
@@ -633,14 +626,16 @@ public class SwaggerGenerator {
       docSchema.description(description);
     }
     if (!schema.fields().isEmpty()) {
+      Map<String, Property> fields = new TreeMap<>();
       for (Field f : schema.fields().values()) {
         fields.put(f.name(), convertToSwaggerProperty(f));
       }
       docSchema.setProperties(fields);
     }
     //map schema should be inlined, but handling anyway 
-    if (schema.mapValueSchema() != null) {
-      docSchema.setAdditionalProperties(convertToSwaggerProperty(schema.mapValueSchema()));
+    Field mapValueSchema = schema.mapValueSchema();
+    if (mapValueSchema != null) {
+      docSchema.setAdditionalProperties(convertToSwaggerProperty(mapValueSchema));
     }
     return docSchema;
   }
@@ -664,7 +659,7 @@ public class SwaggerGenerator {
           p = inlineMapProperty(schemaReference);
         } else {
           String name = schema.name();
-          p = new RefProperty(name).asDefault(name);
+          p = new RefProperty(RefType.DEFINITION.getInternalPrefix() + name);
         }
       } else if (f.type() == FieldType.ARRAY) {
         p = new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
@@ -744,6 +739,9 @@ public class SwaggerGenerator {
     Path path = swagger.getPath(pathStr);
     if (path == null) {
       path = new Path();
+      if (swagger.getPaths() == null) {
+        swagger.setPaths(new TreeMap<>());
+      }
       swagger.path(pathStr, path);
     }
     return path;
