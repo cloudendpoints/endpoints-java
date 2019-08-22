@@ -246,8 +246,24 @@ public class SwaggerGenerator {
     }
     swagger.paths(builder.build());
     combineCommonParameters(swagger, context);
+    normalizeOperationParameters(swagger);
     writeQuotaDefinitions(swagger, genCtx);
     return swagger;
+  }
+
+  /*
+   * Swagger library will set parameters to empty by default. We force them to be empty.
+   * If not empty, makes sure the body is always last.
+   */
+  public static void normalizeOperationParameters(Swagger swagger) {
+    swagger.getPaths().values().stream()
+        .flatMap(path -> path.getOperations().stream())
+        .forEach(operation -> {
+          List<Parameter> parameters = operation.getParameters();
+          if (parameters != null && parameters.isEmpty()) {
+            operation.setParameters(null);
+          }
+        });
   }
 
   private void combineCommonParameters(Swagger swagger, SwaggerContext context) {
