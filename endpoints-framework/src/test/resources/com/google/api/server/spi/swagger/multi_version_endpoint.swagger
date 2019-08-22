@@ -32,7 +32,7 @@
         "operationId": "MyapiV1Get",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -48,7 +48,7 @@
         "operationId": "MyapiV2Get",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }

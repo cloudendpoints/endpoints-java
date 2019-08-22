@@ -29,7 +29,7 @@
         "operationId": "MyapiV1GetArrayService",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A ArrayEndpoint response",
             "schema": {
               "$ref": "#/definitions/ArrayEndpoint"
             }
@@ -45,7 +45,7 @@
         "operationId": "MyapiV1GetBaz",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Baz response",
             "schema": {
               "$ref": "#/definitions/Baz"
             }
@@ -61,7 +61,7 @@
         "operationId": "MyapiV1GetFoosResponse",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -77,7 +77,7 @@
         "operationId": "MyapiV1GetFoos",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A FooCollection response",
             "schema": {
               "$ref": "#/definitions/FooCollection"
             }
@@ -93,7 +93,7 @@
         "operationId": "MyapiV1GetAllArrayedFoos",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A FooCollectionCollection response",
             "schema": {
               "$ref": "#/definitions/FooCollectionCollection"
             }
@@ -109,7 +109,7 @@
         "operationId": "MyapiV1GetAllFoos",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A FooCollectionCollection response",
             "schema": {
               "$ref": "#/definitions/FooCollectionCollection"
             }
@@ -125,7 +125,7 @@
         "operationId": "MyapiV1GetAllFoosResponse",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_FooCollection response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_FooCollection"
             }
@@ -141,7 +141,7 @@
         "operationId": "MyapiV1GetAllNestedFoosResponse",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_FooCollectionCollection response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_FooCollectionCollection"
             }
@@ -157,7 +157,7 @@
         "operationId": "MyapiV1GetArrayedFoos",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A FooCollection response",
             "schema": {
               "$ref": "#/definitions/FooCollection"
             }
@@ -173,7 +173,7 @@
         "operationId": "MyapiV1GetIntegersResponse",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Integer response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Integer"
             }
@@ -189,7 +189,7 @@
         "operationId": "MyapiV1GetListOfString",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A ListContainer response",
             "schema": {
               "$ref": "#/definitions/ListContainer"
             }
@@ -205,7 +205,7 @@
         "operationId": "MyapiV1GetObjectIntegers",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A IntegerCollection response",
             "schema": {
               "$ref": "#/definitions/IntegerCollection"
             }
@@ -221,7 +221,7 @@
         "operationId": "MyapiV1GetIntegers",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A IntegerCollection response",
             "schema": {
               "$ref": "#/definitions/IntegerCollection"
             }

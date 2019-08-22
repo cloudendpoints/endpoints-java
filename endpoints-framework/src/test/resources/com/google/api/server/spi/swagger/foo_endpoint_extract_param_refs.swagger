@@ -38,7 +38,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -75,7 +75,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -112,7 +112,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -146,7 +146,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -172,7 +172,7 @@
         "operationId": "FooV1Toplevel",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -206,7 +206,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -241,7 +241,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -276,7 +276,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -308,7 +308,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }

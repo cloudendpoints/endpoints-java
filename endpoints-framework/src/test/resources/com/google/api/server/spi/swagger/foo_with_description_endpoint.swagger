@@ -51,7 +51,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_FooDescription response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_FooDescription"
             }
@@ -77,7 +77,7 @@
         "operationId": "FooV1Toplevel",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_FooDescription response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_FooDescription"
             }
@@ -115,7 +115,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A FooDescription response",
             "schema": {
               "$ref": "#/definitions/FooDescription"
             }
@@ -159,7 +159,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A FooDescription response",
             "schema": {
               "$ref": "#/definitions/FooDescription"
             }
@@ -204,7 +204,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A FooDescription response",
             "schema": {
               "$ref": "#/definitions/FooDescription"
             }
@@ -240,7 +240,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A FooDescription response",
             "schema": {
               "$ref": "#/definitions/FooDescription"
             }

@@ -29,7 +29,7 @@
         "operationId": "MyapiV1GetDateTimeKeyMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_DateTime_String response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -48,7 +48,7 @@
         "operationId": "MyapiV1GetMapOfStrings",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A MapContainer response",
             "schema": {
               "$ref": "#/definitions/MapContainer"
             }
@@ -64,7 +64,7 @@
         "operationId": "MyapiV1GetStringCollectionMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A JsonMap response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -84,7 +84,7 @@
         "operationId": "MyapiV1GetBooleanKeyMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_Boolean_String response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -103,7 +103,7 @@
         "operationId": "MyapiV1GetDateKeyMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_DateTime_String response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -122,7 +122,7 @@
         "operationId": "MyapiV1GetFloatKeyMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_Float_String response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -141,7 +141,7 @@
         "operationId": "MyapiV1GetIntKeyMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_Integer_String response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -160,7 +160,7 @@
         "operationId": "MyapiV1GetLongKeyMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_Long_String response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -179,7 +179,7 @@
         "operationId": "MyapiV1GetBazMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_String_Baz response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -198,7 +198,7 @@
         "operationId": "MyapiV1GetFooMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_String_Foo response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -217,7 +217,7 @@
         "operationId": "MyapiV1GetIntMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_String_Integer response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -237,7 +237,7 @@
         "operationId": "MyapiV1GetFooMapMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_String_Map_String_Foo response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -259,7 +259,7 @@
         "operationId": "MyapiV1GetStringMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_String_String response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -278,7 +278,7 @@
         "operationId": "MyapiV1GetStringArrayMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A JsonMap response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -298,7 +298,7 @@
         "operationId": "MyapiV1GetStringValueMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_String_StringValue response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -317,7 +317,7 @@
         "operationId": "MyapiV1GetEnumKeyMap",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_TestEnum_String response",
             "schema": {
               "type": "object",
               "additionalProperties": {
@@ -336,7 +336,7 @@
         "operationId": "MyapiV1GetMapService",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A MapEndpoint response",
             "schema": {
               "$ref": "#/definitions/MapEndpoint"
             }
@@ -352,7 +352,7 @@
         "operationId": "MyapiV1GetMapSubclass",
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Map_Boolean_Integer response",
             "schema": {
               "type": "object",
               "additionalProperties": {

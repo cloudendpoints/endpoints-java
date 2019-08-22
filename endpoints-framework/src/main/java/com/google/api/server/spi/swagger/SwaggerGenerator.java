@@ -531,7 +531,8 @@ public class SwaggerGenerator {
       TypeToken<?> returnType =
           ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), apiConfig);
       Schema schema = genCtx.schemata.getOrAdd(returnType, apiConfig);
-      response.responseSchema(getSchema(schema));
+      response.responseSchema(getSchema(schema))
+        .description("A " + schema.name() + " response");
     }
     operation.response(responseCode, response);
 
