@@ -332,8 +332,8 @@ public class SwaggerGeneratorTest {
   }
 
   private void checkSwagger(Swagger expected, Swagger actual) throws Exception {
+    SwaggerSubject.assertThat(actual).isValid();
     SwaggerSubject.assertThat(actual).isSameAs(expected);
-    SwaggerSubject.assertThat(actual).hasNoDuplicateOperations();
   }
 
   @Api(name = "thirdparty", version = "v1",
