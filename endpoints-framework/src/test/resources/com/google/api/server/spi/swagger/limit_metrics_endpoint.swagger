@@ -80,6 +80,7 @@
     "metrics": [
       {
         "name": "read",
+        "displayName": "Read requests",
         "valueType": "INT64",
         "metricKind": "GAUGE"
       },
@@ -97,8 +98,7 @@
           "values": {
             "STANDARD": 100
           },
-          "unit": "1/min/{project}",
-          "displayName": "Read requests"
+          "unit": "1/min/{project}"
         },
         {
           "name": "write",

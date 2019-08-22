@@ -52,6 +52,7 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -371,20 +372,19 @@ public class SwaggerGenerator {
       List<Map<String, Object>> limits = new ArrayList<>();
       List<Map<String, Object>> metrics = new ArrayList<>();
       for (ApiLimitMetricConfig limitMetric : genCtx.limitMetrics.values()) {
-        metrics.add(ImmutableMap.<String, Object>builder()
+        Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
             .put(METRIC_NAME_KEY, limitMetric.name())
             .put(METRIC_VALUE_TYPE_KEY, METRIC_VALUE_TYPE)
-            .put(METRIC_KIND_KEY, METRIC_KIND)
-            .build());
-        ImmutableMap.Builder<String, Object> limitBuilder = ImmutableMap.<String, Object>builder()
+            .put(METRIC_KIND_KEY, METRIC_KIND);
+        if (limitMetric.displayName() != null && !"".equals(limitMetric.displayName())) {
+          builder.put(LIMIT_DISPLAY_NAME_KEY, limitMetric.displayName());
+        }
+        metrics.add(builder.build());
+        limits.add(ImmutableMap.<String, Object>builder()
             .put(LIMIT_NAME_KEY, limitMetric.name())
             .put(LIMIT_METRIC_KEY, limitMetric.name())
             .put(LIMIT_DEFAULT_LIMIT_KEY, ImmutableMap.of("STANDARD", limitMetric.limit()))
-            .put(LIMIT_UNIT_KEY, LIMIT_PER_MINUTE_PER_PROJECT);
-        if (limitMetric.displayName() != null && !"".equals(limitMetric.displayName())) {
-          limitBuilder.put(LIMIT_DISPLAY_NAME_KEY, limitMetric.displayName());
-        }
-        limits.add(limitBuilder.build());
+            .put(LIMIT_UNIT_KEY, LIMIT_PER_MINUTE_PER_PROJECT).build());
       }
       quotaDefinitions.put(LIMITS_KEY, limits);
       swagger.setVendorExtension(MANAGEMENT_DEFINITIONS_KEY,
