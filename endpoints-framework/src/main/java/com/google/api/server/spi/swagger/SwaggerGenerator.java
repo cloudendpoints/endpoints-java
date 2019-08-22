@@ -29,6 +29,7 @@ import com.google.api.server.spi.config.model.ApiIssuerConfigs.IssuerConfig;
 import com.google.api.server.spi.config.model.ApiKey;
 import com.google.api.server.spi.config.model.ApiLimitMetricConfig;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
+import com.google.api.server.spi.config.model.ApiMethodConfig.ErrorResponse;
 import com.google.api.server.spi.config.model.ApiMetricCostConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.AuthScopeRepository;
@@ -45,7 +46,6 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
@@ -53,12 +53,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
+import com.google.common.net.UrlEscapers;
 import com.google.common.reflect.TypeToken;
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Info;
@@ -67,6 +66,7 @@ import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.RefModel;
+import io.swagger.models.RefResponse;
 import io.swagger.models.Response;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
@@ -97,6 +97,7 @@ import io.swagger.models.properties.PropertyBuilder;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.StringProperty;
 
+import io.swagger.models.refs.RefType;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -108,11 +109,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -275,10 +274,10 @@ public class SwaggerGenerator {
       path.getOperations().forEach(operation -> {
         operation.getParameters().forEach(parameter -> {
           Multiset<Parameter> counter = Optional
-              .ofNullable(paramNameCounter.get(parameter.getName()))
+              .ofNullable(paramNameCounter.get(getRefName(parameter)))
               .orElse(HashMultiset.create());
           counter.add(parameter);
-          paramNameCounter.put(parameter.getName(), counter);
+          paramNameCounter.put(getRefName(parameter), counter);
           specLevelParameters.put(parameter, path);
           parameters.put(parameter, operation);
         });
@@ -294,44 +293,58 @@ public class SwaggerGenerator {
           //if multiple params are named the same, only replace the one with the most occurrences
           //TODO add param name suffix depending on "in" and "required" values to deduplicate
           Multiset<Parameter> paramCounter = Multisets
-              .copyHighestCountFirst(paramNameCounter.get(parameter.getName()));
+              .copyHighestCountFirst(paramNameCounter.get(getRefName(parameter)));
           if (paramCounter.iterator().next().equals(parameter)) {
-            swagger.addParameter(parameter.getName(), parameter);
-            swagger.getPaths().values().forEach(path -> path.getOperations().forEach(operation -> {
-              List<Parameter> opParameters = operation.getParameters();
-              if (opParameters.contains(parameter)) {
-                opParameters.add(new RefParameter(parameter.getName())
-                    .asDefault(parameter.getName()));
-                opParameters.remove(parameter);
-              }
-            }));
+            addGlobalParameter(swagger, parameter);
+            swagger.getPaths().values().forEach(path -> path.getOperations()
+                .forEach(operation -> replaceParameterByRef(operation.getParameters(), parameter)
+            ));
             pathLevelParameters.values().forEach(pathParameters -> pathParameters.removeAll(parameter));
           }
         }
       });
     }
     
-    if (context.combineCommonParametersInSamePath) {
       //combine remaining common path-level params
-      pathLevelParameters.forEach((path, parameterMap) -> {
-        parameterMap.asMap().forEach((parameter, operations) -> {
-          //if parameter is used in all operations, replace it
-          if (operations.size() == path.getOperations().size()) {
-            path.addParameter(parameter);
-            operations.forEach(operation -> operation.getParameters().remove(parameter));
-          }
-        });
-        //nullify empty parameters at path level
-        //TODO deserialization with standard Swagger lib recreates an empty list on null value,
-        // causing comparisons in tests to fail. But could save some size on the final document.
-        /*path.getOperations().forEach(operation -> {
-          List<Parameter> parameters = operation.getParameters();
-          if (parameters != null && parameters.isEmpty()) {
-            operation.setParameters(null);
-          }
-        });*/
+    pathLevelParameters.forEach((path, parameterMap) -> {
+      parameterMap.asMap().forEach((parameter, operations) -> {
+        //if parameter is used in all operations on this path, move it to path level
+        boolean combined = false;
+        if (context.combineCommonParametersInSamePath 
+            && operations.size() == path.getOperations().size()) {
+          path.addParameter(parameter);
+          operations.forEach(operation -> operation.getParameters().remove(parameter));
+          combined = true;
+        }
+        //if parameter is more than once in this path but was not extracted before, extract as ref
+        if (context.extractCommonParametersAsRefs && operations.size() > 1 && !combined) {
+          addGlobalParameter(swagger, parameter);
+          operations.forEach(operation ->
+              replaceParameterByRef(operation.getParameters(), parameter));
+        }
       });
+    });
+  }
+
+  private void addGlobalParameter(Swagger swagger, Parameter parameter) {
+    if (swagger.getParameters() == null) {
+      swagger.setParameters(new TreeMap<>());
     }
+    swagger.addParameter(getRefName(parameter), parameter);
+  }
+
+  private void replaceParameterByRef(List<Parameter> opParameters, Parameter parameter) {
+    int index = opParameters.indexOf(parameter);
+    if (index != -1) {
+      opParameters.add(index,
+          new RefParameter(RefType.PARAMETER.getInternalPrefix() + getRefName(parameter)));
+      opParameters.remove(parameter);
+    }
+  }
+
+  private String getRefName(Parameter parameter) {
+    String suffix = "_" + parameter.getIn() + "_parameter";
+    return UrlEscapers.urlPathSegmentEscaper().escape(parameter.getName() + suffix) ;
   }
 
   private void writeQuotaDefinitions(Swagger swagger, GenerationContext genCtx) {
