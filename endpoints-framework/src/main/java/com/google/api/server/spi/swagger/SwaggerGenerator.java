@@ -109,9 +109,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -238,10 +240,30 @@ public class SwaggerGenerator {
     for (ApiKey apiKey : configsByKey.keySet()) {
       writeApi(apiKey, configsByKey.get(apiKey), swagger, context, genCtx);
     }
+    checkEquivalentPaths(swagger);
     combineCommonParameters(swagger, context);
     normalizeOperationParameters(swagger);
     writeQuotaDefinitions(swagger, genCtx);
     return swagger;
+  }
+
+  /*
+    A generated spec might have "equivalent" paths like this:
+    - POST /myapi/v1/foo/{id}
+    - GET /myapi/v1/foo/{fooId}
+    This is valid for the Discovery format, but won't work on Swagger.
+   */
+  private void checkEquivalentPaths(Swagger swagger) {
+    List<Entry<String, List<String>>> duplicatePaths = swagger.getPaths().keySet().stream()
+        .collect(Collectors.groupingBy(path -> path.replaceAll("\\{[^}]+}", "{%}")))
+        .entrySet().stream()
+        .filter(entry -> entry.getValue().size() > 1)
+        .collect(Collectors.toList());
+    if (!duplicatePaths.isEmpty()) {
+      throw new IllegalStateException("Equivalent paths found:" + duplicatePaths.stream()
+          .map(entry -> String.format("\n%s -> %s", entry.getKey(), entry.getValue()))
+          .collect(Collectors.joining()));
+    }
   }
 
   /*

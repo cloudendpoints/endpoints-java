@@ -18,6 +18,7 @@ package com.google.api.server.spi.swagger;
 import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA;
 import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES;
 import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_SUPPORT_ARRAYS_VALUES;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.IoUtil;
@@ -30,6 +31,8 @@ import com.google.api.server.spi.config.ApiConfigLoader;
 import com.google.api.server.spi.config.ApiIssuer;
 import com.google.api.server.spi.config.ApiIssuerAudience;
 import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.ApiMethod.HttpMethod;
+import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.response.BadRequestException;
@@ -320,6 +323,17 @@ public class SwaggerGeneratorTest {
     checkSwagger(expected, swagger);
   }
 
+  @Test
+  public void testEquivalentPathsNotAccepted() {
+    try {
+      ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), EquivalentPathsEndpoint.class);
+      generator.writeSwagger(ImmutableList.of(config), context);
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(IllegalStateException.class);
+      assertThat(e).hasMessageThat().contains("Equivalent paths found");
+    }
+  }
+
   private Swagger getSwagger(Class<?> serviceClass, SwaggerContext context)
       throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), serviceClass);
@@ -416,6 +430,15 @@ public class SwaggerGeneratorTest {
 
     @ApiMethod
     public void throwsUnknownException() throws IllegalStateException { }
+  }
+  
+  @Api(name = "equivalentPaths", version = "v1")
+  private static class EquivalentPathsEndpoint {
+    @ApiMethod(path = "foo/{id}", httpMethod = HttpMethod.GET)
+    public void path1(@Named("id") String id) { }
+
+    @ApiMethod(path = "foo/{fooId}", httpMethod = HttpMethod.POST)
+    public void path2(@Named("fooId") String fooId) { }
   }
   
 }
