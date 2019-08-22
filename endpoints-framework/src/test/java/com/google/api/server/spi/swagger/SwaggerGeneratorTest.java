@@ -54,6 +54,7 @@ import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource1Endpoint
 import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource2Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version1Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version2Endpoint;
+import com.google.api.server.spi.testing.SpecialCharsEndpoint;
 import com.google.common.collect.ImmutableList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -334,6 +335,15 @@ public class SwaggerGeneratorTest {
     }
   }
 
+  @Test
+  public void testWriteSwagger_SpecialChars() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), SpecialCharsEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context
+        .setExtractCommonParametersAsRefs(true));
+    Swagger expected = readExpectedAsSwagger("special_chars.swagger");
+    checkSwagger(expected, swagger);
+  }
+
   private Swagger getSwagger(Class<?> serviceClass, SwaggerContext context)
       throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), serviceClass);
@@ -345,7 +355,7 @@ public class SwaggerGeneratorTest {
     return mapper.readValue(expectedString, Swagger.class);
   }
 
-  private void checkSwagger(Swagger expected, Swagger actual) throws Exception {
+  private void checkSwagger(Swagger expected, Swagger actual) {
     SwaggerSubject.assertThat(actual).isValid();
     SwaggerSubject.assertThat(actual).isSameAs(expected);
   }

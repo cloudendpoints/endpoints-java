@@ -1,0 +1,92 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "swagger-test.appspot.com"
+  },
+  "host": "swagger-test.appspot.com",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "specialChars:v1"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/specialChars/v1/paramSpecialChar1": {
+      "post": {
+        "tags": [
+          "specialChars:v1"
+        ],
+        "operationId": "SpecialCharsV1ParamSpecialChar1",
+        "parameters": [
+          {
+            "$ref": "#/parameters/%C2%B5_query_parameter"
+          },
+          {
+            "in": "body",
+            "name": "Requestù",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Request%C3%B9"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A Responseµ response",
+            "schema": {
+              "$ref": "#/definitions/Response%C2%B5"
+            }
+          }
+        }
+      }
+    },
+    "/specialChars/v1/paramSpecialChar2": {
+      "post": {
+        "tags": [
+          "specialChars:v1"
+        ],
+        "operationId": "SpecialCharsV1ParamSpecialChar2",
+        "parameters": [
+          {
+            "$ref": "#/parameters/%C2%B5_query_parameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A Responseµ response",
+            "schema": {
+              "$ref": "#/definitions/Response%C2%B5"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Requestù": {
+      "type": "object"
+    },
+    "Responseµ": {
+      "type": "object"
+    }
+  },
+  "parameters": {
+    "µ_query_parameter": {
+      "name": "µ",
+      "in": "query",
+      "required": false,
+      "type": "integer",
+      "format": "int32"
+    }
+  }
+}

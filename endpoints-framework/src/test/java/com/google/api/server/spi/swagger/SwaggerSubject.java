@@ -59,12 +59,14 @@ public final class SwaggerSubject extends Subject {
 
   private void validatesSchema() {
     //TODO there is probably a better way to validate, to get errors like https://editor.swagger.io/
+    // This validator will only validate against the JsonSchema, not check references for example 
     try {
       ValidationResponse validationResponse = new ValidatorService()
           .debugByContent(null, null, toString(actual));
       List<SchemaValidationError> schemaValidationMessages = validationResponse
           .getSchemaValidationMessages();
       if (schemaValidationMessages != null && !schemaValidationMessages.isEmpty()) {
+        System.out.println("Swagger spec: " + toString(actual));
         throw new AssertionError("Swagger spec is not valid" +
             schemaValidationMessages.stream()
                 .map(error -> "\nValidation error: " + toString(error))

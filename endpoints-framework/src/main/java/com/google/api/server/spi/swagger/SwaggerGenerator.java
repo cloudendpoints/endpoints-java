@@ -199,12 +199,7 @@ public class SwaggerGenerator {
   );
   
   private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
-      new Function<ApiConfig, ApiKey>() {
-        @Override
-        public ApiKey apply(ApiConfig config) {
-          return new ApiKey(config.getName(), config.getVersion(), null /* root */);
-        }
-      };
+      config -> new ApiKey(config.getName(), config.getVersion(), null /* root */);
 
   public Swagger writeSwagger(Iterable<ApiConfig> configs, SwaggerContext context)
       throws ApiConfigException {
@@ -242,6 +237,7 @@ public class SwaggerGenerator {
     }
     checkEquivalentPaths(swagger);
     combineCommonParameters(swagger, context);
+    //TODO could also combine common responses
     normalizeOperationParameters(swagger);
     writeQuotaDefinitions(swagger, genCtx);
     return swagger;
@@ -359,14 +355,14 @@ public class SwaggerGenerator {
     int index = opParameters.indexOf(parameter);
     if (index != -1) {
       opParameters.add(index,
-          new RefParameter(RefType.PARAMETER.getInternalPrefix() + getRefName(parameter)));
+          new RefParameter(getFullRef(RefType.PARAMETER, getRefName(parameter))));
       opParameters.remove(parameter);
     }
   }
 
   private String getRefName(Parameter parameter) {
     String suffix = "_" + parameter.getIn() + "_parameter";
-    return UrlEscapers.urlPathSegmentEscaper().escape(parameter.getName() + suffix) ;
+    return parameter.getName() + suffix;
   }
 
   private void writeQuotaDefinitions(Swagger swagger, GenerationContext genCtx) {
@@ -591,7 +587,7 @@ public class SwaggerGenerator {
     swagger.response(ref, new Response()
             .description(Optional.ofNullable(description).orElse("A failed response"))
             .responseSchema(schema));
-    return new RefResponse(RefType.RESPONSE.getInternalPrefix() + ref);
+    return new RefResponse(getFullRef(RefType.RESPONSE, ref));
   }
 
   private Model getSchema(Schema schema) {
@@ -602,7 +598,7 @@ public class SwaggerGenerator {
     if (mapField != null) {
       return new ModelImpl().additionalProperties(convertToSwaggerProperty(mapField));
     }
-    return new RefModel(RefType.DEFINITION.getInternalPrefix() + schema.name());
+    return new RefModel(getFullRef(RefType.DEFINITION, schema.name()));
   }
 
   private void writeAuthConfig(Swagger swagger, ApiMethodConfig methodConfig, Operation operation)
@@ -694,7 +690,7 @@ public class SwaggerGenerator {
           p = inlineMapProperty(schemaReference);
         } else {
           String name = schema.name();
-          p = new RefProperty(RefType.DEFINITION.getInternalPrefix() + name);
+          p = new RefProperty(getFullRef(RefType.DEFINITION, name));
         }
       } else if (f.type() == FieldType.ARRAY) {
         p = new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
@@ -736,6 +732,10 @@ public class SwaggerGenerator {
       tag += "." + CONVERTER.convert(resource);
     }
     return tag;
+  }
+
+  private String getFullRef(RefType type, String name) {
+    return type.getInternalPrefix() + UrlEscapers.urlFormParameterEscaper().escape(name);
   }
 
   private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig) {
