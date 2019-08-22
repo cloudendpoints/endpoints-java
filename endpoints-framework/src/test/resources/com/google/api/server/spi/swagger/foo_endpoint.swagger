@@ -67,7 +67,6 @@
           "foo:v1"
         ],
         "operationId": "FooV1Toplevel",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -143,8 +142,8 @@
           },
           {
             "in": "body",
-            "name": "body",
-            "required": false,
+            "name" : "Foo",
+            "required": true,
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -187,8 +186,8 @@
           },
           {
             "in": "body",
-            "name": "body",
-            "required": false,
+            "name" : "Foo",
+            "required": true,
             "schema": {
               "$ref": "#/definitions/Foo"
             }

@@ -27,7 +27,6 @@
           "limits:v1"
         ],
         "operationId": "LimitsV1CreateFoo",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -49,7 +48,6 @@
           "limits:v1"
         ],
         "operationId": "LimitsV1CustomFoo",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"

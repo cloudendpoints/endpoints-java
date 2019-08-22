@@ -27,16 +27,12 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1DoesNotThrow",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -47,16 +43,12 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsMultipleExceptions",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -67,16 +59,12 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsNotFoundException",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -87,16 +75,12 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsServiceException",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -107,16 +91,12 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsUnknownException",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -161,6 +141,14 @@
             }
           }
         }
+      }
+    }
+  },
+  "responses": {
+    "DefaultError": {
+      "description": "A failed response",
+      "schema": {
+        "$ref": "#/definitions/GoogleJsonErrorContainer"
       }
     }
   }

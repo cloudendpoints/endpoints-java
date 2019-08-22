@@ -27,7 +27,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetDateTimeKeyMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -47,7 +46,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetMapOfStrings",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -64,7 +62,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetStringCollectionMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -87,7 +84,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetBooleanKeyMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -107,7 +103,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetDateKeyMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -127,7 +122,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetFloatKeyMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -147,7 +141,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetIntKeyMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -167,7 +160,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetLongKeyMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -187,7 +179,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetBazMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -207,7 +198,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetFooMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -227,7 +217,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetIntMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -248,7 +237,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetFooMapMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -271,7 +259,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetStringMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -291,7 +278,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetStringArrayMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -314,7 +300,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetStringValueMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -334,7 +319,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetEnumKeyMap",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -354,7 +338,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetMapService",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
@@ -371,7 +354,6 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1GetMapSubclass",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "A successful response",
