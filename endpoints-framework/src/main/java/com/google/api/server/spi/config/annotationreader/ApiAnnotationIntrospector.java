@@ -58,10 +58,6 @@ public class ApiAnnotationIntrospector extends NopAnnotationIntrospector {
 
   private final ApiSerializationConfig config;
 
-  public ApiAnnotationIntrospector() {
-    this(new ApiSerializationConfig());
-  }
-
   public ApiAnnotationIntrospector(ApiSerializationConfig config) {
     this.config = config;
   }
@@ -101,11 +97,6 @@ public class ApiAnnotationIntrospector extends NopAnnotationIntrospector {
   @Override
   public JsonSerializer<?> findSerializer(Annotated method) {
     return getJsonSerializer(findSerializerInstance(method));
-  }
-
-  @Override
-  public String findEnumValue(Enum<?> value) {
-    return value.name();
   }
 
   @Nullable
