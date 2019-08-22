@@ -296,8 +296,6 @@ public class DiscoveryGeneratorTest {
   }
 
   private void compareDiscovery(RestDescription expected, RestDescription actual) throws Exception {
-    System.out.println("Actual: " + mapper.writeValueAsString(actual));
-    System.out.println("Expected: " + mapper.writeValueAsString(expected));
-    assertThat(actual).isEqualTo(expected);
+    DiscoverySubject.assertThat(actual).isSameAs(expected);
   }
 }
