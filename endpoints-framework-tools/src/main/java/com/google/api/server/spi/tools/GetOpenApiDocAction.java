@@ -182,7 +182,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
         .setTitle(title)
         .setDescription(description)
         .setApiName(apiName)
-        .setAddErrorCodesForServiceExceptions(addGoogleJsonErrorAsDefaultResponse)
+        .setAddGoogleJsonErrorAsDefaultResponse(addGoogleJsonErrorAsDefaultResponse)
         .setAddErrorCodesForServiceExceptions(addErrorCodesForServiceExceptionsOption)
         .setExtractCommonParametersAsRefs(extractCommonParametersAsRefsOption)
         .setCombineCommonParametersInSamePath(combineCommonParametersInSamePathOption);
