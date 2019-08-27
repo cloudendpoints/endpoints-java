@@ -15,7 +15,7 @@ import org.junit.ComparisonFailure;
 
 public final class DiscoverySubject extends Subject {
 
-  private final ObjectWriter witer = Json.mapper().writerWithDefaultPrettyPrinter();
+  private final ObjectWriter writer = Json.mapper().writerWithDefaultPrettyPrinter();
 
   private final RestDescription actual;
 
@@ -45,7 +45,7 @@ public final class DiscoverySubject extends Subject {
 
   private String toString(RestDescription expected) {
     try {
-      return witer.writeValueAsString(expected);
+      return writer.writeValueAsString(expected);
     } catch (JsonProcessingException e) {
       throw new AssertionError("Cannot create String representation for specs", e);
     }

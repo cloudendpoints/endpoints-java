@@ -267,7 +267,7 @@ public class SwaggerGenerator {
   }
 
   /*
-   * Swagger library will set parameters to empty by default. We force them to be empty.
+   * Swagger library will set parameters to empty by default. We force them to be null.
    * If not empty, makes sure the body is always last.
    */
   public static void normalizeOperationParameters(Swagger swagger) {
