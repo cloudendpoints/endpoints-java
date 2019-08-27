@@ -18,6 +18,7 @@ package com.google.api.server.spi.swagger;
 import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_FORCE_JSON_MAP_SCHEMA;
 import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_IGNORE_UNSUPPORTED_KEY_TYPES;
 import static com.google.api.server.spi.config.model.EndpointsFlag.MAP_SCHEMA_SUPPORT_ARRAYS_VALUES;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.IoUtil;
@@ -30,6 +31,8 @@ import com.google.api.server.spi.config.ApiConfigLoader;
 import com.google.api.server.spi.config.ApiIssuer;
 import com.google.api.server.spi.config.ApiIssuerAudience;
 import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.ApiMethod.HttpMethod;
+import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.response.BadRequestException;
@@ -51,6 +54,7 @@ import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource1Endpoint
 import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource2Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version1Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version2Endpoint;
+import com.google.api.server.spi.testing.SpecialCharsEndpoint;
 import com.google.common.collect.ImmutableList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,7 +75,9 @@ import io.swagger.util.Json;
 public class SwaggerGeneratorTest {
   private final SwaggerGenerator generator = new SwaggerGenerator();
   private final SwaggerContext context = new SwaggerContext()
-      .setApiRoot("https://swagger-test.appspot.com/api");
+      .setScheme("https")
+      .setHostname("swagger-test.appspot.com")
+      .setBasePath("/api");
   private final ObjectMapper mapper = Json.mapper();
   private ApiConfigLoader configLoader;
 
@@ -132,10 +138,10 @@ public class SwaggerGeneratorTest {
   }
 
   @Test
-  public void testWriteSwagger_FooEndpointLocalhost() throws Exception {
+  public void testWriteSwagger_FooEndpointWithApiName() throws Exception {
     Swagger swagger = getSwagger(
-        FooEndpoint.class, new SwaggerContext().setApiRoot("http://localhost:8080/api"));
-    Swagger expected = readExpectedAsSwagger("foo_endpoint_localhost.swagger");
+        FooEndpoint.class, new SwaggerContext().setApiName("customApiName"));
+    Swagger expected = readExpectedAsSwagger("foo_endpoint_api_name.swagger");
     checkSwagger(expected, swagger);
   }
 
@@ -320,6 +326,26 @@ public class SwaggerGeneratorTest {
     checkSwagger(expected, swagger);
   }
 
+  @Test
+  public void testEquivalentPathsNotAccepted() {
+    try {
+      ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), EquivalentPathsEndpoint.class);
+      generator.writeSwagger(ImmutableList.of(config), context);
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(IllegalStateException.class);
+      assertThat(e).hasMessageThat().contains("Equivalent paths found");
+    }
+  }
+
+  @Test
+  public void testWriteSwagger_SpecialChars() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), SpecialCharsEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context
+        .setExtractCommonParametersAsRefs(true));
+    Swagger expected = readExpectedAsSwagger("special_chars.swagger");
+    checkSwagger(expected, swagger);
+  }
+
   private Swagger getSwagger(Class<?> serviceClass, SwaggerContext context)
       throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), serviceClass);
@@ -331,9 +357,9 @@ public class SwaggerGeneratorTest {
     return mapper.readValue(expectedString, Swagger.class);
   }
 
-  private void checkSwagger(Swagger expected, Swagger actual) throws Exception {
+  private void checkSwagger(Swagger expected, Swagger actual) {
+    SwaggerSubject.assertThat(actual).isValid();
     SwaggerSubject.assertThat(actual).isSameAs(expected);
-    SwaggerSubject.assertThat(actual).hasNoDuplicateOperations();
   }
 
   @Api(name = "thirdparty", version = "v1",
@@ -416,6 +442,15 @@ public class SwaggerGeneratorTest {
 
     @ApiMethod
     public void throwsUnknownException() throws IllegalStateException { }
+  }
+  
+  @Api(name = "equivalentPaths", version = "v1")
+  private static class EquivalentPathsEndpoint {
+    @ApiMethod(path = "foo/{id}", httpMethod = HttpMethod.GET)
+    public void path1(@Named("id") String id) { }
+
+    @ApiMethod(path = "foo/{fooId}", httpMethod = HttpMethod.POST)
+    public void path2(@Named("fooId") String fooId) { }
   }
   
 }

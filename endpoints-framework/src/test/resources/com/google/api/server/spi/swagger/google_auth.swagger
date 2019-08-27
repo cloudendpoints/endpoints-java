@@ -27,7 +27,6 @@
           "thirdparty:v1"
         ],
         "operationId": "ThirdpartyV1AuthOverride",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
@@ -46,7 +45,6 @@
           "thirdparty:v1"
         ],
         "operationId": "ThirdpartyV1GoogleAuth",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
@@ -67,7 +65,6 @@
           "thirdparty:v1"
         ],
         "operationId": "ThirdpartyV1NoOverride",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"

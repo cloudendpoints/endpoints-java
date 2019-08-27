@@ -31,12 +31,11 @@ import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.server.spi.response.ServiceUnavailableException;
 import com.google.api.server.spi.response.UnauthorizedException;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -47,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Flattened method configuration for a swarm endpoint method.  Data generally originates from
@@ -543,22 +543,30 @@ public class ApiMethodConfig {
     return returnType;
   }
 
-  public Map<Integer, String> getErrorCodesAndDescriptions() {
-    ErrorMap errorMap = new ErrorMap();
-    Map<Integer, String> descriptionByCode = Maps.newLinkedHashMap();
+  public class ErrorResponse {
+    public final int code;
+    public final String name;
+    public final String description;
+
+    public ErrorResponse(int code, String name, String description) {
+      this.code = code;
+      this.name = name;
+      this.description = description;
+    }
+  }
+  
+  public List<ErrorResponse> getErrorReponses() {
+    List<ErrorResponse> responses = new ArrayList<>();
     for (Class<?> exceptionType : exceptionTypes) {
-      //TODO support custom exception types by either:
-      // - introspecting the CODE static field (convention)
-      // - introducing a new annotation for Exceptions
+      //TODO allow custom exceptions by introducing a new annotation
       Integer code = KNOWN_EXCEPTION_CODES.get(exceptionType);
       if (code != null) {
-        String reason = errorMap.getReason(code);
-        if (reason != null) {
-          descriptionByCode.put(code, reason);
-        }
+        String name = exceptionType.getSimpleName().replace("Exception", "");
+        String description = Joiner.on(' ').join(StringUtils.splitByCharacterTypeCamelCase(name));
+        responses.add(new ErrorResponse(code, name, description));
       }
     }
-    return descriptionByCode;
+    return responses;
   }
 
   /**

@@ -27,10 +27,9 @@
           "absolutepath:v1"
         ],
         "operationId": "AbsolutepathV1CreateFoo",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -44,7 +43,6 @@
           "absolutepath:v1"
         ],
         "operationId": "AbsolutepathV1AbsolutePath",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
@@ -58,7 +56,6 @@
           "absolutepath:v1"
         ],
         "operationId": "AbsolutepathV1AbsolutePath2",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"

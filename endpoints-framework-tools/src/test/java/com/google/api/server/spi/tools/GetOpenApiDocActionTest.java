@@ -55,7 +55,7 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
       @Override
       public String genOpenApiDoc(
           URL[] classPath, String outputFilePath, String hostname, String basePath,
-          String title, String description,
+          String title, String description, String apiName,
           boolean addGoogleJsonErrorAsDefaultResponse,
           boolean addErrorCodesForServiceExceptionsOption,
           boolean extractCommonParametersAsRefsOption,

@@ -423,6 +423,25 @@
           "scopes": [
             "https://www.googleapis.com/auth/userinfo.email"
           ]
+        },
+        "setListOfStringAsQueryParam": {
+          "httpMethod": "POST",
+          "id": "myapi.arrayEndpoint.setListOfStringAsQueryParam",
+          "parameterOrder": [
+            "list"
+          ],
+          "parameters": {
+            "list": {
+              "location": "query",
+              "repeated": true,
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "setListOfStringAsQueryParam",
+          "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
         }
       }
     }
@@ -495,6 +514,12 @@
         },
         "listOfString": {
           "$ref": "ListContainer"
+        },
+        "listOfStringAsQueryParam": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "objectIntegers": {
           "items": {
@@ -605,6 +630,7 @@
       "type": "object"
     },
     "FooCollection": {
+      "description": "An ordered list of Foo",
       "id": "FooCollection",
       "properties": {
         "items": {

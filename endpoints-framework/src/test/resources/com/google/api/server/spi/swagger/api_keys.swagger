@@ -27,7 +27,6 @@
           "apikeys:v1"
         ],
         "operationId": "ApikeysV1ApiKeyWithAuth",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
@@ -47,7 +46,6 @@
           "apikeys:v1"
         ],
         "operationId": "ApikeysV1InheritApiKeySetting",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
@@ -66,7 +64,6 @@
           "apikeys:v1"
         ],
         "operationId": "ApikeysV1OverrideApiKeySetting",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"

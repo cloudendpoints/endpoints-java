@@ -27,10 +27,9 @@
           "limits:v1"
         ],
         "operationId": "LimitsV1CreateFoo",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -49,7 +48,6 @@
           "limits:v1"
         ],
         "operationId": "LimitsV1CustomFoo",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
@@ -82,6 +80,7 @@
     "metrics": [
       {
         "name": "read",
+        "displayName": "Read requests",
         "valueType": "INT64",
         "metricKind": "GAUGE"
       },
@@ -99,8 +98,7 @@
           "values": {
             "STANDARD": 100
           },
-          "unit": "1/min/{project}",
-          "displayName": "Read requests"
+          "unit": "1/min/{project}"
         },
         {
           "name": "write",

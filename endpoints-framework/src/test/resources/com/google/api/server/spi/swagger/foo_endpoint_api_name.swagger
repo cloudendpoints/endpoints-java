@@ -2,10 +2,10 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "localhost:8080"
+    "title": "myapi.appspot.com"
   },
-  "host": "localhost:8080",
-  "basePath": "/api",
+  "host": "myapi.appspot.com",
+  "basePath": "/_ah/api",
   "tags": [
     {
       "name": "foo:v1",
@@ -16,7 +16,7 @@
     }
   ],
   "schemes": [
-    "http"
+    "https"
   ],
   "consumes": [
     "application/json"
@@ -43,7 +43,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -67,10 +67,9 @@
           "foo:v1"
         ],
         "operationId": "FooV1Toplevel",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -108,7 +107,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -143,8 +142,8 @@
           },
           {
             "in": "body",
-            "name": "body",
-            "required": false,
+            "name": "Foo",
+            "required": true,
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -152,7 +151,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -187,8 +186,8 @@
           },
           {
             "in": "body",
-            "name": "body",
-            "required": false,
+            "name": "Foo",
+            "required": true,
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -196,7 +195,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -232,7 +231,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -304,5 +303,6 @@
         }
       }
     }
-  }
+  },
+  "x-google-api-name": "customApiName"
 }

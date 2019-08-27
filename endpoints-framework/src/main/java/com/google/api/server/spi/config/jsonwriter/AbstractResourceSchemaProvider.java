@@ -40,7 +40,6 @@ abstract class AbstractResourceSchemaProvider implements ResourceSchemaProvider 
 
   @Nullable
   private <T> ResourceSchema getResourceSchemaImpl(TypeToken<T> type, ApiConfig config) {
-    Class<? super T> clazz = type.getRawType();
     List<Class<? extends Transformer<?, ?>>> serializerClasses =
         Serializers.getSerializerClasses(type, config.getSerializationConfig());
     if (!serializerClasses.isEmpty() &&

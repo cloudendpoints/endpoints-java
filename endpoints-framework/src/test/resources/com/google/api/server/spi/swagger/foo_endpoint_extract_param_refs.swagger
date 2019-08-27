@@ -33,12 +33,12 @@
         "operationId": "FooV1ListFooos",
         "parameters": [
           {
-            "$ref": "#/parameters/n"
+            "$ref": "#/parameters/n_query_parameter"
           }
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -75,7 +75,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -112,7 +112,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -141,12 +141,12 @@
         "operationId": "FooV1ListFoos",
         "parameters": [
           {
-            "$ref": "#/parameters/n"
+            "$ref": "#/parameters/n_query_parameter"
           }
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -170,10 +170,9 @@
           "foo:v1"
         ],
         "operationId": "FooV1Toplevel",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -202,16 +201,12 @@
         "operationId": "FooV1GetFoo",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "id desc",
-            "required": true,
-            "type": "string"
+            "$ref": "#/parameters/id_path_parameter"
           }
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -238,24 +233,15 @@
         "operationId": "FooV1UpdateFoo",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "id desc",
-            "required": true,
-            "type": "string"
+            "$ref": "#/parameters/id_path_parameter"
           },
           {
-            "in": "body",
-            "name": "body",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/Foo"
-            }
+            "$ref": "#/parameters/Foo_body_parameter"
           }
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -282,24 +268,15 @@
         "operationId": "FooV1CreateFoo",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "id desc",
-            "required": true,
-            "type": "string"
+            "$ref": "#/parameters/id_path_parameter"
           },
           {
-            "in": "body",
-            "name": "body",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/Foo"
-            }
+            "$ref": "#/parameters/Foo_body_parameter"
           }
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -326,16 +303,12 @@
         "operationId": "FooV1DeleteFoo",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "id desc",
-            "required": true,
-            "type": "string"
+            "$ref": "#/parameters/id_path_parameter"
           }
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -409,7 +382,22 @@
     }
   },
   "parameters": {
-    "n": {
+    "Foo_body_parameter": {
+      "in": "body",
+      "name": "Foo",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/Foo"
+      }
+    },
+    "id_path_parameter": {
+      "name": "id",
+      "in": "path",
+      "description": "id desc",
+      "required": true,
+      "type": "string"
+    },
+    "n_query_parameter": {
       "name": "n",
       "in": "query",
       "required": true,

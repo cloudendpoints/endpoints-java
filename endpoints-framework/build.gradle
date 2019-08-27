@@ -116,5 +116,9 @@ dependencies {
   testCompile group: 'com.google.appengine', name: 'appengine-api-stubs', version: appengineVersion
   testCompile group: 'org.springframework', name: 'spring-test', version: springtestVersion
   testCompile group: 'com.google.guava', name: 'guava-testlib', version: guavaVersion
+  testCompile (group: 'io.swagger', name: 'swagger-validator', version: '1.0.6') {
+    exclude group: 'javax.servlet', module: 'javax.servlet-api'
+    exclude group: 'ch.qos.logback', module: 'logback-classic'
+  }
 }
 

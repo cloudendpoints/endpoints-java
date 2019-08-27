@@ -31,10 +31,9 @@
           "foo:v1"
         ],
         "operationId": "FooV1ListFooos",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -69,10 +68,9 @@
           "foo:v1"
         ],
         "operationId": "FooV1ListFooosInPath",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -107,10 +105,9 @@
           "foo:v1"
         ],
         "operationId": "FooV1ListFooosNotRequired",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -157,7 +154,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -181,10 +178,9 @@
           "foo:v1"
         ],
         "operationId": "FooV1Toplevel",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
               "$ref": "#/definitions/CollectionResponse_Foo"
             }
@@ -211,10 +207,9 @@
         ],
         "description": "get desc",
         "operationId": "FooV1GetFoo",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -242,8 +237,8 @@
         "parameters": [
           {
             "in": "body",
-            "name": "body",
-            "required": false,
+            "name": "Foo",
+            "required": true,
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -251,7 +246,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -279,8 +274,8 @@
         "parameters": [
           {
             "in": "body",
-            "name": "body",
-            "required": false,
+            "name": "Foo",
+            "required": true,
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -288,7 +283,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -313,10 +308,9 @@
         ],
         "description": "delete desc",
         "operationId": "FooV1DeleteFoo",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }

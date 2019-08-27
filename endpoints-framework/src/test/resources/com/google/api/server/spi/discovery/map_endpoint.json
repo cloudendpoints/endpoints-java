@@ -421,6 +421,7 @@
       "additionalProperties": {
         "$ref": "Baz"
       },
+      "description": "A collection of name / Baz pairs",
       "id": "Map_String_Baz",
       "type": "object"
     },
@@ -428,6 +429,7 @@
       "additionalProperties": {
         "$ref": "Foo"
       },
+      "description": "A collection of name / Foo pairs",
       "id": "Map_String_Foo",
       "type": "object"
     },
@@ -443,6 +445,7 @@
       "additionalProperties": {
         "$ref": "Map_String_Foo"
       },
+      "description": "A collection of name / Map_String_Foo pairs",
       "id": "Map_String_Map_String_Foo",
       "type": "object"
     },

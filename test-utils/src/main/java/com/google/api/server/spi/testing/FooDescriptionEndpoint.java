@@ -32,7 +32,8 @@ import com.google.api.server.spi.response.CollectionResponse;
 public class FooDescriptionEndpoint {
   @ApiMethod(name = "foo.create", description = "create desc", path = "foos/{id}",
       httpMethod = HttpMethod.PUT)
-  public FooDescription createFoo(@Named("id") @Description("id desc") String id, FooDescription foo) {
+  public FooDescription createFoo(@Named("id") @Description("id desc") String id, 
+      @Description("Description at method parameter level") FooDescription foo) {
     return null;
   }
   @ApiMethod(name = "foo.get", description = "get desc", path = "foos/{id}",

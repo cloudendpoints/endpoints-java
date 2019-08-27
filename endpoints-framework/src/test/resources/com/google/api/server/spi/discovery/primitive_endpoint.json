@@ -134,6 +134,7 @@
       "type": "object"
     },
     "PrimitiveBeanCollection": {
+      "description": "An ordered list of PrimitiveBean",
       "id": "PrimitiveBeanCollection",
       "properties": {
         "items": {

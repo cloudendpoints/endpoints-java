@@ -27,7 +27,6 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1DoesNotThrow",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
@@ -41,22 +40,15 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsMultipleExceptions",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "400": {
-            "description": "badRequest",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/BadRequest"
           },
           "409": {
-            "description": "conflict",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/Conflict"
           }
         }
       }
@@ -67,16 +59,12 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsNotFoundException",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "404": {
-            "description": "notFound",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/NotFound"
           }
         }
       }
@@ -87,7 +75,6 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsServiceException",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
@@ -101,7 +88,6 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsUnknownException",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
@@ -149,6 +135,26 @@
             }
           }
         }
+      }
+    }
+  },
+  "responses": {
+    "BadRequest": {
+      "description": "Bad Request",
+      "schema": {
+        "$ref": "#/definitions/GoogleJsonErrorContainer"
+      }
+    },
+    "Conflict": {
+      "description": "Conflict",
+      "schema": {
+        "$ref": "#/definitions/GoogleJsonErrorContainer"
+      }
+    },
+    "NotFound": {
+      "description": "Not Found",
+      "schema": {
+        "$ref": "#/definitions/GoogleJsonErrorContainer"
       }
     }
   }

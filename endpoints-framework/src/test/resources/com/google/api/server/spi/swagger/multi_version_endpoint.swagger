@@ -30,10 +30,9 @@
           "myapi:v1"
         ],
         "operationId": "MyapiV1Get",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }
@@ -47,10 +46,9 @@
           "myapi:v2"
         ],
         "operationId": "MyapiV2Get",
-        "parameters": [],
         "responses": {
           "200": {
-            "description": "A successful response",
+            "description": "A Foo response",
             "schema": {
               "$ref": "#/definitions/Foo"
             }

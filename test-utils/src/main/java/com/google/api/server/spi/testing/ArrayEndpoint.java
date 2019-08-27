@@ -91,6 +91,9 @@ public class ArrayEndpoint {
   @ApiMethod
   public void setListOfString(@Named("list") List<String> list) {}
 
+  @ApiMethod(path = "setListOfStringAsQueryParam")
+  public void setListOfStringAsQueryParam(@Named("list") List<String> list) {}
+
   @ApiMethod
   public void setListOfBooleans(@Named("list") List<Boolean> list, @Named("array") boolean[] array) {}
 

@@ -16,6 +16,11 @@ import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
+import io.swagger.validator.models.SchemaValidationError;
+import io.swagger.validator.models.ValidationResponse;
+import io.swagger.validator.services.ValidatorService;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.junit.ComparisonFailure;
 
@@ -47,7 +52,32 @@ public final class SwaggerSubject extends Subject {
     this.actual = actual instanceof Swagger ? (Swagger) actual : null;
   }
 
-  void hasNoDuplicateOperations() {
+  void isValid() {
+    validatesSchema();
+    hasNoDuplicateOperations();
+  }
+
+  private void validatesSchema() {
+    //TODO there is probably a better way to validate, to get errors like https://editor.swagger.io/
+    // This validator will only validate against the JsonSchema, not check references for example 
+    try {
+      ValidationResponse validationResponse = new ValidatorService()
+          .debugByContent(null, null, toString(actual));
+      List<SchemaValidationError> schemaValidationMessages = validationResponse
+          .getSchemaValidationMessages();
+      if (schemaValidationMessages != null && !schemaValidationMessages.isEmpty()) {
+        System.out.println("Swagger spec: " + toString(actual));
+        throw new AssertionError("Swagger spec is not valid" +
+            schemaValidationMessages.stream()
+                .map(error -> "\nValidation error: " + toString(error))
+                .collect(Collectors.joining()));
+      }
+    } catch (Exception e) {
+      throw new AssertionError("Could not validate Swagger spec", e);
+    }
+  }
+
+  private void hasNoDuplicateOperations() {
     Multimap<String, String> operationIds = HashMultimap.create();
     for (Entry<String, Path> pathEntry : actual.getPaths().entrySet()) {
       for (Entry<HttpMethod, Operation> opEntry : pathEntry.getValue().getOperationMap()
@@ -75,9 +105,12 @@ public final class SwaggerSubject extends Subject {
     compareMapOrdering("Security definition", actual, expected, Swagger::getSecurityDefinitions);
     compareMapOrdering("Model definition", actual, expected, Swagger::getDefinitions);
     compareMapOrdering("Path", actual, expected, Swagger::getPaths);
+    compareMapOrdering("Parameter", actual, expected, Swagger::getParameters);
+    compareMapOrdering("Response", actual, expected, Swagger::getResponses);
   }
 
   private void checkEquality(Swagger expected) {
+    SwaggerGenerator.normalizeOperationParameters(expected);
     if (!Objects.equals(actual, expected)) {
       throw new ComparisonFailure("Swagger specs don't match",
           toString(expected), toString(actual));
@@ -100,11 +133,11 @@ public final class SwaggerSubject extends Subject {
     }
   }
 
-  private String toString(Swagger expected) {
+  private String toString(Object toJson) {
     try {
-      return witer.writeValueAsString(expected);
+      return witer.writeValueAsString(toJson);
     } catch (JsonProcessingException e) {
-      throw new AssertionError("Cannot create String representation for specs", e);
+      throw new AssertionError("Cannot create String representation", e);
     }
   }
 

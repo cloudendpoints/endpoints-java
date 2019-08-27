@@ -16,10 +16,12 @@
 package com.google.api.server.spi.testing;
 
 import com.google.api.server.spi.config.ApiResourceProperty;
+import com.google.api.server.spi.config.Description;
 
 /**
  * Test resource type with descriptions.
  */
+@Description("Description at class level")
 public class FooDescription {
 
   @ApiResourceProperty(description = "description of name")

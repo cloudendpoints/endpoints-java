@@ -27,16 +27,12 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1DoesNotThrow",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -47,28 +43,18 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsMultipleExceptions",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "400": {
-            "description": "badRequest",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/BadRequest"
           },
           "409": {
-            "description": "conflict",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/Conflict"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -79,22 +65,15 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsNotFoundException",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "404": {
-            "description": "notFound",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/NotFound"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -105,16 +84,12 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsServiceException",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -125,16 +100,12 @@
           "exceptions:v1"
         ],
         "operationId": "ExceptionsV1ThrowsUnknownException",
-        "parameters": [],
         "responses": {
           "204": {
             "description": "A successful response"
           },
           "default": {
-            "description": "A failed response",
-            "schema": {
-              "$ref": "#/definitions/GoogleJsonErrorContainer"
-            }
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -179,6 +150,32 @@
             }
           }
         }
+      }
+    }
+  },
+  "responses": {
+    "BadRequest": {
+      "description": "Bad Request",
+      "schema": {
+        "$ref": "#/definitions/GoogleJsonErrorContainer"
+      }
+    },
+    "Conflict": {
+      "description": "Conflict",
+      "schema": {
+        "$ref": "#/definitions/GoogleJsonErrorContainer"
+      }
+    },
+    "DefaultError": {
+      "description": "A failed response",
+      "schema": {
+        "$ref": "#/definitions/GoogleJsonErrorContainer"
+      }
+    },
+    "NotFound": {
+      "description": "Not Found",
+      "schema": {
+        "$ref": "#/definitions/GoogleJsonErrorContainer"
       }
     }
   }

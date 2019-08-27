@@ -29,6 +29,7 @@ import com.google.api.server.spi.config.model.ApiIssuerConfigs.IssuerConfig;
 import com.google.api.server.spi.config.model.ApiKey;
 import com.google.api.server.spi.config.model.ApiLimitMetricConfig;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
+import com.google.api.server.spi.config.model.ApiMethodConfig.ErrorResponse;
 import com.google.api.server.spi.config.model.ApiMetricCostConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.AuthScopeRepository;
@@ -45,20 +46,19 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
+import com.google.common.net.UrlEscapers;
 import com.google.common.reflect.TypeToken;
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Info;
@@ -67,6 +67,7 @@ import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.RefModel;
+import io.swagger.models.RefResponse;
 import io.swagger.models.Response;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
@@ -97,6 +98,7 @@ import io.swagger.models.properties.PropertyBuilder;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.StringProperty;
 
+import io.swagger.models.refs.RefType;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -112,7 +114,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -198,12 +200,7 @@ public class SwaggerGenerator {
   );
   
   private static final Function<ApiConfig, ApiKey> CONFIG_TO_ROOTLESS_KEY =
-      new Function<ApiConfig, ApiKey>() {
-        @Override
-        public ApiKey apply(ApiConfig config) {
-          return new ApiKey(config.getName(), config.getVersion(), null /* root */);
-        }
-      };
+      config -> new ApiKey(config.getName(), config.getVersion(), null /* root */);
 
   public Swagger writeSwagger(Iterable<ApiConfig> configs, SwaggerContext context)
       throws ApiConfigException {
@@ -236,18 +233,52 @@ public class SwaggerGenerator {
             .version(context.docVersion)
             //TODO contact, license, termsOfService could be configured
         );
+    if (!Strings.isEmptyOrWhitespace(context.apiName)) {
+      swagger.vendorExtension("x-google-api-name", context.apiName);
+    }
     for (ApiKey apiKey : configsByKey.keySet()) {
       writeApi(apiKey, configsByKey.get(apiKey), swagger, context, genCtx);
     }
-    //reorder paths by string order to have consistent output
-    Builder<String, Path> builder = ImmutableSortedMap.naturalOrder();
-    for (Entry<String, Path> pathEntry : swagger.getPaths().entrySet()) {
-      builder.put(pathEntry);
-    }
-    swagger.paths(builder.build());
+    checkEquivalentPaths(swagger);
     combineCommonParameters(swagger, context);
+    //TODO could also combine common responses
+    normalizeOperationParameters(swagger);
     writeQuotaDefinitions(swagger, genCtx);
     return swagger;
+  }
+
+  /*
+    A generated spec might have "equivalent" paths like this:
+    - POST /myapi/v1/foo/{id}
+    - GET /myapi/v1/foo/{fooId}
+    This is valid for the Discovery format, but won't work on Swagger.
+   */
+  private void checkEquivalentPaths(Swagger swagger) {
+    List<Entry<String, List<String>>> duplicatePaths = swagger.getPaths().keySet().stream()
+        .collect(Collectors.groupingBy(path -> path.replaceAll("\\{[^}]+}", "{%}")))
+        .entrySet().stream()
+        .filter(entry -> entry.getValue().size() > 1)
+        .collect(Collectors.toList());
+    if (!duplicatePaths.isEmpty()) {
+      throw new IllegalStateException("Equivalent paths found:" + duplicatePaths.stream()
+          .map(entry -> String.format("\n%s -> %s", entry.getKey(), entry.getValue()))
+          .collect(Collectors.joining()));
+    }
+  }
+
+  /*
+   * Swagger library will set parameters to empty by default. We force them to be null.
+   * If not empty, makes sure the body is always last.
+   */
+  public static void normalizeOperationParameters(Swagger swagger) {
+    swagger.getPaths().values().stream()
+        .flatMap(path -> path.getOperations().stream())
+        .forEach(operation -> {
+          List<Parameter> parameters = operation.getParameters();
+          if (parameters != null && parameters.isEmpty()) {
+            operation.setParameters(null);
+          }
+        });
   }
 
   private void combineCommonParameters(Swagger swagger, SwaggerContext context) {
@@ -265,10 +296,10 @@ public class SwaggerGenerator {
       path.getOperations().forEach(operation -> {
         operation.getParameters().forEach(parameter -> {
           Multiset<Parameter> counter = Optional
-              .ofNullable(paramNameCounter.get(parameter.getName()))
+              .ofNullable(paramNameCounter.get(getRefName(parameter)))
               .orElse(HashMultiset.create());
           counter.add(parameter);
-          paramNameCounter.put(parameter.getName(), counter);
+          paramNameCounter.put(getRefName(parameter), counter);
           specLevelParameters.put(parameter, path);
           parameters.put(parameter, operation);
         });
@@ -284,44 +315,58 @@ public class SwaggerGenerator {
           //if multiple params are named the same, only replace the one with the most occurrences
           //TODO add param name suffix depending on "in" and "required" values to deduplicate
           Multiset<Parameter> paramCounter = Multisets
-              .copyHighestCountFirst(paramNameCounter.get(parameter.getName()));
+              .copyHighestCountFirst(paramNameCounter.get(getRefName(parameter)));
           if (paramCounter.iterator().next().equals(parameter)) {
-            swagger.addParameter(parameter.getName(), parameter);
-            swagger.getPaths().values().forEach(path -> path.getOperations().forEach(operation -> {
-              List<Parameter> opParameters = operation.getParameters();
-              if (opParameters.contains(parameter)) {
-                opParameters.add(new RefParameter(parameter.getName())
-                    .asDefault(parameter.getName()));
-                opParameters.remove(parameter);
-              }
-            }));
+            addGlobalParameter(swagger, parameter);
+            swagger.getPaths().values().forEach(path -> path.getOperations()
+                .forEach(operation -> replaceParameterByRef(operation.getParameters(), parameter)
+            ));
             pathLevelParameters.values().forEach(pathParameters -> pathParameters.removeAll(parameter));
           }
         }
       });
     }
     
-    if (context.combineCommonParametersInSamePath) {
       //combine remaining common path-level params
-      pathLevelParameters.forEach((path, parameterMap) -> {
-        parameterMap.asMap().forEach((parameter, operations) -> {
-          //if parameter is used in all operations, replace it
-          if (operations.size() == path.getOperations().size()) {
-            path.addParameter(parameter);
-            operations.forEach(operation -> operation.getParameters().remove(parameter));
-          }
-        });
-        //nullify empty parameters at path level
-        //TODO deserialization with standard Swagger lib recreates an empty list on null value,
-        // causing comparisons in tests to fail. But could save some size on the final document.
-        /*path.getOperations().forEach(operation -> {
-          List<Parameter> parameters = operation.getParameters();
-          if (parameters != null && parameters.isEmpty()) {
-            operation.setParameters(null);
-          }
-        });*/
+    pathLevelParameters.forEach((path, parameterMap) -> {
+      parameterMap.asMap().forEach((parameter, operations) -> {
+        //if parameter is used in all operations on this path, move it to path level
+        boolean combined = false;
+        if (context.combineCommonParametersInSamePath 
+            && operations.size() == path.getOperations().size()) {
+          path.addParameter(parameter);
+          operations.forEach(operation -> operation.getParameters().remove(parameter));
+          combined = true;
+        }
+        //if parameter is more than once in this path but was not extracted before, extract as ref
+        if (context.extractCommonParametersAsRefs && operations.size() > 1 && !combined) {
+          addGlobalParameter(swagger, parameter);
+          operations.forEach(operation ->
+              replaceParameterByRef(operation.getParameters(), parameter));
+        }
       });
+    });
+  }
+
+  private void addGlobalParameter(Swagger swagger, Parameter parameter) {
+    if (swagger.getParameters() == null) {
+      swagger.setParameters(new TreeMap<>());
     }
+    swagger.addParameter(getRefName(parameter), parameter);
+  }
+
+  private void replaceParameterByRef(List<Parameter> opParameters, Parameter parameter) {
+    int index = opParameters.indexOf(parameter);
+    if (index != -1) {
+      opParameters.add(index,
+          new RefParameter(getFullRef(RefType.PARAMETER, getRefName(parameter))));
+      opParameters.remove(parameter);
+    }
+  }
+
+  private String getRefName(Parameter parameter) {
+    String suffix = "_" + parameter.getIn() + "_parameter";
+    return parameter.getName() + suffix;
   }
 
   private void writeQuotaDefinitions(Swagger swagger, GenerationContext genCtx) {
@@ -330,20 +375,19 @@ public class SwaggerGenerator {
       List<Map<String, Object>> limits = new ArrayList<>();
       List<Map<String, Object>> metrics = new ArrayList<>();
       for (ApiLimitMetricConfig limitMetric : genCtx.limitMetrics.values()) {
-        metrics.add(ImmutableMap.<String, Object>builder()
+        Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
             .put(METRIC_NAME_KEY, limitMetric.name())
             .put(METRIC_VALUE_TYPE_KEY, METRIC_VALUE_TYPE)
-            .put(METRIC_KIND_KEY, METRIC_KIND)
-            .build());
-        ImmutableMap.Builder<String, Object> limitBuilder = ImmutableMap.<String, Object>builder()
+            .put(METRIC_KIND_KEY, METRIC_KIND);
+        if (!Strings.isEmptyOrWhitespace(limitMetric.displayName())) {
+          builder.put(LIMIT_DISPLAY_NAME_KEY, limitMetric.displayName());
+        }
+        metrics.add(builder.build());
+        limits.add(ImmutableMap.<String, Object>builder()
             .put(LIMIT_NAME_KEY, limitMetric.name())
             .put(LIMIT_METRIC_KEY, limitMetric.name())
             .put(LIMIT_DEFAULT_LIMIT_KEY, ImmutableMap.of("STANDARD", limitMetric.limit()))
-            .put(LIMIT_UNIT_KEY, LIMIT_PER_MINUTE_PER_PROJECT);
-        if (limitMetric.displayName() != null && !"".equals(limitMetric.displayName())) {
-          limitBuilder.put(LIMIT_DISPLAY_NAME_KEY, limitMetric.displayName());
-        }
-        limits.add(limitBuilder.build());
+            .put(LIMIT_UNIT_KEY, LIMIT_PER_MINUTE_PER_PROJECT).build());
       }
       quotaDefinitions.put(LIMITS_KEY, limits);
       swagger.setVendorExtension(MANAGEMENT_DEFINITIONS_KEY,
@@ -424,20 +468,19 @@ public class SwaggerGenerator {
   private void writeApiMethod(ApiMethodConfig methodConfig, ApiConfig apiConfig, Swagger swagger,
       SwaggerContext context, GenerationContext genCtx) throws ApiConfigException {
     Path path = getOrCreatePath(swagger, methodConfig);
-    Operation operation = new Operation();
-    operation.setOperationId(getOperationId(apiConfig, methodConfig));
-    operation.setTags(Collections.singletonList(getTagName(apiConfig)));
-    operation.setDescription(methodConfig.getDescription());
-    operation.setDeprecated(methodConfig.isDeprecated() ? true : null);
+    Operation operation = new Operation()
+      .operationId(getOperationId(apiConfig, methodConfig))
+      .tags(Collections.singletonList(getTagName(apiConfig)))
+      .description(methodConfig.getDescription())
+      .deprecated(methodConfig.isDeprecated() ? true : null);
     Collection<String> pathParameters = methodConfig.getPathParameters();
     for (ApiParameterConfig parameterConfig : methodConfig.getParameterConfigs()) {
+      boolean isPathParameter = pathParameters.contains(parameterConfig.getName());
       switch (parameterConfig.getClassification()) {
         case API_PARAMETER:
-          boolean isPathParameter = pathParameters.contains(parameterConfig.getName());
           AbstractSerializableParameter parameter =
               isPathParameter ? new PathParameter() : new QueryParameter();
-          parameter.setName(parameterConfig.getName());
-          parameter.setDescription(parameterConfig.getDescription());
+          parameter.name(parameterConfig.getName()).description(parameterConfig.getDescription());
           String defaultValue = parameterConfig.getDefaultValue();
           if (!Strings.isEmptyOrWhitespace(defaultValue)) {
             parameter.setDefaultValue(defaultValue);
@@ -446,32 +489,36 @@ public class SwaggerGenerator {
               && defaultValue == null);
           if (parameterConfig.isRepeated()) {
             TypeToken<?> t = parameterConfig.getRepeatedItemSerializedType();
-            parameter.setType("array");
-            parameter.setCollectionFormat("multi");
+            parameter.type("array")
+                //RestServletRequestParamReader uses "," as a separator for repeated path params 
+                // => csv, but reads multiple occurrences of query parameters => multi
+                .collectionFormat(isPathParameter ? "csv" : "multi");
             Property p = getSwaggerArrayProperty(t);
             if (parameterConfig.isEnum()) {  // TODO: Not sure if this is the right check
-              ((StringProperty) p).setEnum(getEnumValues(t));
+              ((StringProperty) p)._enum(getEnumValues(t));
             }
-            parameter.setItems(p);
+            parameter.items(p);
           } else if (parameterConfig.isEnum()) {
-            parameter.setType("string");
-            parameter.setEnum(getEnumValues(parameterConfig.getType()));
-            parameter.setRequired(required);
+            parameter.type("string")
+                ._enum(getEnumValues(parameterConfig.getType()))
+                .required(required);
           } else {
-            parameter.setType(
-                TYPE_TO_STRING_MAP.get(parameterConfig.getSchemaBaseType().getType()));
-            parameter.setFormat(
-                TYPE_TO_FORMAT_MAP.get(parameterConfig.getSchemaBaseType().getType()));
-            parameter.setRequired(required);
+            parameter.type(
+                TYPE_TO_STRING_MAP.get(parameterConfig.getSchemaBaseType().getType()))
+                .format(
+                    TYPE_TO_FORMAT_MAP.get(parameterConfig.getSchemaBaseType().getType()))
+                .required(required);
           }
           operation.parameter(parameter);
           break;
         case RESOURCE:
           TypeToken<?> requestType = parameterConfig.getSchemaBaseType();
           Schema schema = genCtx.schemata.getOrAdd(requestType, apiConfig);
-          BodyParameter bodyParameter = new BodyParameter();
-          bodyParameter.setName("body");
-          bodyParameter.setSchema(getSchema(schema));
+          BodyParameter bodyParameter = new BodyParameter()
+              .name(schema.name())
+              .description(parameterConfig.getDescription())
+              .schema(getSchema(schema));
+          bodyParameter.setRequired(true);
           operation.addParameter(bodyParameter);
           break;
         case UNKNOWN:
@@ -487,7 +534,8 @@ public class SwaggerGenerator {
       TypeToken<?> returnType =
           ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), apiConfig);
       Schema schema = genCtx.schemata.getOrAdd(returnType, apiConfig);
-      response.setResponseSchema(getSchema(schema));
+      response.responseSchema(getSchema(schema))
+        .description("A " + schema.name() + " response");
     }
     operation.response(responseCode, response);
 
@@ -495,22 +543,18 @@ public class SwaggerGenerator {
     boolean addErrorCodesForServiceExceptions = context.addErrorCodesForServiceExceptions;
     if (addGoogleJsonErrorAsDefaultResponse || addErrorCodesForServiceExceptions) {
       //add error response model only if necessary
-      Supplier<Model> errorModelSupplier = Suppliers.memoize(() -> getSchema(genCtx.schemata
-          .getOrAdd(TypeToken.of(GoogleJsonErrorContainer.class), apiConfig)));
       if (addErrorCodesForServiceExceptions) {
         //add error code specific to the exceptions thrown by the method
-        Map<Integer, String> errorCodes = methodConfig.getErrorCodesAndDescriptions();
-        for (Entry<Integer, String> entry : errorCodes.entrySet()) {
-          operation.response(entry.getKey(), new Response()
-              .description(entry.getValue())
-              .responseSchema(errorModelSupplier.get()));
+        List<ErrorResponse> errorCodes = methodConfig.getErrorReponses();
+        for (ErrorResponse error : errorCodes) {
+          operation.response(error.code, 
+              getOrCreateErrorModelRef(swagger, apiConfig, genCtx, error.name, error.description));
         }
       }
       if (addGoogleJsonErrorAsDefaultResponse) {
         //add GoogleJsonError as the default response
-        operation.defaultResponse(new Response()
-            .description("A failed response")
-            .responseSchema(errorModelSupplier.get()));
+        operation.defaultResponse(
+            getOrCreateErrorModelRef(swagger, apiConfig, genCtx, null,null));
       }
     }
     
@@ -536,6 +580,20 @@ public class SwaggerGenerator {
     addDefinedMetricCosts(genCtx.limitMetrics, operation, methodConfig.getMetricCosts());
   }
 
+  private RefResponse getOrCreateErrorModelRef(Swagger swagger, ApiConfig apiConfig, 
+      GenerationContext genCtx, String name, String description) {
+    Model schema = getSchema(genCtx.schemata
+        .getOrAdd(TypeToken.of(GoogleJsonErrorContainer.class), apiConfig));
+    if (swagger.getResponses() == null) {
+      swagger.setResponses(new TreeMap<>());
+    }
+    String ref = Optional.ofNullable(name).orElse("DefaultError");
+    swagger.response(ref, new Response()
+            .description(Optional.ofNullable(description).orElse("A failed response"))
+            .responseSchema(schema));
+    return new RefResponse(getFullRef(RefType.RESPONSE, ref));
+  }
+
   private Model getSchema(Schema schema) {
     if (SchemaRepository.isJsonMapSchema(schema)) {
       return new ModelImpl().additionalProperties(FREE_FORM_PROPERTY);
@@ -544,7 +602,7 @@ public class SwaggerGenerator {
     if (mapField != null) {
       return new ModelImpl().additionalProperties(convertToSwaggerProperty(mapField));
     }
-    return new RefModel(schema.name()).asDefault(schema.name());
+    return new RefModel(getFullRef(RefType.DEFINITION, schema.name()));
   }
 
   private void writeAuthConfig(Swagger swagger, ApiMethodConfig methodConfig, Operation operation)
@@ -598,16 +656,21 @@ public class SwaggerGenerator {
 
   private Model convertToSwaggerSchema(Schema schema) {
     ModelImpl docSchema = new ModelImpl().type("object");
-    Map<String, Property> fields = new TreeMap<>();
+    String description = schema.description();
+    if (!Strings.isEmptyOrWhitespace(description)) {
+      docSchema.description(description);
+    }
     if (!schema.fields().isEmpty()) {
+      Map<String, Property> fields = new TreeMap<>();
       for (Field f : schema.fields().values()) {
         fields.put(f.name(), convertToSwaggerProperty(f));
       }
       docSchema.setProperties(fields);
     }
     //map schema should be inlined, but handling anyway 
-    if (schema.mapValueSchema() != null) {
-      docSchema.setAdditionalProperties(convertToSwaggerProperty(schema.mapValueSchema()));
+    Field mapValueSchema = schema.mapValueSchema();
+    if (mapValueSchema != null) {
+      docSchema.setAdditionalProperties(convertToSwaggerProperty(mapValueSchema));
     }
     return docSchema;
   }
@@ -631,7 +694,7 @@ public class SwaggerGenerator {
           p = inlineMapProperty(schemaReference);
         } else {
           String name = schema.name();
-          p = new RefProperty(name).asDefault(name);
+          p = new RefProperty(getFullRef(RefType.DEFINITION, name));
         }
       } else if (f.type() == FieldType.ARRAY) {
         p = new ArrayProperty(convertToSwaggerProperty(f.arrayItemSchema()));
@@ -675,6 +738,10 @@ public class SwaggerGenerator {
     return tag;
   }
 
+  private String getFullRef(RefType type, String name) {
+    return type.getInternalPrefix() + UrlEscapers.urlFormParameterEscaper().escape(name);
+  }
+
   private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig) {
     return FluentIterable.of(apiConfig.getName(), apiConfig.getVersion(),
         apiConfig.getApiClassConfig().getResource(), methodConfig.getEndpointMethodName())
@@ -711,6 +778,9 @@ public class SwaggerGenerator {
     Path path = swagger.getPath(pathStr);
     if (path == null) {
       path = new Path();
+      if (swagger.getPaths() == null) {
+        swagger.setPaths(new TreeMap<>());
+      }
       swagger.path(pathStr, path);
     }
     return path;
@@ -793,32 +863,17 @@ public class SwaggerGenerator {
     private String docVersion = "1.0.0";
     private String title;
     private String description;
+    private String apiName;
     private boolean addGoogleJsonErrorAsDefaultResponse;
     private boolean addErrorCodesForServiceExceptions;
     private boolean extractCommonParametersAsRefs;
     private boolean combineCommonParametersInSamePath;
 
-    public SwaggerContext setApiRoot(String apiRoot) {
-      try {
-        URL url = new URL(apiRoot);
-        hostname = url.getHost();
-        if (("http".equals(url.getProtocol()) && url.getPort() != 80 && url.getPort() != -1)
-            || ("https".equals(url.getProtocol()) && url.getPort() != 443 && url.getPort() != -1)) {
-          hostname += ":" + url.getPort();
-        }
-        basePath = Strings.stripTrailingSlash(url.getPath());
-        setScheme(url.getProtocol());
-        return this;
-      } catch (MalformedURLException e) {
-        throw new IllegalArgumentException(e);
-      }
-    }
-
     public SwaggerContext setScheme(String scheme) {
       this.scheme = "http".equals(scheme) ? Scheme.HTTP : Scheme.HTTPS;
       return this;
     }
-
+    
     public SwaggerContext setHostname(String hostname) {
       this.hostname = hostname;
       return this;
@@ -841,6 +896,11 @@ public class SwaggerGenerator {
 
     public SwaggerContext setDescription(String description) {
       this.description = description;
+      return this;
+    }
+
+    public SwaggerContext setApiName(String apiName) {
+      this.apiName = apiName;
       return this;
     }
 
