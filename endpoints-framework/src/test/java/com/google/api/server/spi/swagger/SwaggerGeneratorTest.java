@@ -54,6 +54,7 @@ import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource1Endpoint
 import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource2Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version1Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version2Endpoint;
+import com.google.api.server.spi.testing.RequiredPropertiesEndpoint;
 import com.google.api.server.spi.testing.SpecialCharsEndpoint;
 import com.google.common.collect.ImmutableList;
 
@@ -272,6 +273,14 @@ public class SwaggerGeneratorTest {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooDescriptionEndpoint.class);
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
     Swagger expected = readExpectedAsSwagger("foo_with_description_endpoint.swagger");
+    checkSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_RequiredPropertiesEndpoint() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), RequiredPropertiesEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
+    Swagger expected = readExpectedAsSwagger("required_parameters_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
 

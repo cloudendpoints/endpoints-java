@@ -49,6 +49,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -66,6 +67,23 @@ public class ApiAnnotationIntrospector extends NopAnnotationIntrospector {
   public boolean hasIgnoreMarker(AnnotatedMember member) {
     ApiResourceProperty apiProperty = member.getAnnotation(ApiResourceProperty.class);
     return apiProperty != null && apiProperty.ignored() == AnnotationBoolean.TRUE;
+  }
+
+  @Override
+  public Boolean hasRequiredMarker(AnnotatedMember member) {
+    ApiResourceProperty apiProperty = member.getAnnotation(ApiResourceProperty.class);
+    Nonnull nonnull = member.getAnnotation(Nonnull.class);
+    Nullable nullable = member.getAnnotation(Nullable.class);
+    if (apiProperty != null && apiProperty.required() != AnnotationBoolean.UNSPECIFIED) {
+      return Boolean.parseBoolean(apiProperty.required().name());
+    }
+    if (nonnull != null) {
+      return true;
+    }
+    if (nullable != null) {
+      return false;
+    }
+    return null;
   }
 
   @Override

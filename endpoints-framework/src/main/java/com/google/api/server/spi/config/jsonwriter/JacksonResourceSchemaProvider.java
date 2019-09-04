@@ -72,6 +72,7 @@ public class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvide
         if (propertyType != null) {
           ResourcePropertySchema propertySchema = ResourcePropertySchema.of(propertyType);
           propertySchema.setDescription(definition.getMetadata().getDescription());
+          propertySchema.setRequired(definition.getMetadata().getRequired());
           schemaBuilder.addProperty(name, propertySchema);
         } else {
           logger.atWarning().log("No type found for property '%s' on class '%s'.", name, type);

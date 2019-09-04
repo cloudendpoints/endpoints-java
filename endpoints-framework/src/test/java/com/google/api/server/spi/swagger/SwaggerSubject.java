@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertAbout;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Predicates;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -12,6 +13,7 @@ import com.google.common.truth.Fact;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import io.swagger.models.HttpMethod;
+import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
@@ -111,9 +113,21 @@ public final class SwaggerSubject extends Subject {
 
   private void checkEquality(Swagger expected) {
     SwaggerGenerator.normalizeOperationParameters(expected);
+    normalizeRequiredPropertyList(actual);
+    normalizeRequiredPropertyList(expected);
     if (!Objects.equals(actual, expected)) {
       throw new ComparisonFailure("Swagger specs don't match",
           toString(expected), toString(actual));
+    }
+  }
+
+  //ModelImpl.required is not "persisted", but gathered from properties
+  private void normalizeRequiredPropertyList(Swagger swagger) {
+    if (swagger.getDefinitions() != null) {
+      swagger.getDefinitions().values().stream()
+          .filter(Predicates.instanceOf(ModelImpl.class))
+          .map(model -> (ModelImpl) model)
+          .forEach(model -> model.setRequired(model.getRequired()));
     }
   }
 

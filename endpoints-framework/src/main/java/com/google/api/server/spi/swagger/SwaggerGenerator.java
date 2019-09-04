@@ -97,11 +97,8 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.PropertyBuilder;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.StringProperty;
-
 import io.swagger.models.refs.RefType;
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -708,6 +705,9 @@ public class SwaggerGenerator {
     //the spec explicitly disallows description on $ref
     if (!(p instanceof RefProperty)) {
       p.description(f.description());
+      if (f.required() != null) {
+        p.setRequired(f.required());
+      }
     }
     return p;
   }

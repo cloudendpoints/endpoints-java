@@ -8,8 +8,6 @@
   - other repeated param features (uniqueItems, default values)
   - empty value parameters
   - headers in params
-- Models
-  - required properties (need new annotation property)
 - Responses
   - use introspection or new annotation to describe usage of any subclasses of ServiceException
   - headers in response

@@ -30,6 +30,7 @@ import java.util.Objects;
 public class ResourcePropertySchema {
   private final TypeToken<?> type;
   private String description;
+  private Boolean required;
 
   private ResourcePropertySchema(TypeToken<?> type) {
     this.type = type;
@@ -56,7 +57,16 @@ public class ResourcePropertySchema {
   public void setDescription(String description) {
     this.description = description;
   }
-  
+
+  public Boolean getRequired() {
+    return required;
+  }
+
+  public ResourcePropertySchema setRequired(Boolean required) {
+    this.required = required;
+    return this;
+  }
+
   /**
    * Returns a default resource property schema for a given type.
    *
