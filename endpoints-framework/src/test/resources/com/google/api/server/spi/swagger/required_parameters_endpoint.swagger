@@ -1,0 +1,81 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "swagger-test.appspot.com"
+  },
+  "host": "swagger-test.appspot.com",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "requiredProperties:v1"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/requiredProperties/v1/requiredproperties": {
+      "get": {
+        "tags": [
+          "requiredProperties:v1"
+        ],
+        "operationId": "RequiredPropertiesV1GetRequiredProperties",
+        "responses": {
+          "200": {
+            "description": "A RequiredProperties response",
+            "schema": {
+              "$ref": "#/definitions/RequiredProperties"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "RequiredProperties": {
+      "type": "object",
+      "required": [
+        "apiResourceProperty_required",
+        "nonnull",
+        "priority1",
+        "priority2"
+      ],
+      "properties": {
+        "apiResourceProperty_not_required": {
+          "type": "string"
+        },
+        "apiResourceProperty_required": {
+          "type": "string"
+        },
+        "apiResourceProperty_undefined": {
+          "type": "string"
+        },
+        "nonnull": {
+          "type": "string"
+        },
+        "nullable": {
+          "type": "string"
+        },
+        "priority1": {
+          "type": "string"
+        },
+        "priority2": {
+          "type": "string"
+        },
+        "priority3": {
+          "type": "string"
+        },
+        "undefined": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

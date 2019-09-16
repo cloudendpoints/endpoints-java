@@ -82,7 +82,11 @@ public abstract class Schema {
     /** The type classification of the field. */
     public abstract FieldType type();
 
+    /** The description of the field. */
     @Nullable public abstract String description();
+
+    /** The required status of the field. */
+    @Nullable public abstract Boolean required();
 
     /**
      * If {@link #type()} is {@link FieldType#OBJECT}, a reference to the schema type that the field
@@ -106,6 +110,7 @@ public abstract class Schema {
       public abstract Builder setName(String name);
       public abstract Builder setType(FieldType type);
       public abstract Builder setDescription(String description);
+      public abstract Builder setRequired(Boolean required);
       public abstract Builder setSchemaReference(SchemaReference ref);
       public abstract Builder setArrayItemSchema(Field schema);
       public abstract Field build();

@@ -279,6 +279,9 @@ public class DiscoveryGenerator {
         .setType(f.type().getDiscoveryType())
         .setDescription(f.description())
         .setFormat(f.type().getDiscoveryFormat());
+    if (f.required() != null) {
+        fieldSchema.setRequired(f.required());
+    }
     if (f.type() == FieldType.ARRAY) {
       fieldSchema.setItems(convertToDiscoverySchema(f.arrayItemSchema()));
     }

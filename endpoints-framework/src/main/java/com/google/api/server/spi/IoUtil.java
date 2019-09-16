@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.RandomAccessFile;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -55,7 +56,7 @@ public final class IoUtil {
   public static String readResourceFile(Class<?> c, String fileName) throws IOException {
     URL url = c.getResource(fileName);
     StringBuilder sb = new StringBuilder();
-    BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+    BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
     for (String line = in.readLine(); line != null; line = in.readLine()) {
       sb.append(line);
     }

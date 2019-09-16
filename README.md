@@ -28,14 +28,19 @@ To install test versions to Maven for easier dependency management, simply run:
 
 These are the most notable additions to
 [the original project by Google](https://github.com/cloudendpoints/endpoints-java), currently
-inactive: 
-- Allow adding [arbitrary data](https://github.com/AODocs/endpoints-java/pull/20) to generic errors
-- [Improve errors](https://github.com/AODocs/endpoints-java/pull/30) on malformed JSON
-- Generated Swagger spec is [compatible](https://github.com/AODocs/endpoints-java/pull/34) with 
-[Cloud Endpoints Portal ](https://cloud.google.com/endpoints/docs/frameworks/dev-portal-overview)
-([and](https://github.com/AODocs/endpoints-java/pull/38) 
-[other](https://github.com/AODocs/endpoints-java/pull/36) 
-[improvements](https://github.com/AODocs/endpoints-java/pull/37))
+inactive:
+- Runtime
+  - Allow [adding arbitrary data](https://github.com/AODocs/endpoints-java/pull/20) to generic errors
+  - [Improve returned errors](https://github.com/AODocs/endpoints-java/pull/30) on malformed JSON
+- Discovery and Swagger
+  - [Add description on resources and resource usage as request body](https://github.com/AODocs/endpoints-java/commit/bbb1eff2bb9e7d28fc2ec17599257d0ef610531d)
+  - [Support declaring resource properties as required](https://github.com/AODocs/endpoints-java/pull/41)
+- Swagger
+  - Generated spec is [fully compatible](https://github.com/AODocs/endpoints-java/pull/34) with 
+[Cloud Endpoints Portal](https://cloud.google.com/endpoints/docs/frameworks/dev-portal-overview) (and is 100% valid Swagger spec)
+  - Support [multi-API service](https://github.com/AODocs/endpoints-java/pull/40/commits/1f18d2f64f1538e63a7836a5cd52ff639fc624fd) in Endpoints Management
+  - [New options](https://github.com/AODocs/endpoints-java/pull/37) to combine common parameters in same path, extract parameter refs at spec level, add error model description, customize spec title and description
+  - [Add description support](https://github.com/AODocs/endpoints-java/pull/40/commits/bbb1eff2bb9e7d28fc2ec17599257d0ef610531d) for resource and resource usage
 
 Check 
 [closed PRs](https://github.com/AODocs/endpoints-java/pulls?q=is%3Apr+sort%3Aupdated-desc+is%3Aclosed)

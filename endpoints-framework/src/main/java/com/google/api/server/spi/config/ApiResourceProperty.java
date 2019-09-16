@@ -34,10 +34,19 @@ public @interface ApiResourceProperty {
   String name() default "";
 
   /**
-   * The description that the property represented by the annotated getter, setter, or field should appear
-   * as in the API.
+   * The description that the property represented by the annotated getter, setter, or field should
+   * appear as in the API.
    */
   String description() default "";
+
+  /**
+   * Whether or not the property represented by the annotated getter, setter or field is "required":
+   * - For requests, indicates the property is required for the resource to be accepted
+   * - For responses, indicates the property will be returned by the server (before applying
+   * partial response filtering)
+   * In both cases, this is only a "hint": this is not enforced in any way.
+   */
+  AnnotationBoolean required() default AnnotationBoolean.UNSPECIFIED;
 
   /**
    * Whether or not the property represented by the annotated getter, setter or field should be

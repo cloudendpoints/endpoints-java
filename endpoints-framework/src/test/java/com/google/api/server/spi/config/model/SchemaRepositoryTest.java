@@ -9,8 +9,10 @@ import static org.junit.Assert.fail;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.ServiceContext;
 import com.google.api.server.spi.TypeLoader;
+import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiConfigLoader;
+import com.google.api.server.spi.config.ApiResourceProperty;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.annotationreader.ApiConfigAnnotationReader;
 import com.google.api.server.spi.config.model.ApiParameterConfig.Classification;
@@ -23,6 +25,8 @@ import com.google.api.server.spi.testing.TestEnum;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -272,6 +276,62 @@ public class SchemaRepositoryTest {
   }
 
   @Test
+  public void getOrAdd_requiredProperties() throws Exception {
+    TypeToken<RequiredProperties> type = TypeToken.of(RequiredProperties.class);
+    // This test checks the combinations of annotation that determine the "required" marker for
+    // resource properties.
+    repo.getOrAdd(type, config);
+    assertThat(repo.getOrAdd(type, config))
+        .isEqualTo(Schema.builder()
+            .setName("RequiredProperties")
+            .setType("object")
+            .addField("undefined", Field.builder()
+                .setName("undefined")
+                .setType(FieldType.STRING)
+                .build())
+            .addField("apiResourceProperty_undefined", Field.builder()
+                .setName("apiResourceProperty_undefined")
+                .setType(FieldType.STRING)
+                .build())
+            .addField("apiResourceProperty_required", Field.builder()
+                .setName("apiResourceProperty_required")
+                .setRequired(true)
+                .setType(FieldType.STRING)
+                .build())
+            .addField("apiResourceProperty_not_required", Field.builder()
+                .setName("apiResourceProperty_not_required")
+                .setRequired(false)
+                .setType(FieldType.STRING)
+                .build())
+            .addField("nullable", Field.builder()
+                .setName("nullable")
+                .setRequired(false)
+                .setType(FieldType.STRING)
+                .build())
+            .addField("nonnull", Field.builder()
+                .setName("nonnull")
+                .setRequired(true)
+                .setType(FieldType.STRING)
+                .build())
+            .addField("priority1", Field.builder()
+                .setName("priority1")
+                .setRequired(true)
+                .setType(FieldType.STRING)
+                .build())
+            .addField("priority2", Field.builder()
+                .setName("priority2")
+                .setRequired(true)
+                .setType(FieldType.STRING)
+                .build())
+            .addField("priority3", Field.builder()
+                .setName("priority3")
+                .setRequired(false)
+                .setType(FieldType.STRING)
+                .build())
+            .build());
+  }
+
+  @Test
   public void get() {
     TypeToken<Parameterized<Integer>> type = new TypeToken<Parameterized<Integer>>() {};
     assertThat(repo.get(type, config)).isNull();
@@ -397,6 +457,44 @@ public class SchemaRepositoryTest {
 
     @Override
     public Parameterized<Short> transformFrom(Parameterized<String> in) {
+      return null;
+    }
+  }
+
+  private static class RequiredProperties {
+    public String getUndefined() {
+      return null;
+    }
+    @ApiResourceProperty
+    public String apiResourceProperty_undefined() {
+      return null;
+    }
+    @ApiResourceProperty(required = AnnotationBoolean.TRUE)
+    public String apiResourceProperty_required() {
+      return "";
+    }
+    @ApiResourceProperty(required = AnnotationBoolean.FALSE)
+    public String apiResourceProperty_not_required() {
+      return null;
+    }
+    @Nullable
+    public String getNullable() {
+      return null;
+    }
+    @Nonnull
+    public String getNonnull() {
+      return "";
+    }
+    @ApiResourceProperty(required = AnnotationBoolean.TRUE) @Nullable
+    public String getPriority1() {
+      return "";
+    }
+    @Nonnull @Nullable
+    public String getPriority2() {
+      return "";
+    }
+    @ApiResourceProperty(required = AnnotationBoolean.FALSE) @Nonnull
+    public String getPriority3() {
       return null;
     }
   }

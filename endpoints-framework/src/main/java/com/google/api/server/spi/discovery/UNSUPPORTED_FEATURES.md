@@ -1,0 +1,2 @@
+- Models:
+  - minimum,maximum,pattern,readonly,annotations

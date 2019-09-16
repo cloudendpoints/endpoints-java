@@ -272,9 +272,11 @@ public class SchemaRepository {
       ResourcePropertySchema propertySchema = entry.getValue();
       TypeToken<?> propertyType = propertySchema.getType();
       if (propertyType != null) {
+        String description = propertySchema.getDescription();
         Field.Builder fieldBuilder = Field.builder()
             .setName(propertyName)
-            .setDescription(propertySchema.getDescription());
+            .setDescription(Strings.isNullOrEmpty(description) ? null : description)
+            .setRequired(propertySchema.getRequired());
         fillInFieldInformation(fieldBuilder, propertyType, typesForConfig, config);
         builder.addField(propertyName, fieldBuilder.build());
       }
