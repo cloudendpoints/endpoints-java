@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.api.server.spi.swagger.SwaggerGenerator.SwaggerContext;
 import com.google.appengine.tools.util.Option;
 import com.google.common.collect.Lists;
 
@@ -44,6 +45,8 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
   private String outputFilePath;
   private String basePath;
   private List<String> serviceClassNames;
+  private String tagTemplate;
+  private String operationIdTemplate;
   private boolean outputToDisk;
   private boolean addGoogleJsonErrorAsDefaultResponse;
   private boolean addErrorCodesForServiceExceptionsOption;
@@ -56,6 +59,7 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
       public String genOpenApiDoc(
           URL[] classPath, String outputFilePath, String hostname, String basePath,
           String title, String description, String apiName,
+          String tagTemplate, String operationIdTemplate,
           boolean addGoogleJsonErrorAsDefaultResponse,
           boolean addErrorCodesForServiceExceptionsOption,
           boolean extractCommonParametersAsRefsOption,
@@ -65,6 +69,8 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
         GetOpenApiDocActionTest.this.outputFilePath = outputFilePath;
         GetOpenApiDocActionTest.this.basePath = basePath;
         GetOpenApiDocActionTest.this.serviceClassNames = serviceClassNames;
+        GetOpenApiDocActionTest.this.tagTemplate = tagTemplate;
+        GetOpenApiDocActionTest.this.operationIdTemplate = operationIdTemplate;
         GetOpenApiDocActionTest.this.outputToDisk = outputToDisk;
         GetOpenApiDocActionTest.this.addGoogleJsonErrorAsDefaultResponse 
             = addGoogleJsonErrorAsDefaultResponse;
@@ -97,6 +103,7 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
         new String[]{GetOpenApiDocAction.NAME, option(EndpointsToolAction.OPTION_CLASS_PATH_SHORT),
             "classPath", option(EndpointsToolAction.OPTION_OUTPUT_DIR_SHORT), "outputDir", 
             option("addGoogleJsonErrorAsDefaultResponse", false),
+            option("tt"), "myCustomTemplate",
             "MyService",
             "MyService2"});
     assertFalse(usagePrinted);
@@ -110,6 +117,8 @@ public class GetOpenApiDocActionTest extends EndpointsToolTest {
     assertEquals(EndpointsToolAction.DEFAULT_BASE_PATH, basePath);
     assertTrue(addGoogleJsonErrorAsDefaultResponse);
     assertFalse(addErrorCodesForServiceExceptionsOption);
+    assertEquals("myCustomTemplate", tagTemplate);
+    assertEquals(SwaggerContext.DEFAULT_OPERATION_ID_TEMPLATE, operationIdTemplate);
     assertStringsEqual(Arrays.asList("MyService", "MyService2"), serviceClassNames);
     assertTrue(outputToDisk);
   }

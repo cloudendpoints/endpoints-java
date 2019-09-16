@@ -113,6 +113,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.text.StrSubstitutor;
 
 /**
  * Generates a {@link Swagger} object representing a set of {@link ApiConfig} objects.
@@ -136,10 +137,7 @@ public class SwaggerGenerator {
   private static final String METRIC_KIND = "GAUGE";
   private static final String METRICS_KEY = "metrics";
   private static final String QUOTA_KEY = "quota";
-
-  private static final Converter<String, String> CONVERTER =
-      CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL);
-  private static final Joiner JOINER = Joiner.on("").skipNulls();
+  
   private static final ImmutableMap<Type, String> TYPE_TO_STRING_MAP =
       ImmutableMap.<java.lang.reflect.Type, String>builder()
           .put(String.class, "string")
@@ -402,7 +400,7 @@ public class SwaggerGenerator {
         addNonConflictingApiLimitMetric(genCtx.limitMetrics, limitMetric);
       }
       writeApiClass(apiConfig, swagger, context, genCtx);
-      swagger.tag(getTag(apiConfig));
+      swagger.tag(getTag(apiConfig, context));
     }
     List<Schema> schemas = genCtx.schemata.getAllSchemaForApi(apiKey);
     for (Schema schema : schemas) {
@@ -426,8 +424,8 @@ public class SwaggerGenerator {
     return INLINED_MODEL_NAMES.contains(schema.name());
   }
 
-  private Tag getTag(ApiConfig apiConfig) {
-    Tag tag = new Tag().name(getTagName(apiConfig));
+  private Tag getTag(ApiConfig apiConfig, SwaggerContext context) {
+    Tag tag = new Tag().name(getTagName(apiConfig, context));
     String description = apiConfig.getDescription();
     if (!Strings.isEmptyOrWhitespace(description)) {
       tag.description(description);
@@ -466,8 +464,8 @@ public class SwaggerGenerator {
       SwaggerContext context, GenerationContext genCtx) throws ApiConfigException {
     Path path = getOrCreatePath(swagger, methodConfig);
     Operation operation = new Operation()
-      .operationId(getOperationId(apiConfig, methodConfig))
-      .tags(Collections.singletonList(getTagName(apiConfig)))
+      .operationId(getOperationId(apiConfig, methodConfig, context))
+      .tags(Collections.singletonList(getTagName(apiConfig, context)))
       .description(methodConfig.getDescription())
       .deprecated(methodConfig.isDeprecated() ? true : null);
     Collection<String> pathParameters = methodConfig.getPathParameters();
@@ -729,23 +727,16 @@ public class SwaggerGenerator {
     return new MapProperty(convertToSwaggerProperty(mapField));
   }
 
-  private static String getTagName(ApiConfig apiConfig) {
-    String tag = apiConfig.getName() + ":" + apiConfig.getVersion();
-    String resource = apiConfig.getApiClassConfig().getResource();
-    if (!Strings.isEmptyOrWhitespace(resource)) {
-      tag += "." + CONVERTER.convert(resource);
-    }
-    return tag;
+  private static String getTagName(ApiConfig apiConfig, SwaggerContext context) {
+    return NamingContext.build(apiConfig, null).resolve(context.tagTemplate);
   }
 
   private String getFullRef(RefType type, String name) {
     return type.getInternalPrefix() + UrlEscapers.urlFormParameterEscaper().escape(name);
   }
 
-  private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig) {
-    return FluentIterable.of(apiConfig.getName(), apiConfig.getVersion(),
-        apiConfig.getApiClassConfig().getResource(), methodConfig.getEndpointMethodName())
-        .transform(CONVERTER).join(JOINER);
+  private static String getOperationId(ApiConfig apiConfig, ApiMethodConfig methodConfig, SwaggerContext context) {
+    return NamingContext.build(apiConfig, methodConfig).resolve(context.operationIdTemplate);
   }
 
   private static Property getSwaggerArrayProperty(TypeToken<?> typeToken) {
@@ -857,6 +848,9 @@ public class SwaggerGenerator {
   }
 
   public static class SwaggerContext {
+    public static final String DEFAULT_TAG_TEMPLATE = "${apiName}:${apiVersion}${.Resource}";
+    public static final String DEFAULT_OPERATION_ID_TEMPLATE = "${apiName}:${apiVersion}${.Resource}${.method}";
+    
     private Scheme scheme = Scheme.HTTPS;
     private String hostname = "myapi.appspot.com";
     private String basePath = "/_ah/api";
@@ -864,6 +858,8 @@ public class SwaggerGenerator {
     private String title;
     private String description;
     private String apiName;
+    private String tagTemplate = DEFAULT_TAG_TEMPLATE;
+    private String operationIdTemplate = DEFAULT_OPERATION_ID_TEMPLATE;
     private boolean addGoogleJsonErrorAsDefaultResponse;
     private boolean addErrorCodesForServiceExceptions;
     private boolean extractCommonParametersAsRefs;
@@ -904,6 +900,16 @@ public class SwaggerGenerator {
       return this;
     }
 
+    public SwaggerContext setTagTemplate(String tagTemplate) {
+      this.tagTemplate = tagTemplate;
+      return this;
+    }
+
+    public SwaggerContext setOperationIdTemplate(String operationIdTemplate) {
+      this.operationIdTemplate = operationIdTemplate;
+      return this;
+    }
+
     public SwaggerContext setAddGoogleJsonErrorAsDefaultResponse(boolean addGoogleJsonErrorAsDefaultResponse) {
       this.addGoogleJsonErrorAsDefaultResponse = addGoogleJsonErrorAsDefaultResponse;
       return this;
@@ -930,4 +936,58 @@ public class SwaggerGenerator {
     private ApiConfigValidator validator;
     private SchemaRepository schemata;
   }
+
+  /**
+   * A template mechanism based on Apache Commons lang's StrSubstitutor (placeholder syntax is "${var}).
+   * 
+   * The following variables are available on API and API method contexts:
+   * - apiName
+   * - apiVersion
+   * - resource (might be null for API or method context)
+   * - method (is null when working in a method context)
+   * 
+   * Each variable comes with following variants:
+   * - Uppercased variants (if "${apiName}" is "myApi", "${ApiName}" will be "MyAPi"
+   * - Prefixed with "-",":" or "." (only chars that are safe for use in Swagger tags for Endpoints Portal)
+   * - Prefixed variants should be used for nullable vars: "${.resource}" will be empty if the resource var is null, but will be ".myResource" if resource is "myResource"
+   * - Prefixed variants also come in uppercased flavors ("${.Resource}" will be ".MyResource" if resource var is "myResource")
+   */
+  private static class NamingContext {
+
+    private static final Converter<String, String> UPPER
+        = CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL);
+    private final Map<String, String> values = new HashMap<>();
+    private final String prefixes;
+
+    private static NamingContext build(ApiConfig apiConfig, ApiMethodConfig methodConfig) {
+      String resource = apiConfig.getApiClassConfig().getResource();
+      String method = methodConfig != null ? methodConfig.getEndpointMethodName() : null;
+      return new NamingContext("-:.")
+          .put("apiName", apiConfig.getName())
+          .put("apiVersion", apiConfig.getVersion())
+          .put("resource", resource)
+          .put("method", method);
+    }
+
+    NamingContext(String prefixes) {
+      this.prefixes = prefixes;
+    }
+
+    NamingContext put(String key, String value) {
+      value = com.google.common.base.Strings.nullToEmpty(value);
+      values.put(key, value);
+      values.put(UPPER.convert(key), UPPER.convert(value));
+      for (char c : prefixes.toCharArray()) {
+        values.put(c + key, value.isEmpty() ? "" : c + value);
+        values.put(c + UPPER.convert(key), value.isEmpty() ? "" : c + UPPER.convert(value));
+      }
+      return this;
+    }
+
+    String resolve(String template) {
+      return new StrSubstitutor(values).replace(template);
+    }
+
+  }
+  
 }

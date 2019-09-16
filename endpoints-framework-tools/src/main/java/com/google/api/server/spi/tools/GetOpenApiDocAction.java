@@ -56,6 +56,8 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
   private Option titleOption = makeTitleOption();
   private Option descriptionOption = makeDescriptionOption();
   private Option apiNameOption = makeApiNameOption();
+  private Option tagTemplateOption = makeTagTemplateOption();
+  private Option operationIdTemplateOption = makeOperationIdTemplateOption();
   private Option addGoogleJsonErrorAsDefaultResponseOption = makeVisibleFlagOption(
       "addGoogleJsonErrorAsDefaultResponse", "Add GoogleJsonError as default response"
   );
@@ -78,6 +80,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
     setOptions(
         Arrays.asList(classPathOption, outputOption, warOption, hostnameOption, basePathOption,
             titleOption, descriptionOption, apiNameOption,
+            tagTemplateOption, operationIdTemplateOption,
             addGoogleJsonErrorAsDefaultResponseOption, addErrorCodesForServiceExceptionsOption,
             extractCommonParametersAsRefsOption, combineCommonParametersInSamePathOption));
     setShortDescription("Generates an OpenAPI document");
@@ -109,6 +112,22 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
         "API_NAME",
         "Sets the api name. Endpoints Management will use hostname if not defined.");
   }
+
+  private static Option makeTagTemplateOption() {
+    return EndpointsOption.makeVisibleNonFlagOption(
+        "tt",
+        "tagTemplate",
+        "TAG_TEMPLATE",
+        "Sets the tag template name. Defaults to " + SwaggerContext.DEFAULT_TAG_TEMPLATE + ".");
+  }
+
+  private static Option makeOperationIdTemplateOption() {
+    return EndpointsOption.makeVisibleNonFlagOption(
+        "oit",
+        "operationIdTemplate",
+        "OPERATION_ID_TEMPLATE",
+        "Sets the operation id template. Defaults to " + SwaggerContext.DEFAULT_OPERATION_ID_TEMPLATE + ".");
+  }
   
   private static boolean getBooleanOptionValue(Option option) {
     return option.getValue() != null;
@@ -132,6 +151,8 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
         getOptionOrDefault(titleOption, null),
         getOptionOrDefault(descriptionOption, null),
         getOptionOrDefault(apiNameOption, null),
+        getOptionOrDefault(tagTemplateOption, SwaggerContext.DEFAULT_TAG_TEMPLATE),
+        getOptionOrDefault(operationIdTemplateOption, SwaggerContext.DEFAULT_OPERATION_ID_TEMPLATE),
         getBooleanOptionValue(addGoogleJsonErrorAsDefaultResponseOption),
         getBooleanOptionValue(addErrorCodesForServiceExceptionsOption),
         getBooleanOptionValue(extractCommonParametersAsRefsOption),
@@ -154,6 +175,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
   public String genOpenApiDoc(
       URL[] classPath, String outputFilePath, String hostname, String basePath,
       String title, String description, String apiName,
+      String tagTemplate, String operationIdTemplate,
       boolean addGoogleJsonErrorAsDefaultResponse, boolean addErrorCodesForServiceExceptionsOption,
       boolean extractCommonParametersAsRefsOption, boolean combineCommonParametersInSamePathOption,
       List<String> serviceClassNames, boolean outputToDisk)
@@ -182,6 +204,8 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
         .setTitle(title)
         .setDescription(description)
         .setApiName(apiName)
+        .setTagTemplate(tagTemplate)
+        .setOperationIdTemplate(operationIdTemplate)
         .setAddGoogleJsonErrorAsDefaultResponse(addGoogleJsonErrorAsDefaultResponse)
         .setAddErrorCodesForServiceExceptions(addErrorCodesForServiceExceptionsOption)
         .setExtractCommonParametersAsRefs(extractCommonParametersAsRefsOption)
