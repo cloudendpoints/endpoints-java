@@ -2,14 +2,17 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "swagger-test.appspot.com"
+    "title": "myapi.appspot.com"
   },
-  "host": "swagger-test.appspot.com",
-  "basePath": "/api",
+  "host": "myapi.appspot.com",
+  "basePath": "/_ah/api",
   "tags": [
     {
-      "name": "foo:v1",
-      "description": "Just Foo Things"
+      "name": "FooV1",
+      "description": "Just Foo Things",
+      "externalDocs": {
+        "url": "https://example.com"
+      }
     }
   ],
   "schemes": [
@@ -25,10 +28,10 @@
     "/foo/v1/foos": {
       "get": {
         "tags": [
-          "foo:v1"
+          "FooV1"
         ],
         "description": "list desc",
-        "operationId": "foo:v1.listFoos",
+        "operationId": "foo-v1-listFoos",
         "parameters": [
           {
             "name": "n",
@@ -36,24 +39,13 @@
             "required": true,
             "type": "integer",
             "format": "int32"
-          },
-          {
-            "name": "enum",
-            "in": "query",
-            "description": "enum desc",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "VALUE1",
-              "VALUE2"
-            ]
           }
         ],
         "responses": {
           "200": {
-            "description": "A CollectionResponse_FooDescription response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
-              "$ref": "#/definitions/CollectionResponse_FooDescription"
+              "$ref": "#/definitions/CollectionResponse_Foo"
             }
           }
         },
@@ -72,14 +64,14 @@
       },
       "post": {
         "tags": [
-          "foo:v1"
+          "FooV1"
         ],
-        "operationId": "foo:v1.toplevel",
+        "operationId": "foo-v1-toplevel",
         "responses": {
           "200": {
-            "description": "A CollectionResponse_FooDescription response",
+            "description": "A CollectionResponse_Foo response",
             "schema": {
-              "$ref": "#/definitions/CollectionResponse_FooDescription"
+              "$ref": "#/definitions/CollectionResponse_Foo"
             }
           }
         },
@@ -100,10 +92,10 @@
     "/foo/v1/foos/{id}": {
       "get": {
         "tags": [
-          "foo:v1"
+          "FooV1"
         ],
         "description": "get desc",
-        "operationId": "foo:v1.getFoo",
+        "operationId": "foo-v1-getFoo",
         "parameters": [
           {
             "name": "id",
@@ -115,9 +107,9 @@
         ],
         "responses": {
           "200": {
-            "description": "A FooDescription response",
+            "description": "A Foo response",
             "schema": {
-              "$ref": "#/definitions/FooDescription"
+              "$ref": "#/definitions/Foo"
             }
           }
         },
@@ -136,10 +128,10 @@
       },
       "post": {
         "tags": [
-          "foo:v1"
+          "FooV1"
         ],
         "description": "update desc",
-        "operationId": "foo:v1.updateFoo",
+        "operationId": "foo-v1-updateFoo",
         "parameters": [
           {
             "name": "id",
@@ -150,18 +142,18 @@
           },
           {
             "in": "body",
-            "name": "FooDescription",
+            "name": "Foo",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/FooDescription"
+              "$ref": "#/definitions/Foo"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "A FooDescription response",
+            "description": "A Foo response",
             "schema": {
-              "$ref": "#/definitions/FooDescription"
+              "$ref": "#/definitions/Foo"
             }
           }
         },
@@ -180,10 +172,10 @@
       },
       "put": {
         "tags": [
-          "foo:v1"
+          "FooV1"
         ],
         "description": "create desc",
-        "operationId": "foo:v1.createFoo",
+        "operationId": "foo-v1-createFoo",
         "parameters": [
           {
             "name": "id",
@@ -194,19 +186,18 @@
           },
           {
             "in": "body",
-            "name": "FooDescription",
-            "description": "Description at method parameter level",
+            "name": "Foo",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/FooDescription"
+              "$ref": "#/definitions/Foo"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "A FooDescription response",
+            "description": "A Foo response",
             "schema": {
-              "$ref": "#/definitions/FooDescription"
+              "$ref": "#/definitions/Foo"
             }
           }
         },
@@ -225,10 +216,10 @@
       },
       "delete": {
         "tags": [
-          "foo:v1"
+          "FooV1"
         ],
         "description": "delete desc",
-        "operationId": "foo:v1.deleteFoo",
+        "operationId": "foo-v1-deleteFoo",
         "parameters": [
           {
             "name": "id",
@@ -240,9 +231,9 @@
         ],
         "responses": {
           "200": {
-            "description": "A FooDescription response",
+            "description": "A Foo response",
             "schema": {
-              "$ref": "#/definitions/FooDescription"
+              "$ref": "#/definitions/Foo"
             }
           }
         },
@@ -286,13 +277,13 @@
     }
   },
   "definitions": {
-    "CollectionResponse_FooDescription": {
+    "CollectionResponse_Foo": {
       "type": "object",
       "properties": {
         "items": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/FooDescription"
+            "$ref": "#/definitions/Foo"
           }
         },
         "nextPageToken": {
@@ -300,28 +291,17 @@
         }
       }
     },
-    "FooDescription": {
+    "Foo": {
       "type": "object",
       "properties": {
-        "choice": {
-          "type": "string",
-          "description": "description of choice",
-          "enum": [
-            "VALUE1",
-            "VALUE2"
-          ]
-        },
         "name": {
-          "type": "string",
-          "description": "description of name"
+          "type": "string"
         },
         "value": {
           "type": "integer",
-          "format": "int32",
-          "description": "description of value"
+          "format": "int32"
         }
-      },
-      "description": "Description at class level"
+      }
     }
   }
 }

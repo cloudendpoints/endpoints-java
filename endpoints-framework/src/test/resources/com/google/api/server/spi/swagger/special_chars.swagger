@@ -26,7 +26,7 @@
         "tags": [
           "specialChars:v1"
         ],
-        "operationId": "SpecialCharsV1ParamSpecialChar1",
+        "operationId": "specialChars:v1.paramSpecialChar1",
         "parameters": [
           {
             "$ref": "#/parameters/%C2%B5_query_parameter"
@@ -55,7 +55,7 @@
         "tags": [
           "specialChars:v1"
         ],
-        "operationId": "SpecialCharsV1ParamSpecialChar2",
+        "operationId": "specialChars:v1.paramSpecialChar2",
         "parameters": [
           {
             "$ref": "#/parameters/%C2%B5_query_parameter"

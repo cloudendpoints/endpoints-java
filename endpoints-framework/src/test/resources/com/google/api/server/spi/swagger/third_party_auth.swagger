@@ -26,7 +26,7 @@
         "tags": [
           "thirdparty:v1"
         ],
-        "operationId": "ThirdpartyV1AuthOverride",
+        "operationId": "thirdparty:v1.authOverride",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -44,7 +44,7 @@
         "tags": [
           "thirdparty:v1"
         ],
-        "operationId": "ThirdpartyV1NoOverride",
+        "operationId": "thirdparty:v1.noOverride",
         "responses": {
           "204": {
             "description": "A successful response"

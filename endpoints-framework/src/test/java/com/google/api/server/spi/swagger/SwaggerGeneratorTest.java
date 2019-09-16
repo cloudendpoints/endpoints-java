@@ -98,6 +98,17 @@ public class SwaggerGeneratorTest {
     Swagger expected = readExpectedAsSwagger("foo_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
+
+  @Test
+  public void testWriteSwagger_FooEndpointCustomTemplates() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), new SwaggerContext()
+        .setTagTemplate("${ApiName}${ApiVersion}")
+        .setOperationIdTemplate("${apiName}-${apiVersion}-${method}")
+    );
+    Swagger expected = readExpectedAsSwagger("foo_endpoint_custom_templates.swagger");
+    checkSwagger(expected, swagger);
+  }
   
   @Test
   public void testWriteSwagger_FooEndpointParameterCombineParamSamePath() throws Exception {

@@ -26,7 +26,7 @@
         "tags": [
           "enum:v1"
         ],
-        "operationId": "EnumV1Create",
+        "operationId": "enum:v1.create",
         "parameters": [
           {
             "name": "value",

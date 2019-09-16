@@ -26,7 +26,7 @@
         "tags": [
           "multipleScopes:v1"
         ],
-        "operationId": "MultipleScopesV1NoOverride",
+        "operationId": "multipleScopes:v1.noOverride",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -51,7 +51,7 @@
         "tags": [
           "multipleScopes:v1"
         ],
-        "operationId": "MultipleScopesV1OverrideAudience",
+        "operationId": "multipleScopes:v1.overrideAudience",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -76,7 +76,7 @@
         "tags": [
           "multipleScopes:v1"
         ],
-        "operationId": "MultipleScopesV1ScopeOverride",
+        "operationId": "multipleScopes:v1.scopeOverride",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -101,7 +101,7 @@
         "tags": [
           "multipleScopes:v1"
         ],
-        "operationId": "MultipleScopesV1UnknownScope",
+        "operationId": "multipleScopes:v1.unknownScope",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -128,9 +128,9 @@
       "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
       "flow": "implicit",
       "scopes": {
+        "https://www.googleapis.com/auth/userinfo.email": "View your email address",
         "https://mail.google.com/": "Read, send, delete, and manage your email",
-        "unknownScope": "unknownScope",
-        "https://www.googleapis.com/auth/userinfo.email": "View your email address"
+        "unknownScope": "unknownScope"
       },
       "x-google-issuer": "https://accounts.google.com",
       "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",
@@ -152,9 +152,9 @@
       "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
       "flow": "implicit",
       "scopes": {
+        "https://www.googleapis.com/auth/userinfo.email": "View your email address",
         "https://mail.google.com/": "Read, send, delete, and manage your email",
-        "unknownScope": "unknownScope",
-        "https://www.googleapis.com/auth/userinfo.email": "View your email address"
+        "unknownScope": "unknownScope"
       },
       "x-google-issuer": "accounts.google.com",
       "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v1/certs",

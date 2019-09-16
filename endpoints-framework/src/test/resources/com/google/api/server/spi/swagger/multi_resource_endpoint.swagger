@@ -32,7 +32,7 @@
         "tags": [
           "multiresource:v1"
         ],
-        "operationId": "MultiresourceV1Get",
+        "operationId": "multiresource:v1.get",
         "responses": {
           "200": {
             "description": "A Foo response",
@@ -48,7 +48,7 @@
         "tags": [
           "multiresource:v1.Resource1"
         ],
-        "operationId": "MultiresourceV1Resource1Get",
+        "operationId": "multiresource:v1.Resource1.get",
         "responses": {
           "200": {
             "description": "A Foo response",
@@ -64,7 +64,7 @@
         "tags": [
           "multiresource:v1.Resource2"
         ],
-        "operationId": "MultiresourceV1Resource2Get",
+        "operationId": "multiresource:v1.Resource2.get",
         "responses": {
           "200": {
             "description": "A Foo response",

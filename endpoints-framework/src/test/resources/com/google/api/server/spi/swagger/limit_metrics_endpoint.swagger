@@ -26,7 +26,7 @@
         "tags": [
           "limits:v1"
         ],
-        "operationId": "LimitsV1CreateFoo",
+        "operationId": "limits:v1.createFoo",
         "responses": {
           "200": {
             "description": "A Foo response",
@@ -47,7 +47,7 @@
         "tags": [
           "limits:v1"
         ],
-        "operationId": "LimitsV1CustomFoo",
+        "operationId": "limits:v1.customFoo",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -80,9 +80,9 @@
     "metrics": [
       {
         "name": "read",
-        "displayName": "Read requests",
         "valueType": "INT64",
-        "metricKind": "GAUGE"
+        "metricKind": "GAUGE",
+        "displayName": "Read requests"
       },
       {
         "name": "write",

@@ -29,7 +29,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1Get",
+        "operationId": "myapi:v1.get",
         "responses": {
           "200": {
             "description": "A Foo response",
@@ -45,7 +45,7 @@
         "tags": [
           "myapi:v2"
         ],
-        "operationId": "MyapiV2Get",
+        "operationId": "myapi:v2.get",
         "responses": {
           "200": {
             "description": "A Foo response",

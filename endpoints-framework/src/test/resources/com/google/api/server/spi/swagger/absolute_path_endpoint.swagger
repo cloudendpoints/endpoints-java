@@ -26,7 +26,7 @@
         "tags": [
           "absolutepath:v1"
         ],
-        "operationId": "AbsolutepathV1CreateFoo",
+        "operationId": "absolutepath:v1.createFoo",
         "responses": {
           "200": {
             "description": "A Foo response",
@@ -42,7 +42,7 @@
         "tags": [
           "absolutepath:v1"
         ],
-        "operationId": "AbsolutepathV1AbsolutePath",
+        "operationId": "absolutepath:v1.absolutePath",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -55,7 +55,7 @@
         "tags": [
           "absolutepath:v1"
         ],
-        "operationId": "AbsolutepathV1AbsolutePath2",
+        "operationId": "absolutepath:v1.absolutePath2",
         "responses": {
           "204": {
             "description": "A successful response"

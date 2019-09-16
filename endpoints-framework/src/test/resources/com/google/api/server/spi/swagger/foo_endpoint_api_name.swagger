@@ -31,7 +31,7 @@
           "foo:v1"
         ],
         "description": "list desc",
-        "operationId": "FooV1ListFoos",
+        "operationId": "foo:v1.listFoos",
         "parameters": [
           {
             "name": "n",
@@ -66,7 +66,7 @@
         "tags": [
           "foo:v1"
         ],
-        "operationId": "FooV1Toplevel",
+        "operationId": "foo:v1.toplevel",
         "responses": {
           "200": {
             "description": "A CollectionResponse_Foo response",
@@ -95,7 +95,7 @@
           "foo:v1"
         ],
         "description": "get desc",
-        "operationId": "FooV1GetFoo",
+        "operationId": "foo:v1.getFoo",
         "parameters": [
           {
             "name": "id",
@@ -131,7 +131,7 @@
           "foo:v1"
         ],
         "description": "update desc",
-        "operationId": "FooV1UpdateFoo",
+        "operationId": "foo:v1.updateFoo",
         "parameters": [
           {
             "name": "id",
@@ -175,7 +175,7 @@
           "foo:v1"
         ],
         "description": "create desc",
-        "operationId": "FooV1CreateFoo",
+        "operationId": "foo:v1.createFoo",
         "parameters": [
           {
             "name": "id",
@@ -219,7 +219,7 @@
           "foo:v1"
         ],
         "description": "delete desc",
-        "operationId": "FooV1DeleteFoo",
+        "operationId": "foo:v1.deleteFoo",
         "parameters": [
           {
             "name": "id",

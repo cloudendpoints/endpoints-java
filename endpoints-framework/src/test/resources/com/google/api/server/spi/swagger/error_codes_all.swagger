@@ -26,7 +26,7 @@
         "tags": [
           "exceptions:v1"
         ],
-        "operationId": "ExceptionsV1DoesNotThrow",
+        "operationId": "exceptions:v1.doesNotThrow",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -42,7 +42,7 @@
         "tags": [
           "exceptions:v1"
         ],
-        "operationId": "ExceptionsV1ThrowsMultipleExceptions",
+        "operationId": "exceptions:v1.throwsMultipleExceptions",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -64,7 +64,7 @@
         "tags": [
           "exceptions:v1"
         ],
-        "operationId": "ExceptionsV1ThrowsNotFoundException",
+        "operationId": "exceptions:v1.throwsNotFoundException",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -83,7 +83,7 @@
         "tags": [
           "exceptions:v1"
         ],
-        "operationId": "ExceptionsV1ThrowsServiceException",
+        "operationId": "exceptions:v1.throwsServiceException",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -99,7 +99,7 @@
         "tags": [
           "exceptions:v1"
         ],
-        "operationId": "ExceptionsV1ThrowsUnknownException",
+        "operationId": "exceptions:v1.throwsUnknownException",
         "responses": {
           "204": {
             "description": "A successful response"

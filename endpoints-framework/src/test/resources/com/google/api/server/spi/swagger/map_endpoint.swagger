@@ -26,7 +26,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetDateTimeKeyMap",
+        "operationId": "myapi:v1.getDateTimeKeyMap",
         "responses": {
           "200": {
             "description": "A Map_DateTime_String response",
@@ -45,7 +45,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetMapOfStrings",
+        "operationId": "myapi:v1.getMapOfStrings",
         "responses": {
           "200": {
             "description": "A MapContainer response",
@@ -61,7 +61,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetStringCollectionMap",
+        "operationId": "myapi:v1.getStringCollectionMap",
         "responses": {
           "200": {
             "description": "A JsonMap response",
@@ -81,7 +81,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetBooleanKeyMap",
+        "operationId": "myapi:v1.getBooleanKeyMap",
         "responses": {
           "200": {
             "description": "A Map_Boolean_String response",
@@ -100,7 +100,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetDateKeyMap",
+        "operationId": "myapi:v1.getDateKeyMap",
         "responses": {
           "200": {
             "description": "A Map_DateTime_String response",
@@ -119,7 +119,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetFloatKeyMap",
+        "operationId": "myapi:v1.getFloatKeyMap",
         "responses": {
           "200": {
             "description": "A Map_Float_String response",
@@ -138,7 +138,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetIntKeyMap",
+        "operationId": "myapi:v1.getIntKeyMap",
         "responses": {
           "200": {
             "description": "A Map_Integer_String response",
@@ -157,7 +157,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetLongKeyMap",
+        "operationId": "myapi:v1.getLongKeyMap",
         "responses": {
           "200": {
             "description": "A Map_Long_String response",
@@ -176,7 +176,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetBazMap",
+        "operationId": "myapi:v1.getBazMap",
         "responses": {
           "200": {
             "description": "A Map_String_Baz response",
@@ -195,7 +195,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetFooMap",
+        "operationId": "myapi:v1.getFooMap",
         "responses": {
           "200": {
             "description": "A Map_String_Foo response",
@@ -214,7 +214,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetIntMap",
+        "operationId": "myapi:v1.getIntMap",
         "responses": {
           "200": {
             "description": "A Map_String_Integer response",
@@ -234,7 +234,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetFooMapMap",
+        "operationId": "myapi:v1.getFooMapMap",
         "responses": {
           "200": {
             "description": "A Map_String_Map_String_Foo response",
@@ -256,7 +256,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetStringMap",
+        "operationId": "myapi:v1.getStringMap",
         "responses": {
           "200": {
             "description": "A Map_String_String response",
@@ -275,7 +275,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetStringArrayMap",
+        "operationId": "myapi:v1.getStringArrayMap",
         "responses": {
           "200": {
             "description": "A JsonMap response",
@@ -295,7 +295,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetStringValueMap",
+        "operationId": "myapi:v1.getStringValueMap",
         "responses": {
           "200": {
             "description": "A Map_String_StringValue response",
@@ -314,7 +314,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetEnumKeyMap",
+        "operationId": "myapi:v1.getEnumKeyMap",
         "responses": {
           "200": {
             "description": "A Map_TestEnum_String response",
@@ -333,7 +333,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetMapService",
+        "operationId": "myapi:v1.getMapService",
         "responses": {
           "200": {
             "description": "A MapEndpoint response",
@@ -349,7 +349,7 @@
         "tags": [
           "myapi:v1"
         ],
-        "operationId": "MyapiV1GetMapSubclass",
+        "operationId": "myapi:v1.getMapSubclass",
         "responses": {
           "200": {
             "description": "A Map_Boolean_Integer response",

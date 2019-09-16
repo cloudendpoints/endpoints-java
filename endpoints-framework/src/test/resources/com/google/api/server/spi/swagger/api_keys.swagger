@@ -26,7 +26,7 @@
         "tags": [
           "apikeys:v1"
         ],
-        "operationId": "ApikeysV1ApiKeyWithAuth",
+        "operationId": "apikeys:v1.apiKeyWithAuth",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -45,7 +45,7 @@
         "tags": [
           "apikeys:v1"
         ],
-        "operationId": "ApikeysV1InheritApiKeySetting",
+        "operationId": "apikeys:v1.inheritApiKeySetting",
         "responses": {
           "204": {
             "description": "A successful response"
@@ -63,7 +63,7 @@
         "tags": [
           "apikeys:v1"
         ],
-        "operationId": "ApikeysV1OverrideApiKeySetting",
+        "operationId": "apikeys:v1.overrideApiKeySetting",
         "responses": {
           "204": {
             "description": "A successful response"
