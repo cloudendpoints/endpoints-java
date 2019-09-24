@@ -38,6 +38,7 @@ import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.SchemaRepository;
+import com.google.api.server.spi.config.model.Serializers;
 import com.google.api.server.spi.testing.DefaultValueSerializer;
 import com.google.api.server.spi.testing.DuplicateMethodEndpoint;
 import com.google.api.server.spi.testing.PassAuthenticator;
@@ -238,12 +239,15 @@ public class ApiConfigValidatorTest {
   public void testMultipleSerializersInstalled() throws Exception {
     // TODO: The generic component of Comparable causes validation to miss certain error
     // cases like this.
-    @SuppressWarnings("rawtypes")
     final class ComparableSerializer extends DefaultValueSerializer<Comparable<String>, Integer> {}
     final class CharSequenceSerializer extends DefaultValueSerializer<CharSequence, Long> {}
     config.getSerializationConfig().addSerializationConfig(ComparableSerializer.class);
     config.getSerializationConfig().addSerializationConfig(CharSequenceSerializer.class);
 
+    List<Class<? extends Transformer<?, ?>>> serializerClasses = Serializers
+        .getSerializerClasses(TypeToken.of(String.class), config.getSerializationConfig());
+    assertThat(serializerClasses.size()).isEqualTo(2);
+    
     try {
       validator.validate(config);
       fail("Expected MultipleTransformersException.");
