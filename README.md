@@ -41,6 +41,7 @@ inactive:
   - Support [multi-API service](https://github.com/AODocs/endpoints-java/pull/40/commits/1f18d2f64f1538e63a7836a5cd52ff639fc624fd) in Endpoints Management
   - [New options](https://github.com/AODocs/endpoints-java/pull/37) to combine common parameters in same path, extract parameter refs at spec level, add error model description, customize spec title and description
   - [Add description support](https://github.com/AODocs/endpoints-java/pull/40/commits/bbb1eff2bb9e7d28fc2ec17599257d0ef610531d) for resource and resource usage
+  - [Configurable naming templates](https://github.com/AODocs/endpoints-java/pull/42) for operationIds and tag names with better defaults
 
 Check 
 [closed PRs](https://github.com/AODocs/endpoints-java/pulls?q=is%3Apr+sort%3Aupdated-desc+is%3Aclosed)
