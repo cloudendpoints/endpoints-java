@@ -49,7 +49,8 @@ public class ServletInitializationParametersTest {
     assertThat(initParameters.isExceptionCompatibilityEnabled()).isTrue();
     assertThat(initParameters.isPrettyPrintEnabled()).isTrue();
     assertThat(initParameters.isAddContentLength()).isFalse();
-    verifyAsMap(initParameters, "", "true", "true", "false", "true", "true", "false");
+    assertThat(initParameters.getApiExplorerUrlTemplate()).isNull();
+    verifyAsMap(initParameters, "", "true", "true", "false", "true", "true", "false", null);
   }
 
   @Test
@@ -62,13 +63,15 @@ public class ServletInitializationParametersTest {
         .setExceptionCompatibilityEnabled(true)
         .setPrettyPrintEnabled(true)
         .setAddContentLength(true)
+        .setApiExplorerUrlTemplate("apiExplorer")
         .build();
     assertThat(initParameters.getServiceClasses()).isEmpty();
     assertThat(initParameters.isServletRestricted()).isTrue();
     assertThat(initParameters.isClientIdWhitelistEnabled()).isTrue();
     assertThat(initParameters.isIllegalArgumentBackendError()).isTrue();
     assertThat(initParameters.isExceptionCompatibilityEnabled()).isTrue();
-    verifyAsMap(initParameters, "", "true", "true", "true", "true", "true", "true");
+    assertThat(initParameters.getApiExplorerUrlTemplate()).isEqualTo("apiExplorer");
+    verifyAsMap(initParameters, "", "true", "true", "true", "true", "true", "true", "apiExplorer");
   }
 
   @Test
@@ -86,7 +89,7 @@ public class ServletInitializationParametersTest {
     assertThat(initParameters.isServletRestricted()).isFalse();
     assertThat(initParameters.isClientIdWhitelistEnabled()).isFalse();
     verifyAsMap(
-        initParameters, String.class.getName(), "false", "false", "false", "false", "false","false");
+        initParameters, String.class.getName(), "false", "false", "false", "false", "false","false", null);
   }
 
   @Test
@@ -96,7 +99,7 @@ public class ServletInitializationParametersTest {
         .build();
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class, Integer.class);
     verifyAsMap(initParameters, String.class.getName() + ',' + Integer.class.getName(), "true",
-        "true", "false", "true", "true", "false");
+        "true", "false", "true", "true", "false", null);
   }
 
   @Test
@@ -111,43 +114,46 @@ public class ServletInitializationParametersTest {
   @Test
   public void testFromServletConfig_nullValues() throws ServletException {
     ServletInitializationParameters initParameters =
-        fromServletConfig(null, null, null, null, null, null, null);
+        fromServletConfig(null, null, null, null, null, null, null, null);
     assertThat(initParameters.getServiceClasses()).isEmpty();
     assertThat(initParameters.isServletRestricted()).isTrue();
     assertThat(initParameters.isClientIdWhitelistEnabled()).isTrue();
     assertThat(initParameters.isIllegalArgumentBackendError()).isFalse();
     assertThat(initParameters.isExceptionCompatibilityEnabled()).isTrue();
     assertThat(initParameters.isPrettyPrintEnabled()).isTrue();
+    assertThat(initParameters.getApiExplorerUrlTemplate()).isNull();
   }
 
   @Test
   public void testFromServletConfig_emptySetsAndFalse() throws ServletException {
     ServletInitializationParameters initParameters =
-        fromServletConfig("", "false", "false", "false", "false", "false", "false");
+        fromServletConfig("", "false", "false", "false", "false", "false", "false", null);
     assertThat(initParameters.getServiceClasses()).isEmpty();
     assertThat(initParameters.isServletRestricted()).isFalse();
     assertThat(initParameters.isClientIdWhitelistEnabled()).isFalse();
     assertThat(initParameters.isIllegalArgumentBackendError()).isFalse();
     assertThat(initParameters.isExceptionCompatibilityEnabled()).isFalse();
     assertThat(initParameters.isPrettyPrintEnabled()).isFalse();
+    assertThat(initParameters.getApiExplorerUrlTemplate()).isNull();
   }
 
   @Test
   public void testFromServletConfig_oneEntrySetsAndTrue() throws ServletException {
     ServletInitializationParameters initParameters =
-        fromServletConfig(String.class.getName(), "true", "true", "true", "true", "true", "true");
+        fromServletConfig(String.class.getName(), "true", "true", "true", "true", "true", "true", null);
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class);
     assertThat(initParameters.isServletRestricted()).isTrue();
     assertThat(initParameters.isClientIdWhitelistEnabled()).isTrue();
     assertThat(initParameters.isIllegalArgumentBackendError()).isTrue();
     assertThat(initParameters.isExceptionCompatibilityEnabled()).isTrue();
     assertThat(initParameters.isPrettyPrintEnabled()).isTrue();
+    assertThat(initParameters.getApiExplorerUrlTemplate()).isNull();
   }
 
   @Test
   public void testFromServletConfig_twoEntrySets() throws ServletException {
     ServletInitializationParameters initParameters = fromServletConfig(
-        String.class.getName() + ',' + Integer.class.getName(), null, null, null, null, null, null);
+        String.class.getName() + ',' + Integer.class.getName(), null, null, null, null, null, null, null);
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class, Integer.class);
   }
 
@@ -155,14 +161,14 @@ public class ServletInitializationParametersTest {
   public void testFromServletConfig_skipsEmptyElements() throws ServletException {
     ServletInitializationParameters initParameters = fromServletConfig(
         ",," + String.class.getName() + ",,," + Integer.class.getName() + ",", null, null, null,
-        null, null, null);
+        null, null, null, null);
     assertThat(initParameters.getServiceClasses()).containsExactly(String.class, Integer.class);
   }
 
   @Test
   public void testFromServletConfig_invalidRestrictedThrows() throws ServletException {
     try {
-      fromServletConfig(null, "yes", null, null, null, null, null);
+      fromServletConfig(null, "yes", null, null, null, null, null, null);
       fail("Expected IllegalArgumentException");
     } catch (IllegalArgumentException expected) {
       // expected
@@ -173,9 +179,9 @@ public class ServletInitializationParametersTest {
       ServletInitializationParameters initParameters, String serviceClasses,
       String isServletRestricted, String isClientIdWhitelistEnabled,
       String isIllegalArgumentBackendError, String isExceptionCompatibilityEnabled,
-      String isPrettyPrintEnabled, String isAddContentLength) {
+      String isPrettyPrintEnabled, String isAddContentLength, String apiExplorerUrlTemplate) {
     Map<String, String> map = initParameters.asMap();
-    assertThat(map).hasSize(7);
+    assertThat(map).hasSize(8);
     assertThat(map.get("services")).isEqualTo(serviceClasses);
     assertThat(map.get("restricted")).isEqualTo(isServletRestricted);
     assertThat(map.get("clientIdWhitelistEnabled")).isEqualTo(isClientIdWhitelistEnabled);
@@ -183,17 +189,18 @@ public class ServletInitializationParametersTest {
     assertThat(map.get("enableExceptionCompatibility")).isEqualTo(isExceptionCompatibilityEnabled);
     assertThat(map.get("prettyPrint")).isEqualTo(isPrettyPrintEnabled);
     assertThat(map.get("addContentLength")).isEqualTo(isAddContentLength);
+    assertThat(map.get("apiExplorerUrlTemplate")).isEqualTo(apiExplorerUrlTemplate);
   }
 
   private ServletInitializationParameters fromServletConfig(
       String serviceClasses, String isServletRestricted,
       String isClientIdWhitelistEnabled, String isIllegalArgumentBackendError,
       String isExceptionCompatibilityEnabled, String isPrettyPrintEnabled,
-      String isAddContentLength)
+      String isAddContentLength, String apiExplorerUrlTemplate)
       throws ServletException {
     ServletConfig servletConfig = new StubServletConfig(serviceClasses,
         isServletRestricted, isClientIdWhitelistEnabled, isIllegalArgumentBackendError,
-        isExceptionCompatibilityEnabled, isPrettyPrintEnabled, isAddContentLength);
+        isExceptionCompatibilityEnabled, isPrettyPrintEnabled, isAddContentLength, apiExplorerUrlTemplate);
     return ServletInitializationParameters.fromServletConfig(
             servletConfig, getClass().getClassLoader());
   }
@@ -204,7 +211,7 @@ public class ServletInitializationParametersTest {
     public StubServletConfig(
         String serviceClasses, String isServletRestricted, String isClientIdWhitelistEnabled,
         String isIllegalArgumentBackendError, String isExceptionCompatibilityEnabled,
-        String isPrettyPrintEnabled, String isAddContentLength) {
+        String isPrettyPrintEnabled, String isAddContentLength, String apiExplorerUrlTemplate) {
       initParameters = Maps.newHashMap();
       initParameters.put("services", serviceClasses);
       initParameters.put("restricted", isServletRestricted);
@@ -213,6 +220,7 @@ public class ServletInitializationParametersTest {
       initParameters.put("enableExceptionCompatibility", isExceptionCompatibilityEnabled);
       initParameters.put("prettyPrint", isPrettyPrintEnabled);
       initParameters.put("addContentLength", isAddContentLength);
+      initParameters.put("apiExplorerUrlTemplate", apiExplorerUrlTemplate);
     }
 
     @Override

@@ -75,7 +75,23 @@ public class EndpointsServletTest {
 
     assertThat(resp.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
     assertThat(resp.getHeader("Location")).isEqualTo(
-        "https://developers.google.com/apis-explorer/?base=" + API_ROOT);
+        "http://apis-explorer.appspot.com/apis-explorer/?base=" + API_ROOT);
+  }
+
+  @Test
+  public void customExplorer() throws IOException, ServletException {
+    MockServletConfig config = new MockServletConfig();
+    config.addInitParameter("apiExplorerUrlTemplate", "http://mycustomapiexplorer.com/#${apiBase}");
+    servlet.init(config);
+    
+    req.setRequestURI("/_ah/api/explorer/");
+    req.setMethod("GET");
+
+    servlet.service(req, resp);
+
+    assertThat(resp.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
+    assertThat(resp.getHeader("Location")).isEqualTo(
+        "http://mycustomapiexplorer.com/#" + API_ROOT);
   }
 
   @Test

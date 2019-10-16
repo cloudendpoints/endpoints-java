@@ -117,7 +117,8 @@ public class EndpointsServlet extends HttpServlet {
       builder.add(handler.getRestMethod(), Strings.stripTrailingSlash(handler.getRestPath()),
           handler.getRestHandler());
     }
-    ExplorerHandler explorerHandler = new ExplorerHandler();
+    String apiExplorerUrlTemplate = initParameters.getApiExplorerUrlTemplate();
+    ExplorerHandler explorerHandler = new ExplorerHandler(apiExplorerUrlTemplate);
     builder.add("GET", EXPLORER_PATH, explorerHandler);
     builder.add("GET", EXPLORER_PATH + "/", explorerHandler);
     builder.add("GET", "static/proxy.html", new ApiProxyHandler());
