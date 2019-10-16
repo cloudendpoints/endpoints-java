@@ -47,6 +47,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -110,9 +111,9 @@ public class ServletRequestParamReaderTest {
         .put(TestEndpoint.NAME_LONG_OBJECT, String.valueOf(VALUE_LONG))
         .put(TestEndpoint.NAME_FLOAT_OBJECT, String.valueOf(VALUE_FLOAT))
         .put(TestEndpoint.NAME_DOUBLE_OBJECT, String.valueOf(VALUE_DOUBLE))
-        .put("stringValue", "321")
-        .put("integerValue", "321")
-        .put("more", "999").build());
+        .put("more", "999").build(), ImmutableMap.of(
+        "stringValue", "321",
+        "integerValue", "321"));
 
     assertEquals(VALUE_STRING, params[0]);
     assertEquals(VALUE_BOOLEAN, params[1]);
@@ -156,8 +157,7 @@ public class ServletRequestParamReaderTest {
         .put(TestEndpoint.NAME_INTEGER_OBJECT, String.valueOf(VALUE_INTEGER))
         .put(TestEndpoint.NAME_FLOAT, String.valueOf(VALUE_FLOAT))
         .put(TestEndpoint.NAME_FLOAT_OBJECT, String.valueOf(VALUE_FLOAT))
-        .put("stringValue", "321")
-        .put("more", "999").build());
+        .put("more", "999").build(), ImmutableMap.of("stringValue", "321"));
 
     assertEquals(VALUE_STRING, params[0]);
     assertEquals(VALUE_BOOLEAN, params[1]);
@@ -177,7 +177,7 @@ public class ServletRequestParamReaderTest {
     assertEquals(request, params[14]);
   }
 
-  private Object[] readExecuteMethod(ImmutableMap<String, String> parameters) throws Exception {
+  private Object[] readExecuteMethod(ImmutableMap<String, String> parameters, ImmutableMap<String, String> resource) throws Exception {
     Method method = TestEndpoint.class.getDeclaredMethod("succeed", String.class,
         boolean.class, int.class, long.class, float.class, double.class,
         Boolean.class, Integer.class, Long.class, Float.class, Double.class,
@@ -187,7 +187,15 @@ public class ServletRequestParamReaderTest {
     for (Map.Entry<String, String> entry : parameters.entrySet()) {
       builder.append(String.format("\"%s\":%s,", entry.getKey(), entry.getValue()));
     }
-    builder.replace(builder.length() - 1, builder.length(), "}");
+    if (!resource.isEmpty()) {
+      builder.append("\"resource\":{");
+      for (Map.Entry<String, String> entry : resource.entrySet()) {
+        builder.append(String.format("\"%s\":%s,", entry.getKey(), entry.getValue()));
+      }
+      builder.replace(builder.length() - 1, builder.length(), "}}");
+    } else {
+      builder.replace(builder.length() - 1, builder.length(), "}");
+    }
     Object[] params = readParameters(builder.toString(), method);
     assertEquals(15, params.length);
     return params;
@@ -556,8 +564,8 @@ public class ServletRequestParamReaderTest {
     }
     String requestString = "{\"str\":\"hello\",\"" + TestEndpoint.NAME_STRING + "\":\""
         + VALUE_STRING + "\",\"" + TestEndpoint.NAME_INTEGER + "\":" + VALUE_INTEGER
-        + ",\"integer_array\":[1,2,3]," + "\"integer_collection\":[4,5,6], \"stringValue\":"
-        + "\"321\", \"integerValue\":321}";
+        + ",\"integer_array\":[1,2,3]," + "\"integer_collection\":[4,5,6],\"resource\":{\"stringValue\":"
+        + "\"321\", \"integerValue\":321}}";
 
     Method method = TestMultipleResources.class.getDeclaredMethod("foo",
         String.class, Integer[].class, Collection.class, Request.class);
@@ -787,6 +795,41 @@ public class ServletRequestParamReaderTest {
         readParameters("{}", TestPrettyPrint.class.getDeclaredMethod("prettyPrint", String.class));
     assertEquals(1, params.length);
     assertEquals(true, params[0]);
+  }
+  
+  @Test
+  public void testNameInParamsAndResource() throws Exception {
+    class TestNameInParamsAndResource {
+      @SuppressWarnings("unused")
+      public void test(@Named("stringValue") List<String> string, 
+          @Nullable @Named("integerValue") List<Integer> integer, Request resource) {}
+    }
+    Object[] params = readParameters(
+        "{\"stringValue\": [\"fromParams\"], \"integerValue\": [1,2,3], " 
+            + "\"resource\": {\"stringValue\": \"abc\", \"integerValue\": 42}}",
+        TestNameInParamsAndResource.class
+            .getDeclaredMethod("test", List.class, List.class, Request.class));
+    assertEquals(3, params.length);
+    assertEquals(Collections.singletonList("fromParams"), params[0]);
+    assertEquals(ImmutableList.of(1,2,3), params[1]);
+    assertEquals(new Request("abc", 42), params[2]);
+  }
+
+  @Test
+  public void testTypeMismatch() throws Exception {
+    class TesTypeMismatch {
+      @SuppressWarnings("unused")
+      public void test(Request request) {}
+    }
+    try {
+      readParameters(
+          "{\"resource\": {\"integerValue\": [42]}}",
+          TesTypeMismatch.class
+              .getDeclaredMethod("test", Request.class));
+      fail("expected bad request exception");
+    } catch (BadRequestException e) {
+      assertEquals("Parse error at 'integerValue' ('int' type)", e.getMessage());
+    }
   }
 
   @Test

@@ -183,7 +183,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid number");
+    thrown.expectMessage("at 'objInt'");
+    thrown.expectMessage("invalid number");
     reader.read();
   }
 
@@ -193,7 +194,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid number value \"invalid\"");
+    thrown.expectMessage("at 'simpleInt'");
+    thrown.expectMessage("invalid number value \"invalid\"");
     reader.read();
   }
 
@@ -203,7 +205,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid number");
+    thrown.expectMessage("at 'objLong'");
+    thrown.expectMessage("invalid number");
     reader.read();
   }
 
@@ -213,7 +216,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid number value \"invalid\"");
+    thrown.expectMessage("at 'simpleLong'");
+    thrown.expectMessage("invalid number value \"invalid\"");
     reader.read();
   }
 
@@ -223,7 +227,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid number");
+    thrown.expectMessage("at 'objFloat'");
+    thrown.expectMessage("invalid number");
     reader.read();
   }
 
@@ -233,7 +238,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid number value \"invalid\"");
+    thrown.expectMessage("at 'simpleFloat'");
+    thrown.expectMessage("invalid number value \"invalid\"");
     reader.read();
   }
 
@@ -243,7 +249,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid number");
+    thrown.expectMessage("at 'objDouble'");
+    thrown.expectMessage("invalid number");
     reader.read();
   }
 
@@ -253,7 +260,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid number value \"invalid\"");
+    thrown.expectMessage("at 'simpleDouble'");
+    thrown.expectMessage("invalid number value \"invalid\"");
     reader.read();
   }
 
@@ -263,7 +271,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid boolean value");
+    thrown.expectMessage("at 'objBoolean'");
+    thrown.expectMessage("invalid boolean value");
     reader.read();
   }
 
@@ -273,7 +282,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid boolean value \"invalid\"");
+    thrown.expectMessage("at 'simpleBoolean'");
+    thrown.expectMessage("invalid boolean value \"invalid\"");
     reader.read();
   }
 
@@ -283,7 +293,8 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid enum value \"invalidEnum\". Valid values are [One, Two, Three]");
+    thrown.expectMessage("at 'simpleEnum'");
+    thrown.expectMessage("invalid enum value \"invalidEnum\". Valid values are [One, Two, Three]");
     reader.read();
   }
   
@@ -293,7 +304,19 @@ public class RestServletRequestParamReaderTest {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
   
     thrown.expect(BadRequestException.class);
-    thrown.expectMessage("Invalid date value \"invalidDate\".");
+    thrown.expectMessage("at 'objDate'");
+    thrown.expectMessage("invalid date value \"invalidDate\".");
+    reader.read();
+  }
+
+  @Test
+  public void parseNestedError() throws ServiceException {
+    request.setContent("{\"nested\":{\"simpleInt\": \"abc\"}}".getBytes(StandardCharsets.UTF_8));
+    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
+
+    thrown.expect(BadRequestException.class);
+    thrown.expectMessage("at 'nested.simpleInt'");
+    thrown.expectMessage("invalid number value \"abc\".");
     reader.read();
   }
   
@@ -379,6 +402,10 @@ public class RestServletRequestParamReaderTest {
     One, Two, Three
   }
   
+  public static class NestedResource {
+    public int simpleInt;
+  }
+  
   public static class TestResource {
     public SimpleDate query;
     
@@ -397,6 +424,7 @@ public class RestServletRequestParamReaderTest {
     public Date objDate;
     
     public TestEnum simpleEnum;
+    public NestedResource nested;
     
     public TestResource() {}
 

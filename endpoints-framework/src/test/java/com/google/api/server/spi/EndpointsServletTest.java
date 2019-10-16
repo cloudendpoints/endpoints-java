@@ -25,6 +25,7 @@ import com.google.common.base.Splitter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.nio.charset.StandardCharsets;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -102,7 +103,7 @@ public class EndpointsServletTest {
   public void echo() throws IOException {
     req.setRequestURI("/_ah/api/test/v2/echo");
     req.setMethod("POST");
-    req.setParameter("x", "1");
+    req.setContent("{\"x\":1}".getBytes(StandardCharsets.UTF_8));
 
     servlet.service(req, resp);
 
@@ -117,7 +118,7 @@ public class EndpointsServletTest {
   public void contentLengthHeaderNull() throws IOException {
     req.setRequestURI("/_ah/api/test/v2/echo");
     req.setMethod("POST");
-    req.setParameter("x", "1");
+    req.setContent("{\"x\":1}".getBytes(StandardCharsets.UTF_8));
 
     servlet.service(req, resp);
 
@@ -133,7 +134,7 @@ public class EndpointsServletTest {
 
     req.setRequestURI("/_ah/api/test/v2/echo");
     req.setMethod("POST");
-    req.setParameter("x", "1");
+    req.setContent("{\"x\":1}".getBytes(StandardCharsets.UTF_8));
 
     servlet.service(req, resp);
 
@@ -145,7 +146,7 @@ public class EndpointsServletTest {
     req.setRequestURI("/_ah/api/test/v2/increment");
     req.setMethod("POST");
     req.addHeader("X-HTTP-Method-Override", "PATCH");
-    req.setParameter("x", "1");
+    req.setContent("{\"x\":1}".getBytes(StandardCharsets.UTF_8));
 
     servlet.service(req, resp);
 
