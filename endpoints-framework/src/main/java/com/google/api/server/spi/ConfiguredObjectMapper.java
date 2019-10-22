@@ -26,13 +26,10 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import com.google.common.flogger.FluentLogger;
 import java.util.Map;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -146,8 +143,7 @@ public class ConfiguredObjectMapper {
       if (instance == null) {
         ObjectMapper mapper =
             ObjectMapperUtil.createStandardObjectMapper(key.apiSerializationConfig);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         for (Module module : key.modulesSet) {
           mapper.registerModule(module);
         }

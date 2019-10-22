@@ -17,8 +17,10 @@ package com.google.api.server.spi.response;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.api.server.spi.ObjectMapperUtil;
@@ -26,6 +28,7 @@ import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.types.DateAndTime;
 import com.google.api.server.spi.types.SimpleDate;
 import com.google.appengine.api.datastore.Blob;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -69,6 +72,7 @@ public class ServletResponseResultWriterTest {
     testTypeChangesAsString(value);
   }
 
+  @Test
   @SuppressWarnings("unused")
   public void testTypeChangesInBeanAsString() throws Exception {
     Object value = new Object() {
@@ -87,6 +91,9 @@ public class ServletResponseResultWriterTest {
       public String getStringEmpty() {
         return "";
       }
+      public String getStringNotEmpty() {
+        return "not empty";
+      }
       public Date getDate() {
         return new Date(DATE_VALUE);
       }
@@ -104,7 +111,14 @@ public class ServletResponseResultWriterTest {
         return new SimpleDate(2002, 10, 2);
       }
 
+      // Null or empty objects, no annotation
       public SimpleDate getSimpleDateNull() {
+        return null;
+      }
+      public Long[] getNullLongArray() {
+        return null;
+      }
+      public List<Long> getNullLongList() {
         return null;
       }
       public Long[] getEmptyLongArray() {
@@ -113,16 +127,223 @@ public class ServletResponseResultWriterTest {
       public List<Long> getEmptyLongList() {
         return new ArrayList<>();
       }
+      public Map<Long,Object> getEmptyMap() {
+        return new HashMap<>();
+      }
+      public List<List<Map<Long,Object>>> getDeeplyEmptyLongList() {
+        List<Map<Long,Object>> list = ImmutableList.of(new HashMap<>());
+        return ImmutableList.of(list);
+      }
+      public Map<Long,List<Long>> getDeeplyEmptyMapList() {
+        return ImmutableMap.of(12L, new ArrayList<>());
+      }
+      public Map<Long,Long[]> getDeeplyEmptyMapArray() {
+        return ImmutableMap.of(12L, new Long[0]);
+      }
+
+      // Null or empty objects, annotation value (ALWAYS)
+      @JsonInclude
+      public SimpleDate getSimpleDateNull_IncludeAlways() {
+        return null;
+      }
+      @JsonInclude
+      public Long[] getNullLongArray_IncludeAlways() {
+        return null;
+      }
+      @JsonInclude
+      public List<Long> getNullLongList_IncludeAlways() {
+        return null;
+      }
+      @JsonInclude
+      public Long[] getEmptyLongArray_IncludeAlways() {
+        return new Long[0];
+      }
+      @JsonInclude
+      public List<Long> getEmptyLongList_IncludeAlways() {
+        return new ArrayList<>();
+      }
+      @JsonInclude
+      public Map<Long,Object> getEmptyMap_IncludeAlways() {
+        return new HashMap<>();
+      }
+      @JsonInclude
+      public List<List<Map<Long,Object>>> getDeeplyEmptyLongList_IncludeAlways() {
+        List<Map<Long,Object>> list = ImmutableList.of(new HashMap<>());
+        return ImmutableList.of(list);
+      }
+      @JsonInclude
+      public Map<Long,List<Long>> getDeeplyEmptyMapList_IncludeAlways() {
+        return ImmutableMap.of(12L, new ArrayList<>());
+      }
+      @JsonInclude
+      public Map<Long,Long[]> getDeeplyEmptyMapArray_IncludeAlways() {
+        return ImmutableMap.of(12L, new Long[0]);
+      }
+
+      // Null or empty objects, annotation NON_NULL
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public SimpleDate getSimpleDateNull_IncludeNonNull() {
+        return null;
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public Long[] getNullLongArray_IncludeNonNull() {
+        return null;
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public List<Long> getNullLongList_IncludeNonNull() {
+        return null;
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public Long[] getEmptyLongArray_IncludeNonNull() {
+        return new Long[0];
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public List<Long> getEmptyLongList_IncludeNonNull() {
+        return new ArrayList<>();
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public Map<Long,Object> getEmptyMap_IncludeNonNull() {
+        return new HashMap<>();
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public List<List<Map<Long,Object>>> getDeeplyEmptyLongList_IncludeNonNull() {
+        List<Map<Long,Object>> list = ImmutableList.of(new HashMap<>());
+        return ImmutableList.of(list);
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public Map<Long,List<Long>> getDeeplyEmptyMapList_IncludeNonNull() {
+        return ImmutableMap.of(12L, new ArrayList<>());
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public Map<Long,Long[]> getDeeplyEmptyMapArray_IncludeNonNull() {
+        return ImmutableMap.of(12L, new Long[0]);
+      }
+
+      // Null or empty objects, annotation NON_EMPTY
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public SimpleDate getSimpleDateNull_IncludeNonEmpty() {
+        return null;
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public Long[] getNullLongArray_IncludeNonEmpty() {
+        return null;
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public List<Long> getNullLongList_IncludeNonEmpty() {
+        return null;
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public Long[] getEmptyLongArray_IncludeNonEmpty() {
+        return new Long[0];
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public List<Long> getEmptyLongList_IncludeNonEmpty() {
+        return new ArrayList<>();
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public Map<Long,Object> getEmptyMap_IncludeNonEmpty() {
+        return new HashMap<>();
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public List<List<Map<Long,Object>>> getDeeplyEmptyLongList_IncludeNonEmpty() {
+        List<Map<Long,Object>> list = ImmutableList.of(new HashMap<>());
+        return ImmutableList.of(list);
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public Map<Long,List<Long>> getDeeplyEmptyMapList_IncludeNonEmpty() {
+        return ImmutableMap.of(12L, new ArrayList<>());
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public Map<Long,Long[]> getDeeplyEmptyMapArray_IncludeNonEmpty() {
+        return ImmutableMap.of(12L, new Long[0]);
+      }
+
+      // Non empty objects, annotation NON_EMPTY
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public Long[] getNonEmptyLongArray_IncludeNonEmpty() {
+        return new Long[] {12L};
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public List<Long> getNonEmptyLongList_IncludeNonEmpty() {
+        return ImmutableList.of(12L);
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public Map<Long,Object> getNonEmptyMap_IncludeNonEmpty() {
+        return ImmutableMap.of(12L, "");
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public List<List<Map<Long,Object>>> getDeeplyNonEmptyLongList_IncludeNonEmpty() {
+        List<Map<Long,Object>> list = ImmutableList.of(ImmutableMap.of(12L, ""));
+        return ImmutableList.of(list);
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public Map<Long,List<Long>> getDeeplyNonEmptyMapList_IncludeNonEmpty() {
+        return ImmutableMap.of(12L, ImmutableList.of(23L));
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public Map<Long,Long[]> getDeeplyNonEmptyMapArray_IncludeNonEmpty() {
+        return ImmutableMap.of(12L, new Long[] {23L});
+      }
     };
     ObjectNode output = testTypeChangesAsString(value);
     assertTrue(output.path("longNull").isMissingNode());
     assertTrue(output.path("stringNull").isMissingNode());
-    assertEquals("", output.path("stringEmpty").asText());
+    assertTrue(output.path("stringEmpty").isMissingNode());
+    assertPathPresent("\"not empty\"", output.path("stringNotEmpty"));
     assertTrue(output.path("dateNull").isMissingNode());
     assertTrue(output.path("dateAndTimeNull").isMissingNode());
+
     assertTrue(output.path("simpleDateNull").isMissingNode());
+    assertTrue(output.path("nullLongArray").isMissingNode());
+    assertTrue(output.path("nullLongList").isMissingNode());
     assertTrue(output.path("emptyLongArray").isMissingNode());
     assertTrue(output.path("emptyLongList").isMissingNode());
+    assertTrue(output.path("emptyMap").isMissingNode());
+    assertTrue(output.path("deeplyEmptyLongList").isMissingNode());
+    assertTrue(output.path("deeplyEmptyMapList").isMissingNode());
+    assertTrue(output.path("deeplyEmptyMapArray").isMissingNode());
+
+    assertPathPresent("null", output.path("simpleDateNull_IncludeAlways"));
+    assertPathPresent("null", output.path("nullLongArray_IncludeAlways"));
+    assertPathPresent("null", output.path("nullLongList_IncludeAlways"));
+    assertPathPresent("[]", output.path("emptyLongArray_IncludeAlways"));
+    assertPathPresent("[]", output.path("emptyLongList_IncludeAlways"));
+    assertPathPresent("{}", output.path("emptyMap_IncludeAlways"));
+    assertPathPresent("[[{}]]", output.path("deeplyEmptyLongList_IncludeAlways"));
+    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapList_IncludeAlways"));
+    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapArray_IncludeAlways"));
+
+    assertTrue(output.path("simpleDateNull_IncludeNonNull").isMissingNode());
+    assertTrue(output.path("nullLongArray_IncludeNonNull").isMissingNode());
+    assertTrue(output.path("nullLongList_IncludeNonNull").isMissingNode());
+    assertPathPresent("[]", output.path("emptyLongArray_IncludeNonNull"));
+    assertPathPresent("[]", output.path("emptyLongList_IncludeNonNull"));
+    assertPathPresent("{}", output.path("emptyMap_IncludeNonNull"));
+    assertPathPresent("[[{}]]", output.path("deeplyEmptyLongList_IncludeNonNull"));
+    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapList_IncludeNonNull"));
+    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapArray_IncludeNonNull"));
+
+    assertTrue(output.path("simpleDateNull_IncludeNonEmpty").isMissingNode());
+    assertTrue(output.path("nullLongArray_IncludeNonEmpty").isMissingNode());
+    assertTrue(output.path("nullLongList_IncludeNonEmpty").isMissingNode());
+    assertTrue(output.path("emptyLongArray_IncludeNonEmpty").isMissingNode());
+    assertTrue(output.path("emptyLongList_IncludeNonEmpty").isMissingNode());
+    assertTrue(output.path("emptyMap_IncludeNonEmpty").isMissingNode());
+    assertTrue(output.path("deeplyEmptyLongList_IncludeNonEmpty").isMissingNode());
+    assertTrue(output.path("deeplyEmptyMapList_IncludeNonEmpty").isMissingNode());
+    assertTrue(output.path("deeplyEmptyMapArray_IncludeNonEmpty").isMissingNode());
+
+    assertPathPresent("[\"12\"]", output.path("nonEmptyLongArray_IncludeNonEmpty"));
+    assertPathPresent("[\"12\"]", output.path("nonEmptyLongList_IncludeNonEmpty"));
+    assertPathPresent("{\"12\":\"\"}", output.path("nonEmptyMap_IncludeNonEmpty"));
+    assertPathPresent("[[{\"12\":\"\"}]]", output.path("deeplyNonEmptyLongList_IncludeNonEmpty"));
+    assertPathPresent("{\"12\":[\"23\"]}", output.path("deeplyNonEmptyMapList_IncludeNonEmpty"));
+    assertPathPresent("{\"12\":[\"23\"]}", output.path("deeplyNonEmptyMapArray_IncludeNonEmpty"));
+  }
+
+  private void assertPathPresent(String expectedString, JsonNode path) {
+    assertFalse(path.isMissingNode());
+    assertEquals(expectedString, path.toString());
   }
 
   @Test
