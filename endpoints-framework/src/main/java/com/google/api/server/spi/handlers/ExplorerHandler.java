@@ -21,6 +21,7 @@ import com.google.api.server.spi.dispatcher.DispatcherHandler;
 
 import java.io.IOException;
 
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -28,19 +29,28 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
   
-  private static final String EXPLORER_URL = "https://developers.google.com/apis-explorer/";
+  private static final String DEFAULT_TEMPLATE 
+      = "http://apis-explorer.appspot.com/apis-explorer/?base=${apiBase}";
+  
+  private final String urlTemplate;
+
+  public ExplorerHandler(String urlTemplate) {
+    this.urlTemplate = Optional.ofNullable(urlTemplate).orElse(DEFAULT_TEMPLATE);
+  }
+
 
   @Override
   public void handle(EndpointsContext context) throws IOException {
-    context.getResponse().sendRedirect(getExplorerUrl(context.getRequest(), context.getPath()));
+    context.getResponse()
+        .sendRedirect(getExplorerUrl(context.getRequest(), context.getPath()));
   }
 
   private String getExplorerUrl(HttpServletRequest req, String path) {
     String url = stripRedundantPorts(Strings.stripTrailingSlash(req.getRequestURL().toString()));
     // This will convert http://localhost:8080/_ah/api/explorer to
     // ${EXPLORER_URL}?base=http://localhost:8080/_ah/api
-    String apiRoot = url.substring(0, url.length() - path.length() - 1);
-    return EXPLORER_URL + "?base=" + apiRoot;
+    String apiBase = url.substring(0, url.length() - path.length() - 1);
+    return urlTemplate.replace("${apiBase}", apiBase);
   }
 
   private static String stripRedundantPorts(String url) {

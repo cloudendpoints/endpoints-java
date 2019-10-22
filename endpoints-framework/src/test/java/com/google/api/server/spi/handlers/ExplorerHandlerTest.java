@@ -31,19 +31,19 @@ import javax.servlet.http.HttpServletResponse;
 public class ExplorerHandlerTest {
   @Test
   public void testHandle() throws Exception {
-    testHandle("http", 8080, "https://developers.google.com/apis-explorer/"
+    testHandle("http", 8080, "http://apis-explorer.appspot.com/apis-explorer/"
         + "?base=http://localhost:8080/_ah/api");
   }
 
   @Test
   public void testHandle_explicitHttpPort() throws Exception {
-    testHandle("http", 80, "https://developers.google.com/apis-explorer/"
+    testHandle("http", 80, "http://apis-explorer.appspot.com/apis-explorer/"
         + "?base=http://localhost/_ah/api");
   }
 
   @Test
   public void testHandle_explicitHttpsPort() throws Exception {
-    testHandle("https", 443, "https://developers.google.com/apis-explorer/"
+    testHandle("https", 443, "http://apis-explorer.appspot.com/apis-explorer/"
         + "?base=https://localhost/_ah/api");
   }
 
@@ -54,7 +54,7 @@ public class ExplorerHandlerTest {
     request.setServerPort(port);
     request.setRequestURI("/_ah/api/explorer/");
     MockHttpServletResponse response = new MockHttpServletResponse();
-    ExplorerHandler handler = new ExplorerHandler();
+    ExplorerHandler handler = new ExplorerHandler(null);
     EndpointsContext context = new EndpointsContext("GET", "explorer", request, response, true);
     handler.handle(context);
 

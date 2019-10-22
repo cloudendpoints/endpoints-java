@@ -23,6 +23,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nullable;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
@@ -39,6 +42,7 @@ public abstract class ServletInitializationParameters {
   private static final String EXCEPTION_COMPATIBILITY = "enableExceptionCompatibility";
   private static final String PRETTY_PRINT = "prettyPrint";
   private static final String ADD_CONTENT_LENGTH = "addContentLength";
+  private static final String API_EXPLORER_URL_TEMPLATE = "apiExplorerUrlTemplate";
 
   private static final Splitter CSV_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Joiner CSV_JOINER = Joiner.on(',').skipNulls();
@@ -91,6 +95,9 @@ public abstract class ServletInitializationParameters {
    *
    */
   public abstract boolean isAddContentLength();
+  
+  @Nullable
+  public abstract String getApiExplorerUrlTemplate();
 
   public static Builder builder() {
     return new AutoValue_ServletInitializationParameters.Builder()
@@ -99,7 +106,8 @@ public abstract class ServletInitializationParameters {
         .setIllegalArgumentBackendError(false)
         .setExceptionCompatibilityEnabled(true)
         .setPrettyPrintEnabled(true)
-        .setAddContentLength(false);
+        .setAddContentLength(false)
+        .setApiExplorerUrlTemplate(null);
   }
 
   /**
@@ -175,6 +183,14 @@ public abstract class ServletInitializationParameters {
      */
     public abstract Builder setAddContentLength(boolean addContentLength);
 
+    /**
+     * Sets the url template for the API explorer.
+     * The only supported variable is ${apiBase}.
+     * Given https://myapp.com/_ah/api/explorer, ${apiBase} is set to https://myapp.com/_ah/api.
+     * Defaults to http://apis-explorer.appspot.com/apis-explorer/?base=${apiBase} if not set.
+     */
+    public abstract Builder setApiExplorerUrlTemplate(String urlTemplate);
+
     abstract ServletInitializationParameters autoBuild();
 
     public ServletInitializationParameters build() {
@@ -222,6 +238,7 @@ public abstract class ServletInitializationParameters {
       if (addContentLength != null) {
         builder.setAddContentLength(parseBoolean(addContentLength, ADD_CONTENT_LENGTH));
       }
+      builder.setApiExplorerUrlTemplate(config.getInitParameter(API_EXPLORER_URL_TEMPLATE));
     }
     return builder.build();
   }
@@ -249,15 +266,16 @@ public abstract class ServletInitializationParameters {
   /**
    * Returns the parameters as a {@link java.util.Map} of parameter name to {@link String} value.
    */
-  public ImmutableMap<String, String> asMap() {
-    return ImmutableMap.<String, String>builder()
-        .put(SERVICES, CSV_JOINER.join(Iterables.transform(getServiceClasses(), CLASS_TO_NAME)))
-        .put(RESTRICTED, Boolean.toString(isServletRestricted()))
-        .put(CLIENT_ID_WHITELIST_ENABLED, Boolean.toString(isClientIdWhitelistEnabled()))
-        .put(ILLEGAL_ARGUMENT_BACKEND_ERROR, Boolean.toString(isIllegalArgumentBackendError()))
-        .put(EXCEPTION_COMPATIBILITY, Boolean.toString(isExceptionCompatibilityEnabled()))
-        .put(PRETTY_PRINT, Boolean.toString(isPrettyPrintEnabled()))
-        .put(ADD_CONTENT_LENGTH, Boolean.toString(isAddContentLength()))
-        .build();
+  public Map<String, String> asMap() {
+    return new HashMap<String, String>() {{
+          put(SERVICES, CSV_JOINER.join(Iterables.transform(getServiceClasses(), CLASS_TO_NAME)));
+          put(RESTRICTED, Boolean.toString(isServletRestricted()));
+          put(CLIENT_ID_WHITELIST_ENABLED, Boolean.toString(isClientIdWhitelistEnabled()));
+          put(ILLEGAL_ARGUMENT_BACKEND_ERROR, Boolean.toString(isIllegalArgumentBackendError()));
+          put(EXCEPTION_COMPATIBILITY, Boolean.toString(isExceptionCompatibilityEnabled()));
+          put(PRETTY_PRINT, Boolean.toString(isPrettyPrintEnabled()));
+          put(ADD_CONTENT_LENGTH, Boolean.toString(isAddContentLength()));
+          put(API_EXPLORER_URL_TEMPLATE, getApiExplorerUrlTemplate());
+      }};
   }
 }
