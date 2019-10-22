@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.util.Objects;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
@@ -59,6 +60,14 @@ public class TestEndpoint extends TestEndpointSuperclass<Foo> {
     private String string;
     private Integer integer = -1;
 
+    public Request() {
+    }
+
+    public Request(String string, Integer integer) {
+      this.string = string;
+      this.integer = integer;
+    }
+
     public void setStringValue(String string) {
       this.string = string;
     }
@@ -73,6 +82,24 @@ public class TestEndpoint extends TestEndpointSuperclass<Foo> {
 
     public Integer getIntegerValue() {
       return integer;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      Request request = (Request) o;
+      return Objects.equals(string, request.string) &&
+          Objects.equals(integer, request.integer);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(string, integer);
     }
   }
 

@@ -15,7 +15,7 @@
  */
 package com.google.api.server.spi.request;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.EndpointsContext;
 import com.google.api.server.spi.IoUtil;
@@ -25,8 +25,6 @@ import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.api.server.spi.response.BadRequestException;
-import com.google.api.server.spi.types.DateAndTime;
-import com.google.api.server.spi.types.SimpleDate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
@@ -42,9 +40,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +86,8 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
         return new Object[0];
       }
       HttpServletRequest servletRequest = endpointsContext.getRequest();
-      JsonNode node;
+      ObjectNode body = (ObjectNode) objectReader.createObjectNode();
+      ObjectNode params = (ObjectNode) objectReader.createObjectNode();
       // multipart/form-data requests can be used for requests which have no resource body. In
       // this case, each part represents a named parameter instead.
       if (ServletFileUpload.isMultipartContent(servletRequest)) {
@@ -107,7 +103,7 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
               throw new BadRequestException("unable to parse multipart form field");
             }
           }
-          node = obj;
+          params = obj;
         } catch (FileUploadException e) {
           throw new BadRequestException("unable to parse multipart request", e);
         }
@@ -117,101 +113,59 @@ public class RestServletRequestParamReader extends ServletRequestParamReader {
         // Unlike the Lily protocol, which essentially always requires a JSON body to exist (due to
         // path and query parameters being injected into the body), bodies are optional here, so we
         // create an empty body and inject named parameters to make deserialize work.
-        node = Strings.isEmptyOrWhitespace(requestBody) ? objectReader.createObjectNode()
-            : objectReader.readTree(requestBody);
+        if (!Strings.isEmptyOrWhitespace(requestBody)) {
+          JsonNode node = objectReader.readTree(requestBody);
+          if (!node.isObject()) {
+            throw new BadRequestException("expected a JSON object body");
+          }
+          body = (ObjectNode) node;
+        }
       }
-      if (!node.isObject()) {
-        throw new BadRequestException("expected a JSON object body");
-      }
-      ObjectNode body = (ObjectNode) node;
       Map<String, Class<?>> parameterMap = getParameterMap(method);
       // First add query parameters, then add path parameters. If the parameters already exist in
       // the resource, then the they aren't added to the body object. For compatibility reasons,
       // the order of precedence is resource field > query parameter > path parameter.
       for (Enumeration<?> e = servletRequest.getParameterNames(); e.hasMoreElements(); ) {
         String parameterName = (String) e.nextElement();
-        if (!body.has(parameterName)) {
-          Class<?> parameterClass = parameterMap.get(parameterName);
-          ApiParameterConfig parameterConfig = parameterConfigMap.get(parameterName);
-          if (parameterClass != null && parameterConfig.isRepeated()) {
-            ArrayNode values = body.putArray(parameterName);
-            for (String value : servletRequest.getParameterValues(parameterName)) {
-              values.add(value);
-            }
-          } else {
-            body.put(parameterName, servletRequest.getParameterValues(parameterName)[0]);
+        Class<?> parameterClass = parameterMap.get(parameterName);
+        ApiParameterConfig parameterConfig = parameterConfigMap.get(parameterName);
+        if (parameterClass != null && parameterConfig.isRepeated()) {
+          ArrayNode values = params.putArray(parameterName);
+          for (String value : servletRequest.getParameterValues(parameterName)) {
+            values.add(value);
           }
+        } else {
+          params.put(parameterName, servletRequest.getParameterValues(parameterName)[0]);
         }
       }
       for (Entry<String, String> entry : rawPathParameters.entrySet()) {
         String parameterName = entry.getKey();
         Class<?> parameterClass = parameterMap.get(parameterName);
-        if (parameterClass != null && !body.has(parameterName)) {
+        if (parameterClass != null && !params.has(parameterName)) {
           if (parameterConfigMap.get(parameterName).isRepeated()) {
-            ArrayNode values = body.putArray(parameterName);
+            ArrayNode values = params.putArray(parameterName);
             for (String value : COMPOSITE_PATH_SPLITTER.split(entry.getValue())) {
               values.add(value);
             }
           } else {
-            body.put(parameterName, entry.getValue());
+            params.put(parameterName, entry.getValue());
           }
         }
       }
       for (Entry<String, ApiParameterConfig> entry : parameterConfigMap.entrySet()) {
-        if (!body.has(entry.getKey()) && entry.getValue().getDefaultValue() != null) {
-          body.put(entry.getKey(), entry.getValue().getDefaultValue());
+        if (!params.has(entry.getKey()) && entry.getValue().getDefaultValue() != null) {
+          params.put(entry.getKey(), entry.getValue().getDefaultValue());
         }
       }
-      return deserializeParams(body);
-    } catch (InvalidFormatException e) {
+      return deserializeParams(body, params);
+    } catch (MismatchedInputException e) {
       logger.atInfo().withCause(e).log("Unable to read request parameter(s)");
-      throw translate(e);
+      throw translateJsonException(e);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
         | IOException e) {
       logger.atInfo().withCause(e).log("Unable to read request parameter(s)");
       throw new BadRequestException("Parse error", "parseError", e);
     }
-  }
-  
-  private BadRequestException translate(InvalidFormatException e) {
-    String messagePattern = "Invalid {0} value \"{1}\".{2}";
-    String message;
-    String reason = "parseError";
-    if (e.getTargetType().isEnum()) {
-      message = MessageFormat.format(messagePattern, "enum",
-              e.getValue(),
-              " Valid values are " + Arrays.toString(e.getTargetType().getEnumConstants())
-      );
-    } else if (isNumber(e.getTargetType())) {
-      message = MessageFormat.format(messagePattern, "number", e.getValue(), "");
-    } else if (isBoolean(e.getTargetType())) {
-      message = MessageFormat.format(messagePattern,"boolean", e.getValue(), " Valid values are [true, false]");
-    } else if (isDate(e.getTargetType())) {
-      message = MessageFormat.format(messagePattern, "date", e.getValue(), "");
-    } else {
-      message = "Parse error";
-    }
-    
-    return new BadRequestException(message, reason, e);
-  }
-  
-  private boolean isBoolean(Class<?> clazz) {
-    return Boolean.class.equals(clazz) || boolean.class.equals(clazz);
-  }
-  
-  private boolean isDate(Class<?> clazz) {
-    return Date.class.isAssignableFrom(clazz)
-            || DateAndTime.class.equals(clazz)
-            || SimpleDate.class.equals(clazz);
-  }
-  
-  private boolean isNumber(Class<?> clazz) {
-    return Number.class.isAssignableFrom(clazz)
-            || byte.class.equals(clazz)
-            || int.class.equals(clazz)
-            || long.class.equals(clazz)
-            || float.class.equals(clazz)
-            || double.class.equals(clazz);
   }
 
   private static ImmutableMap<String, Class<?>> getParameterMap(EndpointMethod method)
