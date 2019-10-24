@@ -16,7 +16,10 @@
 package com.google.api.server.spi.request;
 
 import com.fasterxml.jackson.core.Base64Variants;
+import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.EndpointsContext;
@@ -54,6 +57,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,6 +69,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.util.stream.Collectors;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -128,7 +133,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
     return parameterNames;
   }
 
-  protected Object[] deserializeParams(JsonNode node) throws IOException, IllegalAccessException,
+  protected Object[] deserializeParams(JsonNode body, JsonNode parameters) throws IOException, IllegalAccessException,
       InvocationTargetException, NoSuchMethodException, ServiceException {
     EndpointMethod method = getMethod();
     Class<?>[] paramClasses = method.getParameterClasses();
@@ -174,13 +179,13 @@ public class ServletRequestParamReader extends AbstractParamReader {
       } else {
         String name = parameterNames.get(i);
         if (Strings.isNullOrEmpty(name)) {
-          params[i] = (node == null) ? null : objectReader.forType(clazz).readValue(node);
+          params[i] = (body == null) ? null : objectReader.forType(clazz).readValue(body);
           logger.atFine().log("deserialize: %s %s injected into unnamed param[%d]",
               clazz, params[i], i);
         } else if (StandardParameters.isStandardParamName(name)) {
-          params[i] = getStandardParamValue(node, name);
+          params[i] = getStandardParamValue(parameters, name);
         } else {
-          JsonNode nodeValue = node.get(name);
+          JsonNode nodeValue = parameters.get(name);
           if (nodeValue == null) {
             params[i] = null;
           } else {
@@ -356,10 +361,65 @@ public class ServletRequestParamReader extends AbstractParamReader {
         return new Object[0];
       }
       JsonNode node = objectReader.readTree(requestBody);
-      return deserializeParams(node);
+      if (!node.isObject()) {
+        throw new BadRequestException("expected a JSON object body");
+      }
+      //this convention comes from gapi.client to separate params and body
+      JsonNode resource = node.get("resource");
+      ((ObjectNode) node).remove("resource");
+      return deserializeParams(resource, node);
+    } catch (MismatchedInputException e) {
+      logger.atInfo().withCause(e).log("Unable to read request parameter(s)");
+      throw translateJsonException(e);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
         | IOException e) {
       throw new BadRequestException(e);
     }
+  }
+
+  BadRequestException translateJsonException(MismatchedInputException e) {
+    String reason = "parseError";
+    Class<?> targetType = e.getTargetType();
+    String fieldPath = e.getPath().stream().map(Reference::getFieldName)
+        .collect(Collectors.joining("."));
+    String message = "Parse error at '" + fieldPath
+        + "' ('" + targetType.getSimpleName() + "' type)";
+    String messagePattern = ": invalid {0} value \"{1}\".{2}";
+    if (e instanceof InvalidFormatException) {
+      Object value = ((InvalidFormatException) e).getValue();
+      if (targetType.isEnum()) {
+        message += MessageFormat.format(messagePattern, "enum",
+            value,
+            " Valid values are " + Arrays.toString(targetType.getEnumConstants())
+        );
+      } else if (isNumber(targetType)) {
+        message += MessageFormat.format(messagePattern, "number", value, "");
+      } else if (isBoolean(targetType)) {
+        message += MessageFormat.format(messagePattern,"boolean", value, " Valid values are [true, false]");
+      } else if (isDate(targetType)) {
+        message += MessageFormat.format(messagePattern, "date", value, "");
+      }
+    }
+
+    return new BadRequestException(message, reason, e);
+  }
+
+  private boolean isBoolean(Class<?> clazz) {
+    return Boolean.class.equals(clazz) || boolean.class.equals(clazz);
+  }
+
+  private boolean isDate(Class<?> clazz) {
+    return Date.class.isAssignableFrom(clazz)
+        || DateAndTime.class.equals(clazz)
+        || SimpleDate.class.equals(clazz);
+  }
+
+  private boolean isNumber(Class<?> clazz) {
+    return Number.class.isAssignableFrom(clazz)
+        || byte.class.equals(clazz)
+        || int.class.equals(clazz)
+        || long.class.equals(clazz)
+        || float.class.equals(clazz)
+        || double.class.equals(clazz);
   }
 }
