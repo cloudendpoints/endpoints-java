@@ -91,8 +91,59 @@ public class ServletResponseResultWriterTest {
       public String getStringEmpty() {
         return "";
       }
+      public Date getDate() {
+        return new Date(DATE_VALUE);
+      }
+      public Date getDateNull() {
+        return null;
+      }
+      public DateAndTime getDateAndTime() {
+        return DateAndTime.parseRfc3339String(DATE_AND_TIME_VALUE_STRING);
+      }
+      public DateAndTime getDateAndTimeNull() {
+        return null;
+      }
+
+      public SimpleDate getSimpleDate() {
+        return new SimpleDate(2002, 10, 2);
+      }
+
+      public SimpleDate getSimpleDateNull() {
+        return null;
+      }
+      public Long[] getEmptyLongArray() {
+        return new Long[0];
+      }
+      public List<Long> getEmptyLongList() {
+        return new ArrayList<>();
+      }
+    };
+    ObjectNode output = testTypeChangesAsString(value);
+    assertTrue(output.path("longNull").isMissingNode());
+    assertTrue(output.path("stringNull").isMissingNode());
+    assertEquals("", output.path("stringEmpty").asText(null));
+    assertTrue(output.path("dateNull").isMissingNode());
+    assertTrue(output.path("dateAndTimeNull").isMissingNode());
+    assertTrue(output.path("simpleDateNull").isMissingNode());
+    assertTrue(output.path("emptyLongArray").isMissingNode());
+    assertTrue(output.path("emptyLongList").isMissingNode());
+  }
+
+  @Test
+  @SuppressWarnings("unused")
+  public void testPropertyInclusion_noModifier() throws Exception {
+    Object value = new Object() {
+      public String getStringEmpty() {
+        return "";
+      }
       public String getStringNotEmpty() {
         return "not empty";
+      }
+      public Long getLongNull() {
+        return null;
+      }
+      public String getStringNull() {
+        return null;
       }
       public Date getDate() {
         return new Date(DATE_VALUE);
@@ -140,8 +191,45 @@ public class ServletResponseResultWriterTest {
       public Map<Long,Long[]> getDeeplyEmptyMapArray() {
         return ImmutableMap.of(12L, new Long[0]);
       }
+    };
+    
+    ObjectNode output = toJSON(value);
 
+    //String is handled specifically
+    assertEquals("", output.path("stringEmpty").asText(null));
+    assertPathPresent("\"not empty\"", output.path("stringNotEmpty"));
+
+    //simple objects
+    assertTrue(output.path("longNull").isMissingNode());
+    assertTrue(output.path("stringNull").isMissingNode());
+    assertTrue(output.path("dateNull").isMissingNode());
+    assertTrue(output.path("dateAndTimeNull").isMissingNode());
+    assertTrue(output.path("simpleDateNull").isMissingNode());
+    
+    //collections
+    assertTrue(output.path("nullLongArray").isMissingNode());
+    assertTrue(output.path("nullLongList").isMissingNode());
+    assertTrue(output.path("emptyLongArray").isMissingNode());
+    assertTrue(output.path("emptyLongList").isMissingNode());
+    assertTrue(output.path("emptyMap").isMissingNode());
+    assertTrue(output.path("deeplyEmptyLongList").isMissingNode());
+    assertTrue(output.path("deeplyEmptyMapList").isMissingNode());
+    assertTrue(output.path("deeplyEmptyMapArray").isMissingNode());
+  }
+  
+  @Test
+  @SuppressWarnings("unused")
+  public void testPropertyInclusion_includeAlways() throws Exception {
+    Object value = new Object() {
       // Null or empty objects, annotation value (ALWAYS)
+      @JsonInclude
+      public String getStringEmpty() {
+        return "";
+      }
+      @JsonInclude
+      public String getStringNotEmpty() {
+        return "not empty";
+      }
       @JsonInclude
       public SimpleDate getSimpleDateNull_IncludeAlways() {
         return null;
@@ -179,8 +267,41 @@ public class ServletResponseResultWriterTest {
       public Map<Long,Long[]> getDeeplyEmptyMapArray_IncludeAlways() {
         return ImmutableMap.of(12L, new Long[0]);
       }
+    };
+    
+    ObjectNode output = toJSON(value);
+    
+    //String is handled specifically
+    assertEquals("", output.path("stringEmpty").asText(null));
+    assertPathPresent("\"not empty\"", output.path("stringNotEmpty"));
 
+    //simple objects
+    assertPathPresent("null", output.path("simpleDateNull_IncludeAlways"));
+    assertPathPresent("null", output.path("nullLongArray_IncludeAlways"));
+    assertPathPresent("null", output.path("nullLongList_IncludeAlways"));
+
+    //collections
+    assertPathPresent("[]", output.path("emptyLongArray_IncludeAlways"));
+    assertPathPresent("[]", output.path("emptyLongList_IncludeAlways"));
+    assertPathPresent("{}", output.path("emptyMap_IncludeAlways"));
+    assertPathPresent("[[{}]]", output.path("deeplyEmptyLongList_IncludeAlways"));
+    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapList_IncludeAlways"));
+    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapArray_IncludeAlways"));
+  }
+
+  @Test
+  @SuppressWarnings("unused")
+  public void testPropertyInclusion_includeNonNull() throws Exception {
+    Object value = new Object() {
       // Null or empty objects, annotation NON_NULL
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public String getStringEmpty() {
+        return "";
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL)
+      public String getStringNotEmpty() {
+        return "not empty";
+      }
       @JsonInclude(value = JsonInclude.Include.NON_NULL)
       public SimpleDate getSimpleDateNull_IncludeNonNull() {
         return null;
@@ -218,8 +339,40 @@ public class ServletResponseResultWriterTest {
       public Map<Long,Long[]> getDeeplyEmptyMapArray_IncludeNonNull() {
         return ImmutableMap.of(12L, new Long[0]);
       }
+    };
+    ObjectNode output = toJSON(value);
 
+    //String is handled specifically
+    assertEquals("", output.path("stringEmpty").asText(null));
+    assertPathPresent("\"not empty\"", output.path("stringNotEmpty"));
+
+    //simple objects
+    assertTrue(output.path("simpleDateNull_IncludeNonNull").isMissingNode());
+    assertTrue(output.path("nullLongArray_IncludeNonNull").isMissingNode());
+    assertTrue(output.path("nullLongList_IncludeNonNull").isMissingNode());
+
+    //collections
+    assertPathPresent("[]", output.path("emptyLongArray_IncludeNonNull"));
+    assertPathPresent("[]", output.path("emptyLongList_IncludeNonNull"));
+    assertPathPresent("{}", output.path("emptyMap_IncludeNonNull"));
+    assertPathPresent("[[{}]]", output.path("deeplyEmptyLongList_IncludeNonNull"));
+    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapList_IncludeNonNull"));
+    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapArray_IncludeNonNull"));
+  }
+
+  @Test
+  @SuppressWarnings("unused")
+  public void testPropertyInclusion_IncludeNonEmpty() throws Exception {
+    Object value = new Object() {
       // Null or empty objects, annotation NON_EMPTY
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public String getStringEmpty() {
+        return "";
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+      public String getStringNotEmpty() {
+        return "not empty";
+      }
       @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
       public SimpleDate getSimpleDateNull_IncludeNonEmpty() {
         return null;
@@ -285,45 +438,16 @@ public class ServletResponseResultWriterTest {
         return ImmutableMap.of(12L, new Long[] {23L});
       }
     };
-    ObjectNode output = testTypeChangesAsString(value);
-    assertTrue(output.path("longNull").isMissingNode());
-    assertTrue(output.path("stringNull").isMissingNode());
+    ObjectNode output = toJSON(value);
+    
+    //String is handled specifically
     assertTrue(output.path("stringEmpty").isMissingNode());
     assertPathPresent("\"not empty\"", output.path("stringNotEmpty"));
-    assertTrue(output.path("dateNull").isMissingNode());
-    assertTrue(output.path("dateAndTimeNull").isMissingNode());
 
-    assertTrue(output.path("simpleDateNull").isMissingNode());
-    assertTrue(output.path("nullLongArray").isMissingNode());
-    assertTrue(output.path("nullLongList").isMissingNode());
-    assertTrue(output.path("emptyLongArray").isMissingNode());
-    assertTrue(output.path("emptyLongList").isMissingNode());
-    assertTrue(output.path("emptyMap").isMissingNode());
-    assertTrue(output.path("deeplyEmptyLongList").isMissingNode());
-    assertTrue(output.path("deeplyEmptyMapList").isMissingNode());
-    assertTrue(output.path("deeplyEmptyMapArray").isMissingNode());
-
-    assertPathPresent("null", output.path("simpleDateNull_IncludeAlways"));
-    assertPathPresent("null", output.path("nullLongArray_IncludeAlways"));
-    assertPathPresent("null", output.path("nullLongList_IncludeAlways"));
-    assertPathPresent("[]", output.path("emptyLongArray_IncludeAlways"));
-    assertPathPresent("[]", output.path("emptyLongList_IncludeAlways"));
-    assertPathPresent("{}", output.path("emptyMap_IncludeAlways"));
-    assertPathPresent("[[{}]]", output.path("deeplyEmptyLongList_IncludeAlways"));
-    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapList_IncludeAlways"));
-    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapArray_IncludeAlways"));
-
-    assertTrue(output.path("simpleDateNull_IncludeNonNull").isMissingNode());
-    assertTrue(output.path("nullLongArray_IncludeNonNull").isMissingNode());
-    assertTrue(output.path("nullLongList_IncludeNonNull").isMissingNode());
-    assertPathPresent("[]", output.path("emptyLongArray_IncludeNonNull"));
-    assertPathPresent("[]", output.path("emptyLongList_IncludeNonNull"));
-    assertPathPresent("{}", output.path("emptyMap_IncludeNonNull"));
-    assertPathPresent("[[{}]]", output.path("deeplyEmptyLongList_IncludeNonNull"));
-    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapList_IncludeNonNull"));
-    assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapArray_IncludeNonNull"));
-
+    //simple objects
     assertTrue(output.path("simpleDateNull_IncludeNonEmpty").isMissingNode());
+
+    //collections
     assertTrue(output.path("nullLongArray_IncludeNonEmpty").isMissingNode());
     assertTrue(output.path("nullLongList_IncludeNonEmpty").isMissingNode());
     assertTrue(output.path("emptyLongArray_IncludeNonEmpty").isMissingNode());
@@ -332,7 +456,6 @@ public class ServletResponseResultWriterTest {
     assertTrue(output.path("deeplyEmptyLongList_IncludeNonEmpty").isMissingNode());
     assertTrue(output.path("deeplyEmptyMapList_IncludeNonEmpty").isMissingNode());
     assertTrue(output.path("deeplyEmptyMapArray_IncludeNonEmpty").isMissingNode());
-
     assertPathPresent("[\"12\"]", output.path("nonEmptyLongArray_IncludeNonEmpty"));
     assertPathPresent("[\"12\"]", output.path("nonEmptyLongList_IncludeNonEmpty"));
     assertPathPresent("{\"12\":\"\"}", output.path("nonEmptyMap_IncludeNonEmpty"));
@@ -349,10 +472,7 @@ public class ServletResponseResultWriterTest {
   @Test
   public void testTypeChangesInArrayAsString() throws Exception {
     Object[] array = new Object[]{100L, 200L};
-    String responseBody = writeToResponse(array);
-
-    ObjectNode output = ObjectMapperUtil.createStandardObjectMapper()
-        .readValue(responseBody, ObjectNode.class);
+    ObjectNode output = toJSON(array);
     ArrayNode items = (ArrayNode) output.get("items");
     assertTrue(items.get(0).isTextual());
     assertEquals("100", items.get(0).asText());
@@ -435,9 +555,7 @@ public class ServletResponseResultWriterTest {
   }
 
   private ObjectNode testTypeChangesAsString(Object value) throws Exception {
-    String responseBody = writeToResponse(value);
-    ObjectNode output = ObjectMapperUtil.createStandardObjectMapper()
-        .readValue(responseBody, ObjectNode.class);
+    ObjectNode output = toJSON(value);
     assertTrue(output.get("nonPrimitive").isTextual());
     assertEquals("100", output.get("nonPrimitive").asText());
     assertTrue(output.get("primitive").isTextual());
@@ -451,6 +569,12 @@ public class ServletResponseResultWriterTest {
         DateAndTime.parseRfc3339String(output.get("dateAndTime").asText()));
     assertEquals(SIMPLE_DATE_VALUE_STRING, output.get("simpleDate").asText());
     return output;
+  }
+
+  private ObjectNode toJSON(Object value) throws IOException {
+    String responseBody = writeToResponse(value);
+    return ObjectMapperUtil.createStandardObjectMapper()
+        .readValue(responseBody, ObjectNode.class);
   }
 
   private String writeToResponse(Object value) throws IOException {
