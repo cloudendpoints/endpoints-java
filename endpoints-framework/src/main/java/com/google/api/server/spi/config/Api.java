@@ -26,16 +26,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Api {
-  public static final int UNSPECIFIED_INT = Integer.MIN_VALUE;
-  public static final String UNSPECIFIED_STRING_FOR_LIST = "_UNSPECIFIED_LIST_STRING_VALUE";
-
-  /**
-   * Frontend root URL, e.g. "https://example.appspot.com/_ah/api". All api
-   * methods will be exposed below this path. This will default to
-   * "https://yourapp.appspot.com/_ah/api".
-   */
-  @Deprecated
-  String root() default "";
+  int UNSPECIFIED_INT = Integer.MIN_VALUE;
+  String UNSPECIFIED_STRING_FOR_LIST = "_UNSPECIFIED_LIST_STRING_VALUE";
 
   /**
    * Name of the API, e.g. "guestbook". This is used as the prefix for all api
@@ -72,14 +64,6 @@ public @interface Api {
    * discovery.
    */
   String documentationLink() default "";
-
-  /**
-   * Backend root URL, e.g. "https://example.appspot.com/_ah/spi". This is the root of all backend
-   * method calls. This will default to "https://yourapp.appspot.com/_ah/spi". Non-secure http URLs
-   * will be automatically converted to use https.
-   */
-  @Deprecated
-  String backendRoot() default "";
 
   /**
    * Configures authentication information. See {@link ApiAuth} for details.
