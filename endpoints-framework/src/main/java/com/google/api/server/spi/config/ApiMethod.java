@@ -68,16 +68,6 @@ public @interface ApiMethod {
   String httpMethod() default "";
 
   /**
-   * Cache-Control header settings for this method. See
-   * {@link ApiMethodCacheControl} for details.
-   *
-   * @deprecated ApiMethodCacheControl is deprecated and will be removed in a future version of
-   * Cloud Endpoints.
-   */
-  @Deprecated
-  ApiMethodCacheControl cacheControl() default @ApiMethodCacheControl;
-
-  /**
    * Set frontend auth level.
    */
   AuthLevel authLevel() default AuthLevel.UNSPECIFIED;

@@ -20,7 +20,6 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiCacheControl;
 import com.google.api.server.spi.config.ApiFrontendLimits;
 import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.ApiMethodCacheControl;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,8 +52,7 @@ public class SubclassedOverridingEndpoint extends SubclassedEndpoint {
 
   // Override a config.
   @ApiMethod(
-      name = "foos.get2",
-      cacheControl = @ApiMethodCacheControl(maxAge = 4)
+      name = "foos.get2"
   )
   @Override
   public Foo getFoo(@Named("id") String id) {
