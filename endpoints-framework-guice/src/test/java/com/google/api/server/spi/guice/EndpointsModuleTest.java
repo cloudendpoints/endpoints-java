@@ -63,7 +63,7 @@ public class EndpointsModuleTest {
       @Override
       protected void configureServlets() {
         super.configureServlets();
-        configureEndpoints(URL_PATTERN, INIT_PARAMETERS, true);
+        configureEndpoints(URL_PATTERN, INIT_PARAMETERS);
       }
     };
     Elements.getElements(module);
@@ -112,63 +112,33 @@ public class EndpointsModuleTest {
   }
 
   @Test
-  public void testConfigureEndpoints_legacyServletWithServices() {
-    testServletClassWithServices(true, GuiceEndpointsServlet.class);
-  }
-
-  @Test
-  public void testConfigureEndpoints_newServletWithServices() {
-    testServletClassWithServices(false, GuiceEndpointsServlet.class);
-  }
-
-  @Test
   public void testConfigureEndpoints_defaultServletWithServices() {
-    testServletClassWithServices(null, GuiceEndpointsServlet.class);
-  }
-
-  @Test
-  public void testConfigureEndpoints_legacyServletWithInitParams() {
-    testServletClassWithInitParams(true, GuiceEndpointsServlet.class);
-  }
-
-  @Test
-  public void testConfigureEndpoints_newServletWithInitParams() {
-    testServletClassWithInitParams(false, GuiceEndpointsServlet.class);
+    testServletClassWithServices(GuiceEndpointsServlet.class);
   }
 
   @Test
   public void testConfigureEndpoints_defaultServletWithInitParams() {
-    testServletClassWithInitParams(null, GuiceEndpointsServlet.class);
+    testServletClassWithInitParams(GuiceEndpointsServlet.class);
   }
 
-  private void testServletClassWithServices(final Boolean servletFlag, Class<?> expectedClass) {
+  private void testServletClassWithServices(Class<?> expectedClass) {
     testServletClass(new EndpointsModule() {
       @Override
       protected void configureServlets() {
         super.configureServlets();
-        if (servletFlag == null) {
-          configureEndpoints(URL_PATTERN, SERVICES);
-        } else {
-          configureEndpoints(URL_PATTERN, SERVICES, servletFlag);
-        }
+        configureEndpoints(URL_PATTERN, SERVICES);
       }
     }, expectedClass);
   }
 
-  private void testServletClassWithInitParams(final Boolean servletFlag, Class<?> expectedClass) {
+  private void testServletClassWithInitParams(Class<?> expectedClass) {
     testServletClass(new EndpointsModule() {
       @Override
       protected void configureServlets() {
         super.configureServlets();
-        if (servletFlag == null) {
-          configureEndpoints(URL_PATTERN, ServletInitializationParameters.builder()
-              .addServiceClasses(SERVICES)
-              .build());
-        } else {
-          configureEndpoints(URL_PATTERN, ServletInitializationParameters.builder()
-              .addServiceClasses(SERVICES)
-              .build(), servletFlag);
-        }
+        configureEndpoints(URL_PATTERN, ServletInitializationParameters.builder()
+            .addServiceClasses(SERVICES)
+            .build());
       }
     }, expectedClass);
   }
@@ -194,7 +164,7 @@ public class EndpointsModuleTest {
       @Override
       protected void configureServlets() {
         super.configureServlets();
-        configureEndpoints(URL_PATTERN, SERVICES, true);
+        configureEndpoints(URL_PATTERN, SERVICES);
       }
     };
     Injector injector = Guice.createInjector(module, new DummyModule());
