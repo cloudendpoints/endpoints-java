@@ -23,7 +23,6 @@ import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
-import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
@@ -44,9 +43,6 @@ public class ProxyingDiscoveryServiceTest {
   private static final String API_NAME = "tictactoe";
   private static final String API_VERSION = "v1";
   private static final RestDescription REST_DOC = new RestDescription()
-      .setName(API_NAME)
-      .setVersion(API_VERSION);
-  private static final RpcDescription RPC_DOC = new RpcDescription()
       .setName(API_NAME)
       .setVersion(API_VERSION);
   private static final DirectoryList DIRECTORY = new DirectoryList()
@@ -102,58 +98,6 @@ public class ProxyingDiscoveryServiceTest {
     try {
       ProxyingDiscoveryService discoveryService = createDiscoveryService(false);
       discoveryService.getRestDocument(null /* request */, null /* name */, null /* verson */);
-      fail("expected InternalServerErrorException");
-    } catch (InternalServerErrorException e) {
-      // expected
-    }
-  }
-
-  @Test
-  public void getRpcDocument() throws Exception {
-    ProxyingDiscoveryService discoveryService = createDiscoveryService(true);
-    when(provider.getRpcDocument(SERVER_ROOT, API_NAME, API_VERSION)).thenReturn(RPC_DOC);
-
-    RpcDescription actual = discoveryService.getRpcDocument(
-        createRequest("discovery/v1/apis/tictactoe/v1/rpc"), API_NAME, API_VERSION);
-
-    assertThat(actual).isEqualTo(RPC_DOC);
-  }
-
-  @Test
-  public void getRpcDocument_notFound() throws Exception {
-    ProxyingDiscoveryService discoveryService = createDiscoveryService(true);
-    when(provider.getRpcDocument(SERVER_ROOT, API_NAME, API_VERSION))
-        .thenThrow(new NotFoundException(""));
-
-    try {
-      discoveryService.getRpcDocument(
-          createRequest("discovery/v1/apis/tictactoe/v1/rpc"), API_NAME, API_VERSION);
-      fail("expected NotFoundException");
-    } catch (NotFoundException e) {
-      // expected
-    }
-  }
-
-  @Test
-  public void getRpcDocument_internalServerError() throws Exception {
-    ProxyingDiscoveryService discoveryService = createDiscoveryService(true);
-    when(provider.getRpcDocument(SERVER_ROOT, API_NAME, API_VERSION))
-        .thenThrow(new InternalServerErrorException(""));
-
-    try {
-      discoveryService.getRpcDocument(
-          createRequest("discovery/v1/apis/tictactoe/v1/rest"), API_NAME, API_VERSION);
-      fail("expected InternalServerErrorException");
-    } catch (InternalServerErrorException e) {
-      // expected
-    }
-  }
-
-  @Test
-  public void getRpcDocument_uninitialized() throws Exception {
-    try {
-      ProxyingDiscoveryService discoveryService = createDiscoveryService(false);
-      discoveryService.getRpcDocument(null /* request */, null /* name */, null /* verson */);
       fail("expected InternalServerErrorException");
     } catch (InternalServerErrorException e) {
       // expected

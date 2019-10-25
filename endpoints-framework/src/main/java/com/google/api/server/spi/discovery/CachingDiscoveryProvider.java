@@ -20,7 +20,6 @@ import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
-import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -42,7 +41,6 @@ public class CachingDiscoveryProvider implements DiscoveryProvider {
   private static final int CACHE_EXPIRY_MINS = 10;
 
   private final Cache<ApiKey, RestDescription> restDocuments;
-  private final Cache<ApiKey, RpcDescription> rpcDocuments;
   private final Cache<String, DirectoryList> directoryByRoot;
   private final DiscoveryProvider delegate;
 
@@ -54,9 +52,6 @@ public class CachingDiscoveryProvider implements DiscoveryProvider {
       DiscoveryProvider delegate, long cacheExpiry, TimeUnit cacheExpiryUnit) {
     this.delegate = delegate;
     restDocuments = CacheBuilder.newBuilder()
-        .expireAfterAccess(cacheExpiry, cacheExpiryUnit)
-        .build();
-    rpcDocuments = CacheBuilder.newBuilder()
         .expireAfterAccess(cacheExpiry, cacheExpiryUnit)
         .build();
     directoryByRoot = CacheBuilder.newBuilder()
@@ -71,17 +66,6 @@ public class CachingDiscoveryProvider implements DiscoveryProvider {
       @Override
       public RestDescription call() throws NotFoundException, InternalServerErrorException {
         return delegate.getRestDocument(root, name, version);
-      }
-    });
-  }
-
-  @Override
-  public RpcDescription getRpcDocument(final String root, final String name, final String version)
-      throws NotFoundException, InternalServerErrorException {
-    return getDiscoveryDoc(rpcDocuments, root, name, version, new Callable<RpcDescription>() {
-      @Override
-      public RpcDescription call() throws NotFoundException, InternalServerErrorException {
-        return delegate.getRpcDocument(root, name, version);
       }
     });
   }
@@ -109,7 +93,6 @@ public class CachingDiscoveryProvider implements DiscoveryProvider {
   @VisibleForTesting
   void cleanUp() {
     restDocuments.cleanUp();
-    rpcDocuments.cleanUp();
     directoryByRoot.cleanUp();
   }
 

@@ -25,7 +25,6 @@ import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
-import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
@@ -44,9 +43,6 @@ public class CachingDiscoveryProviderTest {
   private static final String NAME = "name";
   private static final String VERSION = "v1";
   private static final RestDescription REST_DOC = new RestDescription()
-      .setName(NAME)
-      .setVersion(VERSION);
-  private static final RpcDescription RPC_DOC = new RpcDescription()
       .setName(NAME)
       .setVersion(VERSION);
   private static final DirectoryList DIRECTORY = new DirectoryList()
@@ -123,72 +119,6 @@ public class CachingDiscoveryProviderTest {
   }
 
   @Test
-  public void getRpcDocument() throws Exception {
-    CachingDiscoveryProvider provider = createNonExpiringProvider();
-    setupNormalMockDelegate();
-
-    // Make the same call twice and ensure that the delegate is only called once.
-    assertThat(provider.getRpcDocument(ROOT, NAME, VERSION)).isEqualTo(RPC_DOC);
-    assertThat(provider.getRpcDocument(ROOT, NAME, VERSION)).isEqualTo(RPC_DOC);
-    verify(delegate, times(1)).getRpcDocument(ROOT, NAME, VERSION);
-  }
-
-  @Test
-  public void getRpcDocument_cacheExpiry() throws Exception {
-    CachingDiscoveryProvider provider = createShortExpiringProvider();
-    setupNormalMockDelegate();
-
-    assertThat(provider.getRpcDocument(ROOT, NAME, VERSION)).isEqualTo(RPC_DOC);
-
-    Thread.sleep(1000);
-    provider.cleanUp();
-
-    assertThat(provider.getRpcDocument(ROOT, NAME, VERSION)).isEqualTo(RPC_DOC);
-    verify(delegate, times(2)).getRpcDocument(ROOT, NAME, VERSION);
-  }
-
-  @Test
-  public void getRpcDocument_notFound() throws Exception {
-    CachingDiscoveryProvider provider = createNonExpiringProvider();
-    when(delegate.getRpcDocument(ROOT, NAME, VERSION)).thenThrow(new NotFoundException(""));
-
-    try {
-      provider.getRpcDocument(ROOT, NAME, VERSION);
-      fail("expected NotFoundException");
-    } catch (NotFoundException e) {
-      // expected
-    }
-  }
-
-  @Test
-  public void getRpcDocument_internalServerError() throws Exception {
-    CachingDiscoveryProvider provider = createNonExpiringProvider();
-    when(delegate.getRpcDocument(ROOT, NAME, VERSION))
-        .thenThrow(new InternalServerErrorException(""));
-
-    try {
-      provider.getRpcDocument(ROOT, NAME, VERSION);
-      fail("expected InternalServerErrorException");
-    } catch (InternalServerErrorException e) {
-      // expected
-    }
-  }
-
-  @Test
-  public void getRpcDocument_runtimeException() throws Exception {
-    CachingDiscoveryProvider provider = createNonExpiringProvider();
-    when(delegate.getRpcDocument(ROOT, NAME, VERSION))
-        .thenThrow(new RuntimeException(""));
-
-    try {
-      provider.getRpcDocument(ROOT, NAME, VERSION);
-      fail("expected InternalServerErrorException");
-    } catch (InternalServerErrorException e) {
-      // expected
-    }
-  }
-
-  @Test
   public void getDirectory() throws Exception {
     CachingDiscoveryProvider provider = createNonExpiringProvider();
     setupNormalMockDelegate();
@@ -253,7 +183,6 @@ public class CachingDiscoveryProviderTest {
 
   private void setupNormalMockDelegate() throws Exception {
     when(delegate.getRestDocument(ROOT, NAME, VERSION)).thenReturn(REST_DOC);
-    when(delegate.getRpcDocument(ROOT, NAME, VERSION)).thenReturn(RPC_DOC);
     when(delegate.getDirectory(ROOT)).thenReturn(DIRECTORY);
   }
 }

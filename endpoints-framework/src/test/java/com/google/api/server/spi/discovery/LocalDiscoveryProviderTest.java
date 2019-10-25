@@ -68,16 +68,6 @@ public class LocalDiscoveryProviderTest {
   }
 
   @Test
-  public void getRpcDocument() {
-    try {
-      provider.getRpcDocument(ROOT, NAME, VERSION);
-      fail("expected NotFoundException");
-    } catch (NotFoundException expected) {
-      // expected
-    }
-  }
-
-  @Test
   public void getDirectory() throws Exception {
     DirectoryList directory = provider.getDirectory(ROOT);
     assertThat(directory.getItems().get(0).getDiscoveryRestUrl())

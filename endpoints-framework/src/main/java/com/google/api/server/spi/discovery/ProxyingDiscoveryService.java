@@ -23,7 +23,6 @@ import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
-import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.flogger.FluentLogger;
 import javax.servlet.http.HttpServletRequest;
@@ -62,16 +61,6 @@ public class ProxyingDiscoveryService {
       @Named("version") String version) throws NotFoundException, InternalServerErrorException {
     checkIsInitialized();
     return discoveryProvider.getRestDocument(getActualRoot(request), name, version);
-  }
-
-  @ApiMethod(
-      name = "apis.getRpc",
-      path = "apis/{api}/{version}/rpc"
-  )
-  public RpcDescription getRpcDocument(HttpServletRequest request, @Named("api") String name,
-      @Named("version") String version) throws NotFoundException, InternalServerErrorException {
-    checkIsInitialized();
-    return discoveryProvider.getRpcDocument(getActualRoot(request), name, version);
   }
 
   @ApiMethod(

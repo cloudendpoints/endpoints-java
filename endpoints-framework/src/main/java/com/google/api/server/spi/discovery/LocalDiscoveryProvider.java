@@ -9,7 +9,6 @@ import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.DirectoryList.Items;
 import com.google.api.services.discovery.model.RestDescription;
-import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -41,12 +40,6 @@ public class LocalDiscoveryProvider extends AbstractDiscoveryProvider {
       throw new NotFoundException("Not Found");
     }
     return replaceRoot(doc, root);
-  }
-
-  @Override
-  public RpcDescription getRpcDocument(String root, String name, String version)
-      throws NotFoundException {
-    throw new NotFoundException("RPC discovery is no longer supported.");
   }
 
   @Override

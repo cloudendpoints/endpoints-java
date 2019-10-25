@@ -34,11 +34,9 @@ import com.google.api.services.discovery.Discovery;
 import com.google.api.services.discovery.Discovery.Apis;
 import com.google.api.services.discovery.Discovery.Apis.GenerateDirectory;
 import com.google.api.services.discovery.Discovery.Apis.GenerateRest;
-import com.google.api.services.discovery.Discovery.Apis.GenerateRpc;
 import com.google.api.services.discovery.model.ApiConfigs;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
-import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -66,9 +64,6 @@ public class ProxyingDiscoveryProviderTest {
   private static final RestDescription REST_DOC = new RestDescription()
       .setName(NAME)
       .setVersion(V1);
-  private static final RpcDescription RPC_DOC = new RpcDescription()
-      .setName(NAME)
-      .setVersion(V1);
   private static final DirectoryList DIRECTORY = new DirectoryList()
       .setItems(ImmutableList.of(new DirectoryList.Items()
           .setName(NAME)
@@ -81,7 +76,6 @@ public class ProxyingDiscoveryProviderTest {
   @Mock private Discovery discovery;
   @Mock private Apis apis;
   @Mock private GenerateRest restRequest;
-  @Mock private GenerateRpc rpcRequest;
   @Mock private GenerateDirectory directoryRequest;
   @Mock private ApiConfigWriter configWriter;
 
@@ -106,8 +100,6 @@ public class ProxyingDiscoveryProviderTest {
     when(discovery.apis()).thenReturn(apis);
     when(apis.generateRest(any(com.google.api.services.discovery.model.ApiConfig.class)))
         .thenReturn(restRequest);
-    when(apis.generateRpc(any(com.google.api.services.discovery.model.ApiConfig.class)))
-        .thenReturn(rpcRequest);
     when(apis.generateDirectory(any(ApiConfigs.class)))
         .thenReturn(directoryRequest);
     // Used by individual document tests
@@ -150,39 +142,6 @@ public class ProxyingDiscoveryProviderTest {
 
     try {
       provider.getRestDocument(REWRITTEN_ROOT, NAME, V1);
-      fail("expected InternalServerErrorException");
-    } catch (InternalServerErrorException e) {
-      // expected
-    }
-  }
-
-  @Test
-  public void getRpcDocument() throws Exception {
-    when(rpcRequest.execute()).thenReturn(RPC_DOC);
-
-    RpcDescription actual = provider.getRpcDocument(REWRITTEN_ROOT, NAME, V1);
-
-    assertThat(actual).isEqualTo(RPC_DOC);
-    verify(apis).generateRpc(
-        new com.google.api.services.discovery.model.ApiConfig().setConfig(V1_JSON_API_CONFIG));
-  }
-
-  @Test
-  public void getRpcDocument_notFound() throws Exception {
-    try {
-      provider.getRpcDocument(REWRITTEN_ROOT, WRONG_NAME, V1);
-      fail("expected NotFoundException");
-    } catch (NotFoundException e) {
-      // expected
-    }
-  }
-
-  @Test
-  public void getRpcDocument_internalServerError() throws Exception {
-    when(rpcRequest.execute()).thenThrow(new IOException());
-
-    try {
-      provider.getRpcDocument(REWRITTEN_ROOT, NAME, V1);
       fail("expected InternalServerErrorException");
     } catch (InternalServerErrorException e) {
       // expected

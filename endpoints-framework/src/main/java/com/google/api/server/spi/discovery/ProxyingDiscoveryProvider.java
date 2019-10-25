@@ -26,7 +26,6 @@ import com.google.api.services.discovery.Discovery;
 import com.google.api.services.discovery.model.ApiConfigs;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
-import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -60,19 +59,6 @@ public class ProxyingDiscoveryProvider extends AbstractDiscoveryProvider {
     try {
       return discovery.apis()
           .generateRest(new com.google.api.services.discovery.model.ApiConfig().setConfig(
-              getApiConfigStringWithRoot(getApiConfigs(name, version), root))).execute();
-    } catch (IOException | ApiConfigException e) {
-      logger.atSevere().withCause(e).log("Could not generate or cache discovery doc");
-      throw new InternalServerErrorException("Internal Server Error", e);
-    }
-  }
-
-  @Override
-  public RpcDescription getRpcDocument(String root, String name, String version)
-      throws NotFoundException, InternalServerErrorException {
-    try {
-      return discovery.apis()
-          .generateRpc(new com.google.api.services.discovery.model.ApiConfig().setConfig(
               getApiConfigStringWithRoot(getApiConfigs(name, version), root))).execute();
     } catch (IOException | ApiConfigException e) {
       logger.atSevere().withCause(e).log("Could not generate or cache discovery doc");
