@@ -19,12 +19,10 @@ import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiClassConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.testing.PassAuthenticator;
-import com.google.api.server.spi.testing.PassPeerAuthenticator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -185,22 +183,7 @@ public class ApiClassAnnotationConfigTest {
     Class<?>[] authenticators = {Authenticator.class};
     annotationConfig.setAuthenticatorsIfSpecified(
         (Class<? extends Authenticator>[]) authenticators);
-    Mockito.verifyZeroInteractions(config);
-  }
-
-  @Test
-  public void testSetPeerAuthenticatorIfSpecified() throws Exception {
-    annotationConfig.setPeerAuthenticatorsIfSpecified(PassPeerAuthenticator.testArray);
-    Mockito.verify(config).setPeerAuthenticators(Arrays.asList(PassPeerAuthenticator.testArray));
-  }
-
-  // Unchecked cast needed to get a generic array type.
-  @SuppressWarnings("unchecked")
-  public void testSetPeerAuthenticatorIfSpecified_unspecified() throws Exception {
-    Class<?>[] peerAuthenticators = {PeerAuthenticator.class};
-    annotationConfig.setPeerAuthenticatorsIfSpecified(
-        (Class<? extends PeerAuthenticator>[]) peerAuthenticators);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
   }
 
   @Test

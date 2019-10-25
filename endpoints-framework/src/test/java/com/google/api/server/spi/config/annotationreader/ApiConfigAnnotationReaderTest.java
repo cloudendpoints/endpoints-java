@@ -67,11 +67,9 @@ import com.google.api.server.spi.testing.Endpoint2;
 import com.google.api.server.spi.testing.Endpoint3;
 import com.google.api.server.spi.testing.Endpoint4;
 import com.google.api.server.spi.testing.FailAuthenticator;
-import com.google.api.server.spi.testing.FailPeerAuthenticator;
 import com.google.api.server.spi.testing.Foo;
 import com.google.api.server.spi.testing.InterfaceReferenceEndpoint;
 import com.google.api.server.spi.testing.PassAuthenticator;
-import com.google.api.server.spi.testing.PassPeerAuthenticator;
 import com.google.api.server.spi.testing.ReferenceOverridingEndpoint;
 import com.google.api.server.spi.testing.RestfulResourceEndpointBase;
 import com.google.api.server.spi.testing.SimpleBean;
@@ -150,7 +148,6 @@ public class ApiConfigAnnotationReaderTest {
         DEFAULT_SCOPES,
         DEFAULT_AUDIENCES,
         DEFAULT_CLIENTIDS,
-        null,
         null);
   }
 
@@ -194,8 +191,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, getBar.getParameterConfigs().size());
     validateParameter(getBar.getParameterConfigs().get(0), "id", false, null, String.class);
   }
@@ -217,7 +213,6 @@ public class ApiConfigAnnotationReaderTest {
         DEFAULT_SCOPES,
         DEFAULT_AUDIENCES,
         DEFAULT_CLIENTIDS,
-        null,
         null);
     ApiMethodConfig fn2 = config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
         BridgeInheritanceEndpoint.class.getSuperclass().getMethod("fn2")));
@@ -228,7 +223,6 @@ public class ApiConfigAnnotationReaderTest {
         DEFAULT_SCOPES,
         DEFAULT_AUDIENCES,
         DEFAULT_CLIENTIDS,
-        null,
         null);
 
     ApiMethodConfig bridge = config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
@@ -271,7 +265,6 @@ public class ApiConfigAnnotationReaderTest {
         DEFAULT_SCOPES,
         DEFAULT_AUDIENCES,
         DEFAULT_CLIENTIDS,
-        null,
         null);
   }
 
@@ -505,8 +498,7 @@ public class ApiConfigAnnotationReaderTest {
     String[] expectedAudiences = { "a0", "a1" };
     String[] expectedClientIds = { "c0", "c1" };
     validateMethod(listFoos, "foos.list", "foos", ApiMethod.HttpMethod.GET, expectedScopes,
-        expectedAudiences, expectedClientIds, ImmutableList.of(FailAuthenticator.class),
-        ImmutableList.of(FailPeerAuthenticator.class));
+        expectedAudiences, expectedClientIds, ImmutableList.of(FailAuthenticator.class));
     assertEquals(0, listFoos.getParameterConfigs().size());
 
     ApiMethodConfig getFoo = config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
@@ -518,8 +510,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, getFoo.getParameterConfigs().size());
     validateParameter(getFoo.getParameterConfigs().get(0), "id", false, null, String.class);
 
@@ -532,8 +523,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, insertFoo.getParameterConfigs().size());
     validateParameter(insertFoo.getParameterConfigs().get(0), null, false, null, Foo.class);
 
@@ -544,8 +534,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, execute2.getParameterConfigs().size());
     validateParameter(execute2.getParameterConfigs().get(0), "serialized", false, null,
         SimpleBean.class, DumbSerializer2.class, Integer.class);
@@ -590,8 +579,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, getFoo.getParameterConfigs().size());
     validateParameter(getFoo.getParameterConfigs().get(0), "id", false, null, String.class);
   }
@@ -805,7 +793,6 @@ public class ApiConfigAnnotationReaderTest {
         DEFAULT_SCOPES,
         DEFAULT_AUDIENCES,
         DEFAULT_CLIENTIDS,
-        null,
         null);
     validateParameter(methodConfig.getParameterConfigs().get(0), "serialized", false, null,
         TestBean.class, TestSerializer.class, String.class);
@@ -1276,8 +1263,7 @@ public class ApiConfigAnnotationReaderTest {
     String[] expectedAudiences = { "a0", "a1" };
     String[] expectedClientIds = { "c0", "c1" };
     validateMethod(listFoos, "foos.list", "foos", ApiMethod.HttpMethod.GET, expectedScopes,
-        expectedAudiences, expectedClientIds, ImmutableList.of(FailAuthenticator.class),
-        ImmutableList.of(FailPeerAuthenticator.class));
+        expectedAudiences, expectedClientIds, ImmutableList.of(FailAuthenticator.class));
     assertEquals(0, listFoos.getParameterConfigs().size());
 
     ApiMethodConfig getFoo = config.getApiClassConfig().getMethods().get(methodToEndpointMethod(
@@ -1289,8 +1275,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, getFoo.getParameterConfigs().size());
     validateParameter(getFoo.getParameterConfigs().get(0), "id", false, null, String.class);
 
@@ -1303,8 +1288,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, insertFoo.getParameterConfigs().size());
     validateParameter(insertFoo.getParameterConfigs().get(0), null, false, null, Foo.class);
 
@@ -1317,8 +1301,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(2, updateFoo.getParameterConfigs().size());
     validateParameter(updateFoo.getParameterConfigs().get(0), "id", false, null, String.class);
     validateParameter(updateFoo.getParameterConfigs().get(1), null, false, null, Foo.class);
@@ -1329,8 +1312,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, removeFoo.getParameterConfigs().size());
     validateParameter(removeFoo.getParameterConfigs().get(0), "id", false, null, String.class);
 
@@ -1344,8 +1326,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(9, execute0.getParameterConfigs().size());
     validateParameter(execute0.getParameterConfigs().get(0), "id", false, null, String.class);
     validateParameter(execute0.getParameterConfigs().get(1), "i0", false, null, int.class);
@@ -1364,8 +1345,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, execute1.getParameterConfigs().size());
     validateParameter(execute1.getParameterConfigs().get(0), null, false, null, Foo.class);
 
@@ -1376,8 +1356,7 @@ public class ApiConfigAnnotationReaderTest {
         defaultScopes,
         defaultAudiences,
         defaultClientIds,
-        ImmutableList.of(PassAuthenticator.class),
-        ImmutableList.of(PassPeerAuthenticator.class));
+        ImmutableList.of(PassAuthenticator.class));
     assertEquals(1, execute2.getParameterConfigs().size());
     validateParameter(execute2.getParameterConfigs().get(0), "serialized", false, null,
         SimpleBean.class, DumbSerializer1.class, String.class);
@@ -1387,8 +1366,7 @@ public class ApiConfigAnnotationReaderTest {
       String[] scopes,
       String[] audiences,
       String[] clientIds,
-      List<?> authenticators,
-      List<?> peerAuthenticators) {
+      List<?> authenticators) {
     assertEquals(name, method.getName());
     assertEquals(path, method.getPath());
     assertEquals(httpMethod, method.getHttpMethod());
@@ -1396,7 +1374,6 @@ public class ApiConfigAnnotationReaderTest {
     assertEquals(Arrays.asList(audiences), method.getAudiences());
     assertEquals(Arrays.asList(clientIds), method.getClientIds());
     assertEquals(authenticators, method.getAuthenticators());
-    assertEquals(peerAuthenticators, method.getPeerAuthenticators());
   }
 
   private void validateMethodForAuth(ApiMethodConfig method, String[] scopes, String[] audiences,

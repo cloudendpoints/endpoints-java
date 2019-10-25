@@ -239,7 +239,6 @@ public class ApiConfigValidator {
     }
 
     validateNullaryConstructor(config.getAuthenticators(), config, "custom authenticator");
-    validateNullaryConstructor(config.getPeerAuthenticators(), config, "custom peer authenticator");
 
     Set<String> parameterNames = Sets.newHashSet();
     for (ApiParameterConfig parameter : config.getParameterConfigs()) {

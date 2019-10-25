@@ -17,7 +17,6 @@ package com.google.api.server.spi.config.annotationreader;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -117,10 +116,5 @@ public final class AnnotationUtil {
   public static boolean isUnspecified(Class<? extends Authenticator>[] values) {
     return values == null
         || (values.length == 1 && values[0].equals(Authenticator.class));
-  }
-
-  public static boolean isUnspecifiedPeerAuthenticators(
-      Class<? extends PeerAuthenticator>[] values) {
-    return values == null || (values.length == 1 && values[0].equals(PeerAuthenticator.class));
   }
 }

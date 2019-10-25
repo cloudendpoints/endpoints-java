@@ -54,7 +54,6 @@ public class EndpointsModuleTest {
   private static final ServletInitializationParameters INIT_PARAMETERS =
       ServletInitializationParameters.builder()
       .addServiceClasses(SERVICES)
-      .setRestricted(false)
       .build();
   private EndpointsModule module;
 
@@ -82,8 +81,6 @@ public class EndpointsModuleTest {
     assertEquals("Servlet not bound.", 1, visitor.linkedServlets.size());
     LinkedServletBinding servletBinding = visitor.linkedServlets.get(0);
     assertEquals("URL pattern does not match", URL_PATTERN, servletBinding.getPattern());
-    assertEquals("Wrong initialization parameter provided", "false",
-        servletBinding.getInitParams().get("restricted"));
     assertNotNull("SystemService named provider not found.", visitor.systemServiceProvider);
 
     ServiceMap serviceMap = (ServiceMap) visitor.systemServiceProvider.getProvider().get();
@@ -105,8 +102,6 @@ public class EndpointsModuleTest {
     assertEquals("Servlet not bound.", 1, visitor.linkedServlets.size());
     LinkedServletBinding servletBinding = visitor.linkedServlets.get(0);
     assertEquals("URL pattern does not match", URL_PATTERN, servletBinding.getPattern());
-    assertEquals("Wrong initialization parameter provided", "false",
-        servletBinding.getInitParams().get("restricted"));
     assertNotNull("SystemService named provider not found.", visitor.systemServiceProvider);
 
     ServiceMap serviceMap = (ServiceMap) visitor.systemServiceProvider.getProvider().get();
@@ -212,8 +207,6 @@ public class EndpointsModuleTest {
     assertEquals("Servlet not bound.", 1, visitor.linkedServlets.size());
     LinkedServletBinding servletBinding = visitor.linkedServlets.get(0);
     assertEquals("URL pattern does not match", URL_PATTERN, servletBinding.getPattern());
-    assertEquals("Wrong initialization parameter provided", "true",
-        servletBinding.getInitParams().get("restricted"));
     assertNotNull("SystemService named provider not found.", visitor.systemServiceProvider);
 
     ServiceMap serviceMap = (ServiceMap) visitor.systemServiceProvider.getProvider().get();

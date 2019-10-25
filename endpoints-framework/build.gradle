@@ -43,7 +43,6 @@ def annotations = [
     "ApiTransformer.java",
     "Authenticator.java",
     "DefaultValue.java",
-    "PeerAuthenticator.java",
     "AuthLevel.java",
     "Transformer.java",
 ]

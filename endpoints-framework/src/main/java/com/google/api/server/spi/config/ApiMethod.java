@@ -114,11 +114,6 @@ public @interface ApiMethod {
   Class<? extends Authenticator>[] authenticators() default {Authenticator.class};
 
   /**
-   * Custom peer authenticators used to verify peer for this method.
-   */
-  Class<? extends PeerAuthenticator>[] peerAuthenticators() default {PeerAuthenticator.class};
-
-  /**
    * Whether or not API method should be ignored.
    */
   AnnotationBoolean ignored() default AnnotationBoolean.UNSPECIFIED;

@@ -43,10 +43,6 @@ public class Attribute {
   public static final String ENABLE_CLIENT_ID_WHITELIST =
       "endpoints:Enable-Client-Id-Whitelist";
   /**
-   * @deprecated
-   */
-  public static final String RESTRICT_SERVLET = "endpoints:Restrict-Servlet";
-  /**
    * A {@link Boolean} indicating if the App Engine user should be populated.
    */
   public static final String REQUIRE_APPENGINE_USER = "endpoints:Require-AppEngine-User";
@@ -106,7 +102,6 @@ public class Attribute {
       ApiMethodConfig methodConfig,
       ServletInitializationParameters initParameters) {
     Attribute attr = Attribute.from(request);
-    attr.set(Attribute.RESTRICT_SERVLET, initParameters.isServletRestricted());
     attr.set(Attribute.ENABLE_CLIENT_ID_WHITELIST, initParameters.isClientIdWhitelistEnabled());
     attr.set(Attribute.API_METHOD_CONFIG, methodConfig);
     // No clientId is allowed. Producer is not interested in Jwt/OAuth2 authentication.

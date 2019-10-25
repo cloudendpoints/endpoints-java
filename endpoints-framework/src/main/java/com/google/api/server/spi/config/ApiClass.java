@@ -78,12 +78,6 @@ public @interface ApiClass {
   Class<? extends Authenticator>[] authenticators() default {Authenticator.class};
 
   /**
-   * Custom peer authenticators, applicable to all methods of the API class unless overridden by
-   * {@code @ApiMethod#peerAuthenticators}.
-   */
-  Class<? extends PeerAuthenticator>[] peerAuthenticators() default {PeerAuthenticator.class};
-
-  /**
    * {@code AnnotationBoolean.TRUE} to request that overriding configuration be loaded from the
    * appengine datastore.
    */

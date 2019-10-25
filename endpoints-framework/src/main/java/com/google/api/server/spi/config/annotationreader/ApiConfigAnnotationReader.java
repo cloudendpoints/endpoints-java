@@ -28,7 +28,6 @@ import com.google.api.server.spi.config.ApiLimitMetric;
 import com.google.api.server.spi.config.ApiMetricCost;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.model.ApiClassConfig;
 import com.google.api.server.spi.config.model.ApiClassConfig.MethodConfigMap;
@@ -208,8 +207,6 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     config.setClientIdsIfSpecified(getAnnotationProperty(api, "clientIds"));
     config.setAuthenticatorsIfSpecified(
         this.<Class<? extends Authenticator>[]>getAnnotationProperty(api, "authenticators"));
-    config.setPeerAuthenticatorsIfSpecified(this
-        .<Class<? extends PeerAuthenticator>[]>getAnnotationProperty(api, "peerAuthenticators"));
     config.setApiKeyRequiredIfSpecified(
         this.getAnnotationProperty(api, "apiKeyRequired"));
     config.setApiLimitMetrics(
@@ -302,8 +299,6 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     config.setClientIdsIfSpecified(getAnnotationProperty(apiClass, "clientIds"));
     config.setAuthenticatorsIfSpecified(
         this.<Class<? extends Authenticator>[]>getAnnotationProperty(apiClass, "authenticators"));
-    config.setPeerAuthenticatorsIfSpecified(this.<
-        Class<? extends PeerAuthenticator>[]>getAnnotationProperty(apiClass, "peerAuthenticators"));
     config.setUseDatastoreIfSpecified(
         getAnnotationProperty(apiClass, "useDatastoreForAdditionalConfig"));
     config.setApiKeyRequiredIfSpecified(
@@ -360,9 +355,6 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     config.setClientIdsIfSpecified(getAnnotationProperty(apiMethod, "clientIds"));
     config.setAuthenticatorsIfSpecified(
         this.<Class<? extends Authenticator>[]>getAnnotationProperty(apiMethod, "authenticators"));
-    config.setPeerAuthenticatorsIfSpecified(this.<
-        Class<? extends PeerAuthenticator>[]>getAnnotationProperty(apiMethod,
-        "peerAuthenticators"));
     config.setIgnoredIfSpecified(getAnnotationProperty(apiMethod, "ignored"));
     config.setApiKeyRequiredIfSpecified(
         this.getAnnotationProperty(apiMethod, "apiKeyRequired"));

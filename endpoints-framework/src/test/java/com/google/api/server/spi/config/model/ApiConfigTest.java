@@ -20,12 +20,10 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.api.server.spi.ServiceContext;
 import com.google.api.server.spi.TypeLoader;
-import com.google.api.server.spi.auth.EndpointsPeerAuthenticator;
 import com.google.api.server.spi.auth.GoogleJwtAuthenticator;
 import com.google.api.server.spi.config.ApiConfigInconsistency;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.testing.DumbSerializer1;
 import com.google.api.server.spi.testing.FloatToStringSerializer;
@@ -177,8 +175,6 @@ public class ApiConfigTest {
     apiConfig.setClientIds(ImmutableList.of("clientid"));
     apiConfig.setAuthenticators(
         ImmutableList.<Class<? extends Authenticator>>of(GoogleJwtAuthenticator.class));
-    apiConfig.setPeerAuthenticators(
-        ImmutableList.<Class<? extends PeerAuthenticator>>of(EndpointsPeerAuthenticator.class));
     assertThat(apiConfig).isEqualTo(new ApiConfig(apiConfig));
   }
 }

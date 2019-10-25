@@ -21,11 +21,9 @@ import static org.junit.Assert.assertTrue;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.auth.EndpointsAuthenticator;
-import com.google.api.server.spi.auth.EndpointsPeerAuthenticator;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiClassConfig;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
@@ -33,7 +31,6 @@ import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.testing.PassAuthenticator;
-import com.google.api.server.spi.testing.PassPeerAuthenticator;
 import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -67,8 +64,6 @@ public class ApiMethodAnnotationConfigTest {
   private static final List<String> defaultClientIds = Lists.newArrayList("c1", "c2");
   private static final List<Class<? extends Authenticator>> defaultAuthenticators =
       ImmutableList.<Class<? extends Authenticator>>of(EndpointsAuthenticator.class);
-  private static final List<Class<? extends PeerAuthenticator>> defaultPeerAuthenticators =
-      ImmutableList.<Class<? extends PeerAuthenticator>>of(EndpointsPeerAuthenticator.class);
 
   @Before
   public void setUp() throws Exception {
@@ -81,8 +76,6 @@ public class ApiMethodAnnotationConfigTest {
     Mockito.when(apiClassConfig.getClientIds()).thenReturn(defaultClientIds);
     Mockito.<List<Class<? extends Authenticator>>>when(apiClassConfig.getAuthenticators())
         .thenReturn(defaultAuthenticators);
-    Mockito.<List<Class<? extends PeerAuthenticator>>>when(apiClassConfig.getPeerAuthenticators())
-        .thenReturn(defaultPeerAuthenticators);
     Mockito.when(apiClassConfig.getApiClassJavaSimpleName()).thenReturn(
         TestEndpoint.class.getSimpleName());
     Mockito.when(apiConfig.getSerializationConfig()).thenReturn(serializationConfig);
@@ -104,7 +97,6 @@ public class ApiMethodAnnotationConfigTest {
     assertEquals(defaultAudiences, config.getAudiences());
     assertEquals(defaultClientIds, config.getClientIds());
     assertEquals(defaultAuthenticators, config.getAuthenticators());
-    assertEquals(defaultPeerAuthenticators, config.getPeerAuthenticators());
   }
 
   @Test
@@ -359,29 +351,6 @@ public class ApiMethodAnnotationConfigTest {
     annotationConfig.setAuthenticatorsIfSpecified(PassAuthenticator.testArray);
     annotationConfig.setAuthenticatorsIfSpecified(unspecifiedConverted);
     assertEquals(Arrays.asList(PassAuthenticator.testArray), config.getAuthenticators());
-  }
-
-  @Test
-  public void testPeerSetAuthenticatorIfSpecified() throws Exception {
-    annotationConfig.setPeerAuthenticatorsIfSpecified(PassPeerAuthenticator.testArray);
-    assertEquals(Arrays.asList(PassPeerAuthenticator.testArray), config.getPeerAuthenticators());
-  }
-
-  // Unchecked cast needed to get a generic array type.
-  @SuppressWarnings("unchecked")
-  public void testSetPeerAuthenticatorIfSpecified_unspecified() throws Exception {
-    Class<?>[] unspecified = {PeerAuthenticator.class};
-    Class<? extends PeerAuthenticator>[] unspecifiedConverted =
-        (Class<? extends PeerAuthenticator>[]) unspecified;
-
-    testDefaults();
-
-    annotationConfig.setPeerAuthenticatorsIfSpecified(unspecifiedConverted);
-    testDefaults();
-
-    annotationConfig.setPeerAuthenticatorsIfSpecified(PassPeerAuthenticator.testArray);
-    annotationConfig.setPeerAuthenticatorsIfSpecified(unspecifiedConverted);
-    assertEquals(Arrays.asList(PassPeerAuthenticator.testArray), config.getPeerAuthenticators());
   }
 
   private static AuthScopeExpression toScopeExpression(String... scopes) {

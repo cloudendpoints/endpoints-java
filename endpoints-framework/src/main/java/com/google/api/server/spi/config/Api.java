@@ -147,13 +147,6 @@ public @interface Api {
   Class<? extends Authenticator>[] authenticators() default {Authenticator.class};
 
   /**
-   * Custom peer authenticators. Applies to all methods of the API unless overridden by
-   * {@code @ApiClass#peerAuthenticators} or {@code @ApiMethod#peerAuthenticators}. See
-   * {@link PeerAuthenticator}.
-   */
-  Class<? extends PeerAuthenticator>[] peerAuthenticators() default {PeerAuthenticator.class};
-
-  /**
    * {@code true} if this API configuration is used as the base for another. Should be {@code false}
    * for most situations.
    */

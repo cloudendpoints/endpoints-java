@@ -69,7 +69,6 @@ import java.util.Map;
     audiences = {"aa0", "aa1"},
     clientIds = {"cc0", "cc1"},
     authenticators = { PassAuthenticator.class },
-    peerAuthenticators = { PassPeerAuthenticator.class },
     defaultVersion = AnnotationBoolean.TRUE,
     transformers = { DumbSerializer1.class },
     useDatastoreForAdditionalConfig = AnnotationBoolean.TRUE
@@ -87,8 +86,7 @@ public class Endpoint1 {
       scopes = {"s0", "s1 s2"},
       audiences = {"a0", "a1"},
       clientIds = {"c0", "c1"},
-      authenticators = { FailAuthenticator.class },
-      peerAuthenticators = { FailPeerAuthenticator.class }
+      authenticators = { FailAuthenticator.class }
   )
   public List<Foo> listFoos() {
     return null;
