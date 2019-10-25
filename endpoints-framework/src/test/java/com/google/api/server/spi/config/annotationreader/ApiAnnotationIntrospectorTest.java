@@ -593,7 +593,7 @@ public class ApiAnnotationIntrospectorTest {
       try {
         obj = clazz.newInstance();
       } catch (Exception e) {
-        Throwables.propagate(e);
+        throw new RuntimeException(e);
       }
       obj.point = String.format("%d,%d",
           MoreObjects.firstNonNull(in.get("x"), 0),
