@@ -215,18 +215,17 @@ public class ProxyingDiscoveryProviderTest {
     return argThat(new ConfigMatcher(Sets.newHashSet(configs)));
   }
 
-  private static class ConfigMatcher extends ArgumentMatcher<Iterable<ApiConfig>> {
+  private static class ConfigMatcher implements ArgumentMatcher<Iterable<ApiConfig>> {
     private final Set<ApiConfig> configs;
 
     ConfigMatcher(Set<ApiConfig> configs) {
       this.configs = configs;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public boolean matches(Object argument) {
-      return argument instanceof Iterable
-          && configs.equals(Sets.newHashSet((Iterable<ApiConfig>) argument));
+    public boolean matches(Iterable<ApiConfig> argument) {
+      return argument != null
+          && configs.equals(Sets.newHashSet(argument));
     }
   }
 
@@ -234,7 +233,7 @@ public class ProxyingDiscoveryProviderTest {
     return argThat(new ApiConfigsMatcher(Sets.newHashSet(jsonConfigs)));
   }
 
-  private static class ApiConfigsMatcher extends ArgumentMatcher<ApiConfigs> {
+  private static class ApiConfigsMatcher implements ArgumentMatcher<ApiConfigs> {
     private final Set<String> configs;
 
     ApiConfigsMatcher(Set<String> configs) {
@@ -242,9 +241,9 @@ public class ProxyingDiscoveryProviderTest {
     }
 
     @Override
-    public boolean matches(Object argument) {
-      return argument instanceof ApiConfigs
-          && configs.equals(Sets.newHashSet(((ApiConfigs) argument).getConfigs()));
+    public boolean matches(ApiConfigs argument) {
+      return argument != null
+          && configs.equals(Sets.newHashSet(argument.getConfigs()));
     }
   }
 

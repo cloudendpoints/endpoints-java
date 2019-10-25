@@ -97,8 +97,6 @@ public class BackendPropertiesTest {
   @Test
   public void testGetApplicationId_flex() {
     System.clearProperty(BackendProperties.APP_ID_PROPERTY);
-    Mockito.when(envReader.getenv(BackendProperties.GCLOUD_PROJECT_PROPERTY))
-        .thenReturn(APPLICATION_ID);
     assertNull(properties.getApplicationId());
   }
 }

@@ -129,7 +129,6 @@ public class GoogleJwtAuthenticatorTest {
   public void testAuthenticate_skipClientIdCheck() throws Exception {
     request.removeAttribute(Attribute.ENABLE_CLIENT_ID_WHITELIST);
     when(verifier.verify(TOKEN)).thenReturn(token);
-    when(config.getClientIds()).thenReturn(ImmutableList.of("clientId2"));
     when(config.getAudiences()).thenReturn(ImmutableList.of(AUDIENCE));
     User user = authenticator.authenticate(request);
     assertEquals(EMAIL, user.getEmail());

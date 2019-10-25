@@ -97,7 +97,6 @@ public class AttributeTest {
 
     attr.remove(Attribute.SKIP_TOKEN_AUTH);
     initParams = createInitParams(true /* restricted */, false /* clientIdWhitelistEnabled */);
-    when(methodConfig.getClientIds()).thenReturn(ImmutableList.of("clientId"));
     attr = Attribute.bindStandardRequestAttributes(request, methodConfig, initParams);
     assertFalse(attr.isEnabled(Attribute.SKIP_TOKEN_AUTH));
   }

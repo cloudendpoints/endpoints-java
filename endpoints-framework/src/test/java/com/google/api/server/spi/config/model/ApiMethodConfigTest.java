@@ -71,7 +71,6 @@ public class ApiMethodConfigTest {
     Mockito.when(apiClassConfig.getApiConfig()).thenReturn(apiConfig);
 
     Mockito.when(method.getMethod()).thenReturn(TestEndpoint.class.getMethod("getResultNoParams"));
-    Mockito.doReturn(TestEndpoint.class).when(method).getEndpointClass();
 
     methodConfig = new ApiMethodConfig(method, new TypeLoader(), apiClassConfig);
   }
