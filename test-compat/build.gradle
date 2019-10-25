@@ -136,7 +136,7 @@ dependencies {
   testlibCompile group: 'junit', name: 'junit', version: junitVersion
   testlibCompile group: 'com.google.truth', name: 'truth', version: truthVersion
   testlibCompile group: 'javax.servlet', name: 'servlet-api', version: servletVersion
-  testlibCompile(group: 'com.google.http-client', name: 'google-http-client-jackson', version: apiclientVersion) {
+  testlibCompile(group: 'com.google.http-client', name: 'google-http-client-jackson', version: httpClientVersion) {
     exclude group: 'com.google.guava', module: 'guava-jdk5'
   }
   testlibCompile(group: 'com.google.api-client', name: 'google-api-client', version: apiclientVersion) {
