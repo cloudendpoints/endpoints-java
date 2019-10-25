@@ -19,7 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.when;
 
@@ -38,7 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Map;
 
@@ -119,9 +119,9 @@ public class ConfiguredObjectMapperTest {
     doModuleSetup(moduleB, "moduleB");
     doModuleSetup(moduleC, "moduleC");
     builder.addRegisteredModules(ImmutableList.of(moduleA, moduleB, moduleC)).build();
-    Mockito.verify(moduleA, atLeastOnce()).setupModule(any(SetupContext.class));
-    Mockito.verify(moduleB, atLeastOnce()).setupModule(any(SetupContext.class));
-    Mockito.verify(moduleC, atLeastOnce()).setupModule(any(SetupContext.class));
+    Mockito.verify(moduleA, atLeastOnce()).setupModule(any());
+    Mockito.verify(moduleB, atLeastOnce()).setupModule(any());
+    Mockito.verify(moduleC, atLeastOnce()).setupModule(any());
     assertEquals(1, cache.size());
   }
 

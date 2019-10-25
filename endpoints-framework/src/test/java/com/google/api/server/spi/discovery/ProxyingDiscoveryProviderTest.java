@@ -17,8 +17,8 @@ package com.google.api.server.spi.discovery;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Set;
@@ -98,9 +98,9 @@ public class ProxyingDiscoveryProviderTest {
 
     // Setup standard mocks on our discovery API.
     when(discovery.apis()).thenReturn(apis);
-    when(apis.generateRest(any(com.google.api.services.discovery.model.ApiConfig.class)))
+    when(apis.generateRest(any()))
         .thenReturn(restRequest);
-    when(apis.generateDirectory(any(ApiConfigs.class)))
+    when(apis.generateDirectory(any()))
         .thenReturn(directoryRequest);
     // Used by individual document tests
     when(configWriter.writeConfig(withConfigs(rewrittenApiConfig1, rewrittenApiConfig2)))

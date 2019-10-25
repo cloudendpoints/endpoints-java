@@ -18,7 +18,7 @@ package com.google.api.server.spi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 
 import com.google.api.server.spi.config.Api;

@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 
@@ -58,7 +58,7 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetResourceIfNotEmpty_empty() {
     annotationConfig.setResourceIfNotEmpty("");
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     annotationConfig.setResourceIfNotEmpty("bleh");
     annotationConfig.setResourceIfNotEmpty("");
@@ -80,7 +80,7 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetAuthLevelIfSpecified_unspecified() throws Exception {
     annotationConfig.setAuthLevelIfSpecified(AuthLevel.UNSPECIFIED);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
   }
 
   @Test
@@ -100,11 +100,11 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetScopesIfSpecified_unspecified() throws Exception {
     annotationConfig.setScopesIfSpecified(null);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] unspecified = {Api.UNSPECIFIED_STRING_FOR_LIST};
     annotationConfig.setScopesIfSpecified(unspecified);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] scopes = { "bleh", "more bleh" };
     annotationConfig.setScopesIfSpecified(scopes);
@@ -130,11 +130,11 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetAudiencesIfSpecified_unspecified() throws Exception {
     annotationConfig.setAudiencesIfSpecified(null);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] unspecified = {Api.UNSPECIFIED_STRING_FOR_LIST};
     annotationConfig.setAudiencesIfSpecified(unspecified);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] audiences = {"bleh", "more bleh"};
     annotationConfig.setAudiencesIfSpecified(audiences);
@@ -160,11 +160,11 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetClientIdsIfSpecified_unspecified() throws Exception {
     annotationConfig.setClientIdsIfSpecified(null);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] unspecified = {Api.UNSPECIFIED_STRING_FOR_LIST};
     annotationConfig.setClientIdsIfSpecified(unspecified);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] clientIds = {"bleh", "more bleh"};
     annotationConfig.setClientIdsIfSpecified(clientIds);
