@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Value;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -143,7 +144,9 @@ public class ConfiguredObjectMapper {
       if (instance == null) {
         ObjectMapper mapper =
             ObjectMapperUtil.createStandardObjectMapper(key.apiSerializationConfig);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
+        mapper.configOverride(String.class)
+            .setIncludeAsProperty(Value.construct(JsonInclude.Include.NON_NULL, null));
         for (Module module : key.modulesSet) {
           mapper.registerModule(module);
         }
