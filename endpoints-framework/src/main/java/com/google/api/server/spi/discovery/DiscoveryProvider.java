@@ -19,7 +19,6 @@ import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
-import com.google.api.services.discovery.model.RpcDescription;
 
 /**
  * An interface for generating discovery documents from API configurations.
@@ -32,15 +31,6 @@ public interface DiscoveryProvider {
    * @throws InternalServerErrorException an error takes place when getting the document
    */
   RestDescription getRestDocument(String root, String name, String version)
-      throws NotFoundException, InternalServerErrorException;
-
-  /**
-   * Gets an RPC discovery document for an API.
-   *
-   * @throws NotFoundException if the API doesn't exist
-   * @throws InternalServerErrorException an error takes place when getting the document
-   */
-  RpcDescription getRpcDocument(String root, String name, String version)
       throws NotFoundException, InternalServerErrorException;
 
   /**

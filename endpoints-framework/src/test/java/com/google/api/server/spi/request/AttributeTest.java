@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.ServletConfig;
@@ -53,30 +53,16 @@ public class AttributeTest {
   }
 
   @Test
-  public void bindStandardRequestAttributes_restricted() throws Exception {
-    when(methodConfig.getClientIds()).thenReturn(null);
-
-    ServletInitializationParameters initParams =
-        createInitParams(true /* restricted */, true /* clientIdWhitelistEnabled */);
-    Attribute attr = Attribute.bindStandardRequestAttributes(request, methodConfig, initParams);
-    assertTrue(attr.isEnabled(Attribute.RESTRICT_SERVLET));
-
-    initParams = createInitParams(false /* restricted */, true /* clientIdWhitelistEnabled */);
-    attr = Attribute.bindStandardRequestAttributes(request, methodConfig, initParams);
-    assertFalse(attr.isEnabled(Attribute.RESTRICT_SERVLET));
-  }
-
-  @Test
   public void bindStandardRequestAttributes_clientIdWhitelist() throws Exception {
     when(methodConfig.getClientIds()).thenReturn(null);
 
     ServletInitializationParameters initParams =
-        createInitParams(true /* restricted */, true /* clientIdWhitelistEnabled */);
+        createInitParams(true /* clientIdWhitelistEnabled */);
     Attribute attr = Attribute.bindStandardRequestAttributes(request, methodConfig, initParams);
     assertTrue(attr.isEnabled(Attribute.ENABLE_CLIENT_ID_WHITELIST));
 
     attr.remove(Attribute.ENABLE_CLIENT_ID_WHITELIST);
-    initParams = createInitParams(true /* restricted */, false /* clientIdWhitelistEnabled */);
+    initParams = createInitParams(false /* clientIdWhitelistEnabled */);
     attr = Attribute.bindStandardRequestAttributes(request, methodConfig, initParams);
     assertFalse(attr.isEnabled(Attribute.ENABLE_CLIENT_ID_WHITELIST));
   }
@@ -84,20 +70,19 @@ public class AttributeTest {
   @Test
   public void bindStandardRequestAttributes_skipTokenAuth() throws Exception {
     ServletInitializationParameters initParams =
-        createInitParams(true /* restricted */, true /* clientIdWhitelistEnabled */);
+        createInitParams(true /* clientIdWhitelistEnabled */);
     when(methodConfig.getClientIds()).thenReturn(null);
     Attribute attr = Attribute.bindStandardRequestAttributes(request, methodConfig, initParams);
     assertTrue(attr.isEnabled(Attribute.SKIP_TOKEN_AUTH));
 
     attr.remove(Attribute.SKIP_TOKEN_AUTH);
-    initParams = createInitParams(true /* restricted */, true /* clientIdWhitelistEnabled */);
+    initParams = createInitParams(true /* clientIdWhitelistEnabled */);
     when(methodConfig.getClientIds()).thenReturn(ImmutableList.of("clientId"));
     attr = Attribute.bindStandardRequestAttributes(request, methodConfig, initParams);
     assertFalse(attr.isEnabled(Attribute.SKIP_TOKEN_AUTH));
 
     attr.remove(Attribute.SKIP_TOKEN_AUTH);
-    initParams = createInitParams(true /* restricted */, false /* clientIdWhitelistEnabled */);
-    when(methodConfig.getClientIds()).thenReturn(ImmutableList.of("clientId"));
+    initParams = createInitParams(false /* clientIdWhitelistEnabled */);
     attr = Attribute.bindStandardRequestAttributes(request, methodConfig, initParams);
     assertFalse(attr.isEnabled(Attribute.SKIP_TOKEN_AUTH));
   }
@@ -106,7 +91,7 @@ public class AttributeTest {
   public void bindStandardRequestAttributes_apiMethodConfig() throws Exception {
     when(methodConfig.getClientIds()).thenReturn(null);
     ServletInitializationParameters initParams =
-        createInitParams(true /* restricted */, true /* clientIdWhitelistEnabled */);
+        createInitParams(true /* clientIdWhitelistEnabled */);
     Attribute attr = Attribute.bindStandardRequestAttributes(request, methodConfig, initParams);
     assertEquals(attr.get(Attribute.API_METHOD_CONFIG), methodConfig);
   }
@@ -117,10 +102,8 @@ public class AttributeTest {
    *
    * @throws ServletException
    */
-  protected ServletInitializationParameters createInitParams(boolean restricted,
-      boolean clientIdWhitelistEnabled) throws Exception {
+  protected ServletInitializationParameters createInitParams(boolean clientIdWhitelistEnabled) throws Exception {
     return ServletInitializationParameters.builder()
-        .setRestricted(restricted)
         .setClientIdWhitelistEnabled(clientIdWhitelistEnabled)
         .build();
   }

@@ -19,19 +19,17 @@ import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiClassConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.testing.PassAuthenticator;
-import com.google.api.server.spi.testing.PassPeerAuthenticator;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 
@@ -58,7 +56,7 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetResourceIfNotEmpty_empty() {
     annotationConfig.setResourceIfNotEmpty("");
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     annotationConfig.setResourceIfNotEmpty("bleh");
     annotationConfig.setResourceIfNotEmpty("");
@@ -80,7 +78,7 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetAuthLevelIfSpecified_unspecified() throws Exception {
     annotationConfig.setAuthLevelIfSpecified(AuthLevel.UNSPECIFIED);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
   }
 
   @Test
@@ -100,11 +98,11 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetScopesIfSpecified_unspecified() throws Exception {
     annotationConfig.setScopesIfSpecified(null);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] unspecified = {Api.UNSPECIFIED_STRING_FOR_LIST};
     annotationConfig.setScopesIfSpecified(unspecified);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] scopes = { "bleh", "more bleh" };
     annotationConfig.setScopesIfSpecified(scopes);
@@ -130,11 +128,11 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetAudiencesIfSpecified_unspecified() throws Exception {
     annotationConfig.setAudiencesIfSpecified(null);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] unspecified = {Api.UNSPECIFIED_STRING_FOR_LIST};
     annotationConfig.setAudiencesIfSpecified(unspecified);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] audiences = {"bleh", "more bleh"};
     annotationConfig.setAudiencesIfSpecified(audiences);
@@ -160,11 +158,11 @@ public class ApiClassAnnotationConfigTest {
   @Test
   public void testSetClientIdsIfSpecified_unspecified() throws Exception {
     annotationConfig.setClientIdsIfSpecified(null);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] unspecified = {Api.UNSPECIFIED_STRING_FOR_LIST};
     annotationConfig.setClientIdsIfSpecified(unspecified);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
 
     String[] clientIds = {"bleh", "more bleh"};
     annotationConfig.setClientIdsIfSpecified(clientIds);
@@ -185,22 +183,7 @@ public class ApiClassAnnotationConfigTest {
     Class<?>[] authenticators = {Authenticator.class};
     annotationConfig.setAuthenticatorsIfSpecified(
         (Class<? extends Authenticator>[]) authenticators);
-    Mockito.verifyZeroInteractions(config);
-  }
-
-  @Test
-  public void testSetPeerAuthenticatorIfSpecified() throws Exception {
-    annotationConfig.setPeerAuthenticatorsIfSpecified(PassPeerAuthenticator.testArray);
-    Mockito.verify(config).setPeerAuthenticators(Arrays.asList(PassPeerAuthenticator.testArray));
-  }
-
-  // Unchecked cast needed to get a generic array type.
-  @SuppressWarnings("unchecked")
-  public void testSetPeerAuthenticatorIfSpecified_unspecified() throws Exception {
-    Class<?>[] peerAuthenticators = {PeerAuthenticator.class};
-    annotationConfig.setPeerAuthenticatorsIfSpecified(
-        (Class<? extends PeerAuthenticator>[]) peerAuthenticators);
-    Mockito.verifyZeroInteractions(config);
+    Mockito.verifyNoInteractions(config);
   }
 
   @Test

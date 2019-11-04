@@ -23,7 +23,6 @@ import com.google.api.server.spi.config.ApiFrontendLimitRule;
 import com.google.api.server.spi.config.ApiFrontendLimits;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
-import com.google.api.server.spi.config.ApiMethodCacheControl;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
 
@@ -69,7 +68,6 @@ import java.util.Map;
     audiences = {"aa0", "aa1"},
     clientIds = {"cc0", "cc1"},
     authenticators = { PassAuthenticator.class },
-    peerAuthenticators = { PassPeerAuthenticator.class },
     defaultVersion = AnnotationBoolean.TRUE,
     transformers = { DumbSerializer1.class },
     useDatastoreForAdditionalConfig = AnnotationBoolean.TRUE
@@ -80,15 +78,10 @@ public class Endpoint1 {
       name = "foos.list",
       path = "foos",
       httpMethod = HttpMethod.GET,
-      cacheControl = @ApiMethodCacheControl(
-          noCache = true,
-          maxAge = 1
-      ),
       scopes = {"s0", "s1 s2"},
       audiences = {"a0", "a1"},
       clientIds = {"c0", "c1"},
-      authenticators = { FailAuthenticator.class },
-      peerAuthenticators = { FailPeerAuthenticator.class }
+      authenticators = { FailAuthenticator.class }
   )
   public List<Foo> listFoos() {
     return null;
@@ -97,11 +90,7 @@ public class Endpoint1 {
   @ApiMethod(
       name = "foos.get",
       path = "foos/{id}",
-      httpMethod = HttpMethod.GET,
-      cacheControl = @ApiMethodCacheControl(
-          noCache = false,
-          maxAge = 2
-      )
+      httpMethod = HttpMethod.GET
   )
   public Foo getFoo(@Named("id") String id) {
     return null;
@@ -110,11 +99,7 @@ public class Endpoint1 {
   @ApiMethod(
       name = "foos.insert",
       path = "foos",
-      httpMethod = HttpMethod.POST,
-      cacheControl = @ApiMethodCacheControl(
-          noCache = false,
-          maxAge = 3
-      )
+      httpMethod = HttpMethod.POST
   )
   public Foo insertFoo(Foo r) {
     return null;
@@ -123,11 +108,7 @@ public class Endpoint1 {
   @ApiMethod(
       name = "foos.update",
       path = "foos/{id}",
-      httpMethod = HttpMethod.PUT,
-      cacheControl = @ApiMethodCacheControl(
-          noCache = false,
-          maxAge = 4
-      )
+      httpMethod = HttpMethod.PUT
   )
   public Foo updateFoo(@Named("id") String id, Foo r) {
     return null;
@@ -136,11 +117,7 @@ public class Endpoint1 {
   @ApiMethod(
       name = "foos.remove",
       path = "foos/{id}",
-      httpMethod = HttpMethod.DELETE,
-      cacheControl = @ApiMethodCacheControl(
-          noCache = false,
-          maxAge = 5
-      )
+      httpMethod = HttpMethod.DELETE
   )
   public void removeFoo(@Named("id") String id) {
   }

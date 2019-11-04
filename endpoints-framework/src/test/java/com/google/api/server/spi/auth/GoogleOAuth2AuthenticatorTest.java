@@ -32,7 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
@@ -106,7 +106,6 @@ public class GoogleOAuth2AuthenticatorTest {
   public void testAuthenticate_skipClientIdCheck() throws ServiceUnavailableException {
     request.removeAttribute(Attribute.ENABLE_CLIENT_ID_WHITELIST);
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret("scope1"));
-    when(config.getClientIds()).thenReturn(ImmutableList.of("clientId2"));
     User user = authenticator.authenticate(request);
     assertEquals(EMAIL, user.getEmail());
     assertEquals(USER_ID, user.getId());

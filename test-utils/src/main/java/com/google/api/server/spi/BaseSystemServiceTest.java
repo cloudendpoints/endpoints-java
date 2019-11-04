@@ -18,7 +18,7 @@ package com.google.api.server.spi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 
 import com.google.api.server.spi.config.Api;
@@ -263,7 +263,7 @@ public abstract class BaseSystemServiceTest {
     return argThat(new ConfigListMatcher(configs));
   }
 
-  private static class ConfigListMatcher extends ArgumentMatcher<Iterable<ApiConfig>> {
+  private static class ConfigListMatcher implements ArgumentMatcher<Iterable<ApiConfig>> {
     private Set<ApiConfig> expectedConfigs;
 
     public ConfigListMatcher(ApiConfig... expectedConfigs) {
@@ -271,9 +271,9 @@ public abstract class BaseSystemServiceTest {
     }
 
     @Override
-    public boolean matches(Object argument) {
-      return argument instanceof Iterable
-          && expectedConfigs.equals(Sets.newHashSet((Iterable<ApiConfig>) argument));
+    public boolean matches(Iterable<ApiConfig> argument) {
+      return argument != null
+          && expectedConfigs.equals(Sets.newHashSet(argument));
     }
   }
 }

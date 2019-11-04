@@ -47,7 +47,7 @@ public class JacksonUtil {
       JsonNode child2 = object2.get(fieldName);
       JsonNode child1 = object1.get(fieldName);
       JsonNode merged = (child1 == null) ? child2 : mergeNode(child1, child2, throwOnConflict);
-      object1.put(fieldName, merged);
+      object1.set(fieldName, merged);
     }
     return object1;
   }

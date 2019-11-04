@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
@@ -71,7 +71,6 @@ public class ApiMethodConfigTest {
     Mockito.when(apiClassConfig.getApiConfig()).thenReturn(apiConfig);
 
     Mockito.when(method.getMethod()).thenReturn(TestEndpoint.class.getMethod("getResultNoParams"));
-    Mockito.doReturn(TestEndpoint.class).when(method).getEndpointClass();
 
     methodConfig = new ApiMethodConfig(method, new TypeLoader(), apiClassConfig);
   }

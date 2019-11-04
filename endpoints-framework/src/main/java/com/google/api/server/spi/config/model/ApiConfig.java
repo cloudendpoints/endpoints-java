@@ -21,7 +21,6 @@ import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.ApiConfigInconsistency;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.common.base.Preconditions;
@@ -74,7 +73,6 @@ public class ApiConfig {
   private ApiIssuerAudienceConfig issuerAudiences;
   private List<String> clientIds;
   private List<Class<? extends Authenticator>> authenticators;
-  private List<Class<? extends PeerAuthenticator>> peerAuthenticators;
   private boolean apiKeyRequired;
 
   private final ApiAuthConfig authConfig;
@@ -141,7 +139,6 @@ public class ApiConfig {
     this.issuerAudiences = original.issuerAudiences;
     this.clientIds = original.clientIds == null ? null : new ArrayList<>(original.clientIds);
     this.authenticators = original.authenticators;
-    this.peerAuthenticators = original.peerAuthenticators;
     this.apiKeyRequired = original.apiKeyRequired;
     this.apiLimitMetrics = original.apiLimitMetrics;
     this.authConfig = new ApiAuthConfig(original.authConfig);
@@ -193,7 +190,6 @@ public class ApiConfig {
         .addIfInconsistent("issuerAudiencies", issuerAudiences, config.issuerAudiences)
         .addIfInconsistent("clientIds", clientIds, config.clientIds)
         .addIfInconsistent("authenticators", authenticators, config.authenticators)
-        .addIfInconsistent("peerAuthenticators", peerAuthenticators, config.peerAuthenticators)
         .addIfInconsistent("apiKeyRequired", apiKeyRequired, config.apiKeyRequired)
         .addIfInconsistent("apiLimitMetrics", apiLimitMetrics, config.apiLimitMetrics)
         .addAll(authConfig.getConfigurationInconsistencies(config.authConfig))
@@ -209,7 +205,7 @@ public class ApiConfig {
     return Objects.hash(typeLoader, root, name, canonicalName, version, title, description,
         documentationLink, backendRoot, isAbstract, defaultVersion, discoverable, useDatastore,
         resource, authLevel, scopeExpression, audiences, clientIds, authenticators,
-        peerAuthenticators, authConfig, cacheControlConfig, frontendLimitsConfig,
+        authConfig, cacheControlConfig, frontendLimitsConfig,
         serializationConfig, apiClassConfig, issuers, issuerAudiences, apiKeyRequired,
         apiLimitMetrics);
   }
@@ -279,7 +275,6 @@ public class ApiConfig {
     issuerAudiences = ApiIssuerAudienceConfig.EMPTY;
     clientIds = DEFAULT_CLIENT_IDS;
     authenticators = null;
-    peerAuthenticators = null;
     apiKeyRequired = false;
     apiLimitMetrics = ImmutableList.of();
   }
@@ -476,14 +471,6 @@ public class ApiConfig {
 
   public List<Class<? extends Authenticator>> getAuthenticators() {
     return authenticators;
-  }
-
-  public void setPeerAuthenticators(List<Class<? extends PeerAuthenticator>> peerAuthenticators) {
-    this.peerAuthenticators = peerAuthenticators;
-  }
-
-  public List<Class<? extends PeerAuthenticator>> getPeerAuthenticators() {
-    return peerAuthenticators;
   }
 
   public void setApiKeyRequired(boolean apiKeyRequired) {

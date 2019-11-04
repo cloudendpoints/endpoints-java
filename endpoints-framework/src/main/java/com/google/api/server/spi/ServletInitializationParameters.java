@@ -59,14 +59,6 @@ public abstract class ServletInitializationParameters {
   public abstract ImmutableSet<Class<?>> getServiceClasses();
 
   /**
-   * Returns if the SPI servlet is restricted.
-   *
-   * @deprecated No longer serves any purpose and will be removed in a future release
-   */
-  @Deprecated
-  public abstract boolean isServletRestricted();
-
-  /**
    * Returns if client ID whitelisting is enabled.
    */
   public abstract boolean isClientIdWhitelistEnabled();
@@ -101,7 +93,6 @@ public abstract class ServletInitializationParameters {
 
   public static Builder builder() {
     return new AutoValue_ServletInitializationParameters.Builder()
-        .setServletRestricted(true)
         .setClientIdWhitelistEnabled(true)
         .setIllegalArgumentBackendError(false)
         .setExceptionCompatibilityEnabled(true)
@@ -137,24 +128,6 @@ public abstract class ServletInitializationParameters {
      * Sets the complete list of endpoint service classes to serve.
      */
     public abstract Builder setServiceClasses(ImmutableSet<Class<?>> clazzes);
-
-    /**
-     * Sets if the servlet is restricted. Defaults to {@code true}.
-     *
-     * @deprecated No longer serves any purpose and will be removed in a future release
-     */
-    @Deprecated
-    public abstract Builder setServletRestricted(boolean servletRestricted);
-
-    /**
-     * Sets if the servlet is restricted. Retained for API compatibility.
-     *
-     * @deprecated Retained for API compatibility
-     */
-    @Deprecated
-    public Builder setRestricted(boolean servletRestricted) {
-      return setServletRestricted(servletRestricted);
-    }
 
     /**
      * Sets if the client ID whitelist is enabled, defaulting to {@code true}.
@@ -211,10 +184,6 @@ public abstract class ServletInitializationParameters {
           builder.addServiceClass(getClassForName(serviceClassName, classLoader));
         }
       }
-      String servletRestricted = config.getInitParameter(RESTRICTED);
-      if (servletRestricted != null) {
-        builder.setServletRestricted(parseBoolean(servletRestricted, RESTRICTED));
-      }
       String clientIdWhitelist = config.getInitParameter(CLIENT_ID_WHITELIST_ENABLED);
       if (clientIdWhitelist != null) {
         builder.setClientIdWhitelistEnabled(
@@ -269,7 +238,6 @@ public abstract class ServletInitializationParameters {
   public Map<String, String> asMap() {
     return new HashMap<String, String>() {{
           put(SERVICES, CSV_JOINER.join(Iterables.transform(getServiceClasses(), CLASS_TO_NAME)));
-          put(RESTRICTED, Boolean.toString(isServletRestricted()));
           put(CLIENT_ID_WHITELIST_ENABLED, Boolean.toString(isClientIdWhitelistEnabled()));
           put(ILLEGAL_ARGUMENT_BACKEND_ERROR, Boolean.toString(isIllegalArgumentBackendError()));
           put(EXCEPTION_COMPATIBILITY, Boolean.toString(isExceptionCompatibilityEnabled()));

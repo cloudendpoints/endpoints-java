@@ -21,7 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.ServiceException;
@@ -610,7 +610,7 @@ public class ServletResponseResultWriterTest {
     ServletResponseResultWriter writer = new ServletResponseResultWriter(response, null) {
       @Override
       protected ObjectWriter configureWriter(ObjectWriter objectWriter) {
-        return objectWriter.withoutFeatures(JsonGenerator.Feature.QUOTE_FIELD_NAMES);
+        return objectWriter.withoutFeatures(JsonWriteFeature.QUOTE_FIELD_NAMES);
       }
     };
     return writer;

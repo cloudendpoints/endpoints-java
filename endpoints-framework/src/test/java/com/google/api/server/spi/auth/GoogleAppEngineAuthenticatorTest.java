@@ -34,7 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -147,7 +147,6 @@ public class GoogleAppEngineAuthenticatorTest {
     when(config.getScopeExpression()).thenReturn(AuthScopeExpressions.interpret(SCOPES));
     when(oauthService.getAuthorizedScopes(SCOPES)).thenReturn(SCOPES);
     when(oauthService.getClientId(SCOPES)).thenReturn(CLIENT_ID);
-    when(config.getClientIds()).thenReturn(ImmutableList.of("clienId2"));
     when(oauthService.getCurrentUser(SCOPES)).thenReturn(APP_ENGINE_USER);
     assertEquals(APP_ENGINE_USER, authenticator.getOAuth2User(request, config));
   }

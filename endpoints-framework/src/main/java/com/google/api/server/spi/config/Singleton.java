@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * Annotation used with Authenticator and PeerAuthenticator to denote only one instance will be
+ * Annotation used with Authenticator to denote only one instance will be
  * created for optimization. Implementation must be thread safe. Without the annotation a new
  * (peer)authenticator instance will be created for each request.
  */

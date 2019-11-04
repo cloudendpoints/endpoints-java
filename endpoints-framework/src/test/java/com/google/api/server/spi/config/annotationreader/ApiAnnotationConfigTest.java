@@ -26,13 +26,11 @@ import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
 import com.google.api.server.spi.testing.PassAuthenticator;
-import com.google.api.server.spi.testing.PassPeerAuthenticator;
 import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.common.collect.ImmutableList;
 
@@ -380,21 +378,6 @@ public class ApiAnnotationConfigTest {
     annotationConfig.setAuthenticatorsIfSpecified(
         (Class<? extends Authenticator>[]) authenticators);
     assertNull(config.getAuthenticators());
-  }
-
-  @Test
-  public void testSetPeerAuthenticatorIfSpecified() throws Exception {
-    annotationConfig.setPeerAuthenticatorsIfSpecified(PassPeerAuthenticator.testArray);
-    assertEquals(Arrays.asList(PassPeerAuthenticator.testArray), config.getPeerAuthenticators());
-  }
-
-  // Unchecked cast needed to get a generic array type.
-  @SuppressWarnings("unchecked")
-  public void testSetPeerAuthenticatorIfSpecified_unspecified() throws Exception {
-    Class<?>[] peerAuthenticators = {PeerAuthenticator.class};
-    annotationConfig.setPeerAuthenticatorsIfSpecified(
-        (Class<? extends PeerAuthenticator>[]) peerAuthenticators);
-    assertNull(config.getPeerAuthenticators());
   }
 
   private EndpointMethod getResultNoParamsMethod() throws NoSuchMethodException, SecurityException {

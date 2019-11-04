@@ -17,8 +17,8 @@ package com.google.api.server.spi.discovery;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,11 +34,9 @@ import com.google.api.services.discovery.Discovery;
 import com.google.api.services.discovery.Discovery.Apis;
 import com.google.api.services.discovery.Discovery.Apis.GenerateDirectory;
 import com.google.api.services.discovery.Discovery.Apis.GenerateRest;
-import com.google.api.services.discovery.Discovery.Apis.GenerateRpc;
 import com.google.api.services.discovery.model.ApiConfigs;
 import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
-import com.google.api.services.discovery.model.RpcDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -48,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Set;
@@ -66,9 +64,6 @@ public class ProxyingDiscoveryProviderTest {
   private static final RestDescription REST_DOC = new RestDescription()
       .setName(NAME)
       .setVersion(V1);
-  private static final RpcDescription RPC_DOC = new RpcDescription()
-      .setName(NAME)
-      .setVersion(V1);
   private static final DirectoryList DIRECTORY = new DirectoryList()
       .setItems(ImmutableList.of(new DirectoryList.Items()
           .setName(NAME)
@@ -81,7 +76,6 @@ public class ProxyingDiscoveryProviderTest {
   @Mock private Discovery discovery;
   @Mock private Apis apis;
   @Mock private GenerateRest restRequest;
-  @Mock private GenerateRpc rpcRequest;
   @Mock private GenerateDirectory directoryRequest;
   @Mock private ApiConfigWriter configWriter;
 
@@ -104,11 +98,9 @@ public class ProxyingDiscoveryProviderTest {
 
     // Setup standard mocks on our discovery API.
     when(discovery.apis()).thenReturn(apis);
-    when(apis.generateRest(any(com.google.api.services.discovery.model.ApiConfig.class)))
+    when(apis.generateRest(any()))
         .thenReturn(restRequest);
-    when(apis.generateRpc(any(com.google.api.services.discovery.model.ApiConfig.class)))
-        .thenReturn(rpcRequest);
-    when(apis.generateDirectory(any(ApiConfigs.class)))
+    when(apis.generateDirectory(any()))
         .thenReturn(directoryRequest);
     // Used by individual document tests
     when(configWriter.writeConfig(withConfigs(rewrittenApiConfig1, rewrittenApiConfig2)))
@@ -157,39 +149,6 @@ public class ProxyingDiscoveryProviderTest {
   }
 
   @Test
-  public void getRpcDocument() throws Exception {
-    when(rpcRequest.execute()).thenReturn(RPC_DOC);
-
-    RpcDescription actual = provider.getRpcDocument(REWRITTEN_ROOT, NAME, V1);
-
-    assertThat(actual).isEqualTo(RPC_DOC);
-    verify(apis).generateRpc(
-        new com.google.api.services.discovery.model.ApiConfig().setConfig(V1_JSON_API_CONFIG));
-  }
-
-  @Test
-  public void getRpcDocument_notFound() throws Exception {
-    try {
-      provider.getRpcDocument(REWRITTEN_ROOT, WRONG_NAME, V1);
-      fail("expected NotFoundException");
-    } catch (NotFoundException e) {
-      // expected
-    }
-  }
-
-  @Test
-  public void getRpcDocument_internalServerError() throws Exception {
-    when(rpcRequest.execute()).thenThrow(new IOException());
-
-    try {
-      provider.getRpcDocument(REWRITTEN_ROOT, NAME, V1);
-      fail("expected InternalServerErrorException");
-    } catch (InternalServerErrorException e) {
-      // expected
-    }
-  }
-
-  @Test
   public void getDirectory() throws Exception {
     when(directoryRequest.execute()).thenReturn(DIRECTORY);
 
@@ -215,18 +174,17 @@ public class ProxyingDiscoveryProviderTest {
     return argThat(new ConfigMatcher(Sets.newHashSet(configs)));
   }
 
-  private static class ConfigMatcher extends ArgumentMatcher<Iterable<ApiConfig>> {
+  private static class ConfigMatcher implements ArgumentMatcher<Iterable<ApiConfig>> {
     private final Set<ApiConfig> configs;
 
     ConfigMatcher(Set<ApiConfig> configs) {
       this.configs = configs;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public boolean matches(Object argument) {
-      return argument instanceof Iterable
-          && configs.equals(Sets.newHashSet((Iterable<ApiConfig>) argument));
+    public boolean matches(Iterable<ApiConfig> argument) {
+      return argument != null
+          && configs.equals(Sets.newHashSet(argument));
     }
   }
 
@@ -234,7 +192,7 @@ public class ProxyingDiscoveryProviderTest {
     return argThat(new ApiConfigsMatcher(Sets.newHashSet(jsonConfigs)));
   }
 
-  private static class ApiConfigsMatcher extends ArgumentMatcher<ApiConfigs> {
+  private static class ApiConfigsMatcher implements ArgumentMatcher<ApiConfigs> {
     private final Set<String> configs;
 
     ApiConfigsMatcher(Set<String> configs) {
@@ -242,9 +200,9 @@ public class ProxyingDiscoveryProviderTest {
     }
 
     @Override
-    public boolean matches(Object argument) {
-      return argument instanceof ApiConfigs
-          && configs.equals(Sets.newHashSet(((ApiConfigs) argument).getConfigs()));
+    public boolean matches(ApiConfigs argument) {
+      return argument != null
+          && configs.equals(Sets.newHashSet(argument.getConfigs()));
     }
   }
 

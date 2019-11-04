@@ -25,7 +25,6 @@ import java.util.logging.Logger;
  * this class and call one of the helpers in {@link #configureServlets()}.
  */
 public class EndpointsModule extends ServletModule {
-  private static final Logger logger = Logger.getLogger(EndpointsModule.class.getName());
   /**
    * Configure Endpoints given a list of service classes using {@link GuiceEndpointsServlet}.
    *
@@ -36,40 +35,10 @@ public class EndpointsModule extends ServletModule {
    */
   protected void configureEndpoints(
       String urlPattern, Iterable<? extends Class<?>> serviceClasses) {
-    configureEndpoints(urlPattern, serviceClasses, false);
-  }
-
-  /**
-   * Configure Endpoints given a list of service classes.
-   *
-   * @deprecated the legacy servlet is no longer available.
-   * @param urlPattern the URL pattern to configure the servlet on. For the legacy servlet, use
-   * "/_ah/spi/*". For the new servlet, use "/_ah/api/*" if backwards compatibility is desired, or
-   * any other pattern if compatibility is not an issue.
-   * @param serviceClasses the list of backend classes to be included
-   * @param useLegacyServlet whether or not to use the old style servlet
-   */
-  @Deprecated
-  protected void configureEndpoints(
-      String urlPattern, Iterable<? extends Class<?>> serviceClasses, boolean useLegacyServlet) {
     ServletInitializationParameters initParameters = ServletInitializationParameters.builder()
         .addServiceClasses(serviceClasses)
         .build();
-    configureEndpoints(urlPattern, initParameters, useLegacyServlet);
-  }
-
-  /**
-   * Configure Endpoints given {@link ServletInitializationParameters} using
-   * {@link GuiceEndpointsServlet}.
-   *
-   * @param urlPattern the URL pattern to configure the servlet on. For the legacy servlet, use
-   * "/_ah/spi/*". For the new servlet, use "/_ah/api/*" if backwards compatibility is desired, or
-   * any other pattern if compatibility is not an issue
-   * @param initParameters the initialization parameters. Must include service classes to be useful
-   */
-  protected void configureEndpoints(
-      String urlPattern, ServletInitializationParameters initParameters) {
-    configureEndpoints(urlPattern, initParameters, false);
+    configureEndpoints(urlPattern, initParameters);
   }
 
   /**
@@ -79,15 +48,11 @@ public class EndpointsModule extends ServletModule {
    * "/_ah/spi/*". For the new servlet, use "/_ah/api/*" if backwards compatibility is desired, or
    * any other pattern if compatibility is not an issue
    * @param initParameters the initialization parameters. Must include service classes to be useful
-   * @param useLegacyServlet whether or not to use the old style servlet
    */
   protected void configureEndpoints(
-      String urlPattern, ServletInitializationParameters initParameters, boolean useLegacyServlet) {
+      String urlPattern, ServletInitializationParameters initParameters) {
     bind(ServiceMap.class)
         .toInstance(ServiceMap.create(binder(), initParameters.getServiceClasses()));
-    if (useLegacyServlet) {
-      logger.severe("the legacy servlet is no longer available.");
-    }
     super.serve(urlPattern).with(GuiceEndpointsServlet.class, initParameters.asMap());
   }
 }

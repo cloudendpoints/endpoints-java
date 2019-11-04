@@ -20,7 +20,6 @@ import com.google.api.server.spi.config.ApiCacheControl;
 import com.google.api.server.spi.config.ApiFrontendLimits;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
-import com.google.api.server.spi.config.ApiMethodCacheControl;
 import com.google.api.server.spi.config.ApiReference;
 
 import javax.inject.Named;
@@ -45,11 +44,7 @@ public class ReferenceOverridingEndpoint extends SubclassedOverridingEndpoint {
   @ApiMethod(
       name = "foos.get3",
       path = "foos/{id}",
-      httpMethod = HttpMethod.GET,
-      cacheControl = @ApiMethodCacheControl(
-          noCache = false,
-          maxAge = 2
-      )
+      httpMethod = HttpMethod.GET
   )
   @Override
   public Foo getFoo(@Named("id") String id) {

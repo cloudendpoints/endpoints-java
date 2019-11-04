@@ -18,7 +18,6 @@ package com.google.api.server.spi.config.annotationreader;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiClassConfig;
 import com.google.api.server.spi.config.model.ApiIssuerAudienceConfig;
 import com.google.api.server.spi.config.scope.AuthScopeExpressions;
@@ -76,13 +75,6 @@ public class ApiClassAnnotationConfig {
   public void setAuthenticatorsIfSpecified(Class<? extends Authenticator>[] authenticators) {
     if (!AnnotationUtil.isUnspecified(authenticators)) {
       config.setAuthenticators(Arrays.asList(authenticators));
-    }
-  }
-
-  public void setPeerAuthenticatorsIfSpecified(
-      Class<? extends PeerAuthenticator>[] peerAuthenticators) {
-    if (!AnnotationUtil.isUnspecifiedPeerAuthenticators(peerAuthenticators)) {
-      config.setPeerAuthenticators(Arrays.asList(peerAuthenticators));
     }
   }
 

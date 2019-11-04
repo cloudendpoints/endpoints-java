@@ -15,12 +15,10 @@
  */
 package com.google.api.server.spi.config.model;
 
-import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.common.base.Preconditions;
 
@@ -52,7 +50,6 @@ public class ApiClassConfig {
   private ApiIssuerAudienceConfig issuerAudiences;
   private List<String> clientIds;
   private List<Class<? extends Authenticator>> authenticators;
-  private List<Class<? extends PeerAuthenticator>> peerAuthenticators;
   private Boolean apiKeyRequired;
 
   private final MethodConfigMap methods;
@@ -69,7 +66,6 @@ public class ApiClassConfig {
     this.issuerAudiences = ApiIssuerAudienceConfig.UNSPECIFIED;
     this.clientIds = null;
     this.authenticators = null;
-    this.peerAuthenticators = null;
     this.useDatastore = null;
     this.methods = new MethodConfigMap(this);
     this.apiKeyRequired = null;
@@ -88,8 +84,6 @@ public class ApiClassConfig {
     this.clientIds = original.clientIds == null ? null : new ArrayList<>(original.clientIds);
     this.authenticators =
         original.authenticators == null ? null : new ArrayList<>(original.authenticators);
-    this.peerAuthenticators =
-        original.peerAuthenticators == null ? null : new ArrayList<>(original.peerAuthenticators);
     this.useDatastore = original.useDatastore;
     this.methods = new MethodConfigMap(original.methods, this);
     this.apiKeyRequired = original.apiKeyRequired;
@@ -111,7 +105,6 @@ public class ApiClassConfig {
           Objects.equals(issuerAudiences, config.issuerAudiences) &&
           Objects.equals(clientIds, config.clientIds) &&
           Objects.equals(authenticators, config.authenticators) &&
-          Objects.equals(peerAuthenticators, config.peerAuthenticators) &&
           Objects.equals(useDatastore, config.useDatastore) &&
           methods.equals(config.methods) &&
           Objects.equals(apiKeyRequired, config.apiKeyRequired);
@@ -123,7 +116,7 @@ public class ApiClassConfig {
   @Override
   public int hashCode() {
     return Objects.hash(apiClassJavaName, apiClassJavaSimpleName, typeLoader, resource,
-        authLevel, scopeExpression, audiences, clientIds, authenticators, peerAuthenticators, 
+        authLevel, scopeExpression, audiences, clientIds, authenticators,
         useDatastore, methods, issuerAudiences, apiKeyRequired);
   }
 
@@ -197,15 +190,6 @@ public class ApiClassConfig {
 
   public List<Class<? extends Authenticator>> getAuthenticators() {
     return authenticators != null ? authenticators : apiConfig.getAuthenticators();
-  }
-
-
-  public void setPeerAuthenticators(List<Class<? extends PeerAuthenticator>> peerAuthenticators) {
-    this.peerAuthenticators = peerAuthenticators;
-  }
-
-  public List<Class<? extends PeerAuthenticator>> getPeerAuthenticators() {
-    return peerAuthenticators != null ? peerAuthenticators : apiConfig.getPeerAuthenticators();
   }
 
   public void setUseDatastore(boolean useDatastore) {

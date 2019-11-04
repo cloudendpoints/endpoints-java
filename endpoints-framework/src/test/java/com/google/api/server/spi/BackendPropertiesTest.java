@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Tests for {@link BackendProperties}.
@@ -97,8 +97,6 @@ public class BackendPropertiesTest {
   @Test
   public void testGetApplicationId_flex() {
     System.clearProperty(BackendProperties.APP_ID_PROPERTY);
-    Mockito.when(envReader.getenv(BackendProperties.GCLOUD_PROJECT_PROPERTY))
-        .thenReturn(APPLICATION_ID);
     assertNull(properties.getApplicationId());
   }
 }

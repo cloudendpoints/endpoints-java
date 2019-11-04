@@ -34,7 +34,6 @@ import com.google.api.server.spi.config.ApiIssuer;
 import com.google.api.server.spi.config.ApiIssuerAudience;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.Transformer;
 import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.SchemaRepository;
@@ -42,7 +41,6 @@ import com.google.api.server.spi.config.model.Serializers;
 import com.google.api.server.spi.testing.DefaultValueSerializer;
 import com.google.api.server.spi.testing.DuplicateMethodEndpoint;
 import com.google.api.server.spi.testing.PassAuthenticator;
-import com.google.api.server.spi.testing.PassPeerAuthenticator;
 import com.google.api.server.spi.testing.TestEndpoint;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -569,72 +567,6 @@ public class ApiConfigValidatorTest {
       assertTrue(expected.getMessage().contains("Invalid custom authenticator"));
       assertTrue(expected.getMessage().endsWith(
           "InvalidAuthenticator. It must have a public nullary constructor."));
-    }
-  }
-
-  @Test
-  public void testValidatePeerAuthenticator() throws Exception {
-    config.getApiClassConfig().getMethods()
-        .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
-        .setPeerAuthenticators(
-            ImmutableList.<Class<? extends PeerAuthenticator>>of(PassPeerAuthenticator.class));
-
-    validator.validate(config);
-  }
-
-  @Test
-  public void testValidatePeerAuthenticator_noNullary() throws Exception {
-    final class InvalidPeerAuthenticator implements PeerAuthenticator {
-    @SuppressWarnings("unused")
-      public InvalidPeerAuthenticator(int x) {}
-
-    @SuppressWarnings("unused")
-    @Override
-      public boolean authenticate(HttpServletRequest request) {
-        return false;
-      }
-    }
-
-    config.getApiClassConfig().getMethods()
-        .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
-        .setPeerAuthenticators(
-            ImmutableList.<Class<? extends PeerAuthenticator>>of(InvalidPeerAuthenticator.class));
-
-    try {
-      validator.validate(config);
-      fail();
-    } catch (InvalidConstructorException expected) {
-      assertTrue(expected.getMessage().contains("Invalid custom peer authenticator"));
-      assertTrue(expected.getMessage().endsWith(
-          "InvalidPeerAuthenticator. It must have a public nullary constructor."));
-    }
-  }
-
-  @Test
-  public void testValidatePeerAuthenticator_privateNullary() throws Exception {
-    final class InvalidPeerAuthenticator implements PeerAuthenticator {
-    @SuppressWarnings("unused")
-      private InvalidPeerAuthenticator() {}
-
-    @SuppressWarnings("unused")
-    @Override
-      public boolean authenticate(HttpServletRequest request) {
-        return false;
-      }
-    }
-
-    config.getApiClassConfig().getMethods()
-        .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))
-        .setPeerAuthenticators(
-            ImmutableList.<Class<? extends PeerAuthenticator>>of(InvalidPeerAuthenticator.class));
-
-    try {
-      validator.validate(config);
-      fail();
-    } catch (InvalidConstructorException expected) {
-      assertTrue(expected.getMessage().contains("Invalid custom peer authenticator"));
-      assertTrue(expected.getMessage().endsWith(
-          "InvalidPeerAuthenticator. It must have a public nullary constructor."));
     }
   }
 

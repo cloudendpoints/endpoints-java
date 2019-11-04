@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-plugins {
-  id 'net.ltgt.apt' version '0.8'
-}
-
 configurations {
   include
   compile.extendsFrom include
@@ -47,7 +43,6 @@ def annotations = [
     "ApiTransformer.java",
     "Authenticator.java",
     "DefaultValue.java",
-    "PeerAuthenticator.java",
     "AuthLevel.java",
     "Transformer.java",
 ]
@@ -87,7 +82,7 @@ dependencies {
   compile group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
   compile group: 'com.google.flogger', name: 'flogger', version: floggerVersion
   runtime group: 'com.google.flogger', name: 'flogger-system-backend', version: floggerVersion
-  compile(group: 'com.google.http-client', name: 'google-http-client-jackson2', version: apiclientVersion) {
+  compile(group: 'com.google.http-client', name: 'google-http-client-jackson2', version: httpClientVersion) {
     exclude group: 'com.google.guava', module: 'guava-jdk5'
     exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
   }
@@ -105,7 +100,7 @@ dependencies {
 
   compileOnly group: 'javax.servlet', name: 'servlet-api', version: servletVersion
   compileOnly "com.google.auto.value:auto-value:1.2"
-  apt "com.google.auto.value:auto-value:1.2"
+  annotationProcessor "com.google.auto.value:auto-value:1.2"
 
   testCompile project(':test-utils')
   testCompile group: 'junit', name: 'junit', version: junitVersion

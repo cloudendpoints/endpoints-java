@@ -20,12 +20,10 @@ import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.AuthLevel;
 import com.google.api.server.spi.config.Authenticator;
-import com.google.api.server.spi.config.PeerAuthenticator;
 import com.google.api.server.spi.config.model.ApiParameterConfig.Classification;
 import com.google.api.server.spi.config.scope.AuthScopeExpression;
 import com.google.api.server.spi.response.BadRequestException;
 import com.google.api.server.spi.response.ConflictException;
-import com.google.api.server.spi.response.ErrorMap;
 import com.google.api.server.spi.response.ForbiddenException;
 import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.NotFoundException;
@@ -176,7 +174,6 @@ public class ApiMethodConfig {
   private ApiIssuerAudienceConfig issuerAudiences;
   private List<String> clientIds;
   private List<Class<? extends Authenticator>> authenticators;
-  private List<Class<? extends PeerAuthenticator>> peerAuthenticators;
   private boolean ignored = false;
   private boolean deprecated = false;
   private Boolean apiKeyRequired;
@@ -209,8 +206,6 @@ public class ApiMethodConfig {
     this.clientIds = original.clientIds == null ? null : new ArrayList<>(original.clientIds);
     this.authenticators =
         original.authenticators == null ? null : new ArrayList<>(original.authenticators);
-    this.peerAuthenticators =
-        original.peerAuthenticators == null ? null : new ArrayList<>(original.peerAuthenticators);
     this.ignored = original.ignored;
     this.apiKeyRequired = original.apiKeyRequired;
     this.returnType = original.returnType;
@@ -250,7 +245,6 @@ public class ApiMethodConfig {
     issuerAudiences = ApiIssuerAudienceConfig.UNSPECIFIED;
     clientIds = null;
     authenticators = null;
-    peerAuthenticators = null;
     ignored = false;
     apiKeyRequired = null;
     returnType = endpointMethod.getReturnType();
@@ -282,7 +276,6 @@ public class ApiMethodConfig {
           Objects.equals(issuerAudiences, config.issuerAudiences) &&
           Objects.equals(clientIds, config.clientIds) &&
           Objects.equals(authenticators, config.authenticators) &&
-          Objects.equals(peerAuthenticators, config.peerAuthenticators) &&
           Objects.equals(typeLoader, config.typeLoader) &&
           ignored == config.ignored &&
           apiKeyRequired == config.apiKeyRequired &&
@@ -296,7 +289,7 @@ public class ApiMethodConfig {
   @Override
   public int hashCode() {
     return Objects.hash(endpointMethodName, parameterConfigs, name, path, httpMethod,
-        scopeExpression, audiences, clientIds, authenticators, peerAuthenticators, typeLoader,
+        scopeExpression, audiences, clientIds, authenticators, typeLoader,
         ignored, issuerAudiences, apiKeyRequired, returnType, metricCosts);
   }
 
@@ -490,14 +483,6 @@ public class ApiMethodConfig {
 
   public List<Class<? extends Authenticator>> getAuthenticators() {
     return authenticators != null ? authenticators : apiClassConfig.getAuthenticators();
-  }
-
-  public void setPeerAuthenticators(List<Class<? extends PeerAuthenticator>> peerAuthenticators) {
-    this.peerAuthenticators = peerAuthenticators;
-  }
-
-  public List<Class<? extends PeerAuthenticator>> getPeerAuthenticators() {
-    return peerAuthenticators != null ? peerAuthenticators : apiClassConfig.getPeerAuthenticators();
   }
 
   public void setIgnored(boolean ignored) {
