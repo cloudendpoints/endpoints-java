@@ -78,8 +78,8 @@ public class RestServletRequestParamReaderTest {
   @Before
   public void setUp() throws Exception {
     endpointMethod = EndpointMethod.create(TestApi.class,
-        TestApi.class.getMethod("test", Long.TYPE, List.class, SimpleDate.class,
-            TestResource.class));
+        TestApi.class.getMethod("test", Long.TYPE, List.class, TestEnum.class,
+            SimpleDate.class, TestResource.class));
     request = new MockHttpServletRequest();
     ServiceContext serviceContext = ServiceContext.create();
     serializationConfig = new ApiSerializationConfig();
@@ -106,6 +106,7 @@ public class RestServletRequestParamReaderTest {
         .containsExactly(
             1234L,
             ImmutableList.of(NOV_1, NOV_2),
+            null,
             NOV_2,
             new TestResource())
         .inOrder();
@@ -121,6 +122,7 @@ public class RestServletRequestParamReaderTest {
     assertThat(params).asList()
         .containsExactly(
             1234L,
+            null,
             null,
             JAN_1,
             new TestResource());
@@ -141,6 +143,7 @@ public class RestServletRequestParamReaderTest {
         .containsExactly(
             1234L,
             null,
+            null,
             NOV_2,
             new TestResource(NOV_2))
         .inOrder();
@@ -158,6 +161,7 @@ public class RestServletRequestParamReaderTest {
     assertThat(params).asList()
         .containsExactly(
             4321L,
+            null,
             null,
             NOV_2,
             new TestResource())
@@ -179,147 +183,94 @@ public class RestServletRequestParamReaderTest {
   
   @Test
   public void parseIntegerError() throws ServiceException {
-    request.setContent("{\"objInt\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'objInt'");
-    thrown.expectMessage("invalid number");
-    reader.read();
+    checkContentParseError("{\"objInt\":\"invalid\"}", "field 'objInt'", "Integer", "invalid number");
   }
 
   @Test
   public void parseIntError() throws ServiceException {
-    request.setContent("{\"simpleInt\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'simpleInt'");
-    thrown.expectMessage("invalid number value \"invalid\"");
-    reader.read();
+    checkContentParseError("{\"simpleInt\":\"invalid\"}", "field 'simpleInt'", "int",
+        "invalid number value \"invalid\"");
   }
 
   @Test
   public void parseLongError() throws ServiceException {
-    request.setContent("{\"objLong\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'objLong'");
-    thrown.expectMessage("invalid number");
-    reader.read();
+    checkContentParseError("{\"objLong\":\"invalid\"}", "field 'objLong'", "Long", "invalid number");
   }
 
   @Test
   public void parsePrimitiveLongError() throws ServiceException {
-    request.setContent("{\"simpleLong\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'simpleLong'");
-    thrown.expectMessage("invalid number value \"invalid\"");
-    reader.read();
+    checkContentParseError("{\"simpleLong\":\"invalid\"}", "field 'simpleLong'", "long",
+        "invalid number value \"invalid\"");
   }
 
   @Test
   public void parseFloatError() throws ServiceException {
-    request.setContent("{\"objFloat\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'objFloat'");
-    thrown.expectMessage("invalid number");
-    reader.read();
+    checkContentParseError("{\"objFloat\":\"invalid\"}", "field 'objFloat'", "Float", "invalid number");
   }
 
   @Test
   public void parsePrimitiveFloatError() throws ServiceException {
-    request.setContent("{\"simpleFloat\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'simpleFloat'");
-    thrown.expectMessage("invalid number value \"invalid\"");
-    reader.read();
+    checkContentParseError("{\"simpleFloat\":\"invalid\"}", "field 'simpleFloat'", "float",
+        "invalid number value \"invalid\"");
   }
 
   @Test
   public void parseDoubleError() throws ServiceException {
-    request.setContent("{\"objDouble\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'objDouble'");
-    thrown.expectMessage("invalid number");
-    reader.read();
+    checkContentParseError("{\"objDouble\":\"invalid\"}", "field 'objDouble'", "Double", "invalid number");
   }
 
   @Test
   public void parsePrimitiveDoubleError() throws ServiceException {
-    request.setContent("{\"simpleDouble\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'simpleDouble'");
-    thrown.expectMessage("invalid number value \"invalid\"");
-    reader.read();
+    checkContentParseError("{\"simpleDouble\":\"invalid\"}", "field 'simpleDouble'", "double",
+        "invalid number value \"invalid\"");
   }
 
   @Test
   public void parseBooleanError() throws ServiceException {
-    request.setContent("{\"objBoolean\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'objBoolean'");
-    thrown.expectMessage("invalid boolean value");
-    reader.read();
+    checkContentParseError("{\"objBoolean\":\"invalid\"}", "field 'objBoolean'", "Boolean",
+        "invalid boolean value");
   }
 
   @Test
   public void parsePrimitiveBooleanError() throws ServiceException {
-    request.setContent("{\"simpleBoolean\":\"invalid\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'simpleBoolean'");
-    thrown.expectMessage("invalid boolean value \"invalid\"");
-    reader.read();
+    checkContentParseError("{\"simpleBoolean\":\"invalid\"}", "field 'simpleBoolean'", "boolean",
+        "invalid boolean value \"invalid\"");
   }
 
   @Test
   public void parseEnumError() throws ServiceException {
-    request.setContent("{\"simpleEnum\":\"invalidEnum\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'simpleEnum'");
-    thrown.expectMessage("invalid enum value \"invalidEnum\". Valid values are [One, Two, Three]");
-    reader.read();
+    checkContentParseError("{\"simpleEnum\":\"invalidEnum\"}", "field 'simpleEnum'", "TestEnum",
+        "invalid enum value \"invalidEnum\". Valid values are [One, Two, Three]");
   }
   
   @Test
   public void parseDateError() throws ServiceException {
-    request.setContent("{\"objDate\":\"invalidDate\"}".getBytes(StandardCharsets.UTF_8));
-    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
-  
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'objDate'");
-    thrown.expectMessage("invalid date value \"invalidDate\".");
-    reader.read();
+    checkContentParseError("{\"objDate\":\"invalidDate\"}", "field 'objDate'", "Date",
+        "invalid date value \"invalidDate\".");
   }
 
   @Test
   public void parseNestedError() throws ServiceException {
-    request.setContent("{\"nested\":{\"simpleInt\": \"abc\"}}".getBytes(StandardCharsets.UTF_8));
+    checkContentParseError("{\"nested\":{\"simpleInt\": \"abc\"}}", "field 'nested.simpleInt'", "int",
+        "invalid number value \"abc\".");
+  }
+
+  @Test
+  public void parseIntAsParamError() throws ServiceException {
+    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "abcd"));
+    checkParseError("a parameter", "long", "invalid number value \"abcd\"", reader);
+  }
+
+  @Test
+  public void parseEnumAsParamError() throws ServiceException {
+    request.addParameter("enum", "invalidEnum");
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
 
-    thrown.expect(BadRequestException.class);
-    thrown.expectMessage("at 'nested.simpleInt'");
-    thrown.expectMessage("invalid number value \"abc\".");
-    reader.read();
+    checkParseError("a parameter", "TestEnum",
+        "invalid enum value \"invalidEnum\". Valid values are [One, Two, Three]", reader);
   }
-  
+
+
   @Test
   public void parseError() throws ServiceException {
     request.setContent("{\"field\": \"this is an invalid json".getBytes(StandardCharsets.UTF_8));
@@ -328,7 +279,6 @@ public class RestServletRequestParamReaderTest {
     thrown.expect(BadRequestException.class);
     thrown.expectMessage("Parse error");
     reader.read();
-  
   }
   
   @Test
@@ -345,6 +295,7 @@ public class RestServletRequestParamReaderTest {
     assertThat(params).asList()
         .containsExactly(
             1234L,
+            null,
             null,
             JAN_1,
             new TestResource(NOV_2))
@@ -398,6 +349,23 @@ public class RestServletRequestParamReaderTest {
         serializationConfig, methodConfig);
   }
 
+  private void checkContentParseError(String content, String location, String type, String details)
+      throws ServiceException {
+    request.setContent(content.getBytes(StandardCharsets.UTF_8));
+    RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "1234"));
+
+    checkParseError(location, type, details, reader);
+  }
+
+  private void checkParseError(String location, String type, String details,
+      RestServletRequestParamReader reader) throws ServiceException {
+    thrown.expect(BadRequestException.class);
+    thrown.expectMessage("for " + location);
+    thrown.expectMessage("of type '" + type + "'");
+    thrown.expectMessage(details);
+    reader.read();
+  }
+
   public enum TestEnum {
     One, Two, Three
   }
@@ -444,6 +412,7 @@ public class RestServletRequestParamReaderTest {
     public void test(
         @Nullable @Named("path") long path,
         @Nullable @Named("dates") List<SimpleDate> dates,
+        @Nullable @Named("enum") TestEnum enumValue,
         @Named("defaultvalue") @DefaultValue("2015-01-01") SimpleDate defaultValue,
         TestResource resource) {
     }

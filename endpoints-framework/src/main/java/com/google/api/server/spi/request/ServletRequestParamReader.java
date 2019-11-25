@@ -379,11 +379,18 @@ public class ServletRequestParamReader extends AbstractParamReader {
 
   BadRequestException translateJsonException(MismatchedInputException e) {
     String reason = "parseError";
+    String message = "Parse error for ";
+    List<Reference> path = e.getPath();
+    if (path.isEmpty()) {
+      //query / path parameter name can't be retrieved from the error
+      message += "a parameter";
+    } else {
+      String fieldPath = path.stream().map(Reference::getFieldName)
+          .collect(Collectors.joining("."));
+      message += "field '" + fieldPath + "'";
+    }
     Class<?> targetType = e.getTargetType();
-    String fieldPath = e.getPath().stream().map(Reference::getFieldName)
-        .collect(Collectors.joining("."));
-    String message = "Parse error at '" + fieldPath
-        + "' ('" + targetType.getSimpleName() + "' type)";
+    message += " of type '" + targetType.getSimpleName() + "'";
     String messagePattern = ": invalid {0} value \"{1}\".{2}";
     if (e instanceof InvalidFormatException) {
       Object value = ((InvalidFormatException) e).getValue();

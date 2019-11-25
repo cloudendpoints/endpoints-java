@@ -828,7 +828,7 @@ public class ServletRequestParamReaderTest {
               .getDeclaredMethod("test", Request.class));
       fail("expected bad request exception");
     } catch (BadRequestException e) {
-      assertEquals("Parse error at 'integerValue' ('int' type)", e.getMessage());
+      assertEquals("Parse error for field 'integerValue' of type 'int'", e.getMessage());
     }
   }
 
