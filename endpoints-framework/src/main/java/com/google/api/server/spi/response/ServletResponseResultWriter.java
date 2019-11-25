@@ -23,6 +23,7 @@ import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.api.server.spi.types.DateAndTime;
 import com.google.api.server.spi.types.SimpleDate;
 import com.google.appengine.api.datastore.Blob;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingOutputStream;
 
@@ -48,7 +49,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ServletResponseResultWriter implements ResultWriter {
 
-  private static final Set<SimpleModule> WRITER_MODULES;
+  @VisibleForTesting
+  protected static final Set<SimpleModule> WRITER_MODULES;
 
   static {
     Set<SimpleModule> modules = new LinkedHashSet<>();
@@ -73,22 +75,18 @@ public class ServletResponseResultWriter implements ResultWriter {
   private final boolean addContentLength;
 
   public ServletResponseResultWriter(
-      HttpServletResponse servletResponse, ApiSerializationConfig serializationConfig) {
-    this(servletResponse, serializationConfig, false /* prettyPrint */, false /* addContentLength */);
+      HttpServletResponse servletResponse, ApiSerializationConfig serializationConfig,
+      boolean prettyPrint, boolean addContentLength) {
+    this(servletResponse,  ConfiguredObjectMapper.builder()
+            .apiSerializationConfig(serializationConfig)
+            .addRegisteredModules(WRITER_MODULES)
+            .build().writer(), prettyPrint, addContentLength);
   }
 
   public ServletResponseResultWriter(
-      HttpServletResponse servletResponse, ApiSerializationConfig serializationConfig,
+      HttpServletResponse servletResponse, ObjectWriter objectWriter,
       boolean prettyPrint, boolean addContentLength) {
     this.servletResponse = servletResponse;
-    Set<SimpleModule> modules = new LinkedHashSet<>();
-    modules.addAll(WRITER_MODULES);
-    ObjectWriter objectWriter = ConfiguredObjectMapper.builder()
-        .apiSerializationConfig(serializationConfig)
-        .addRegisteredModules(modules)
-        .build()
-        .writer();
-
     if (prettyPrint) {
       objectWriter = objectWriter.with(new EndpointsPrettyPrinter());
     }

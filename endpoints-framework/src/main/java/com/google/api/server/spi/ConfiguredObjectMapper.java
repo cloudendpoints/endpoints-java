@@ -15,24 +15,23 @@
  */
 package com.google.api.server.spi;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Value;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.flogger.FluentLogger;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonInclude.Value;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import javax.annotation.Nullable;
 
-import com.google.common.flogger.FluentLogger;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 /**
  * A wrapper around an {@link ObjectMapper} with a frozen configuration. This exposes a subset of
@@ -135,6 +134,7 @@ public class ConfiguredObjectMapper {
 
     /**
      * Builds a {@link ConfiguredObjectMapper} using the configuration specified in this builder.
+     * Returns a cached instance unsing {@link ApiSerializationConfig} and modules as key.
      *
      * @return the constructed object
      */
@@ -144,9 +144,11 @@ public class ConfiguredObjectMapper {
       if (instance == null) {
         ObjectMapper mapper =
             ObjectMapperUtil.createStandardObjectMapper(key.apiSerializationConfig);
-        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
+        mapper.setDefaultPropertyInclusion(Include.NON_EMPTY);
         mapper.configOverride(String.class)
-            .setIncludeAsProperty(Value.construct(JsonInclude.Include.NON_NULL, null));
+            .setIncludeAsProperty(Value.construct(Include.NON_NULL, Include.USE_DEFAULTS));
+        mapper.configOverride(Map.class)
+            .setIncludeAsProperty(Value.construct(Include.USE_DEFAULTS, Include.NON_NULL));
         for (Module module : key.modulesSet) {
           mapper.registerModule(module);
         }
@@ -163,6 +165,20 @@ public class ConfiguredObjectMapper {
         logger.atFine().log("Cache hit, reusing ObjectMapper");
       }
       return instance;
+    }
+
+    /**
+     * Builds a {@link ConfiguredObjectMapper} using the configuration specified in this builder,
+     * and a customized ObjectMapper instance. Returned instance is NOT cached.
+     * 
+     * @param mapper low-level Jackson {@link ObjectMapper}
+     * @return the constructed object
+     */
+    public ConfiguredObjectMapper buildWithCustomMapper(ObjectMapper mapper) {
+      for (Module module : modules.build()) {
+        mapper.registerModule(module);
+      }
+      return new ConfiguredObjectMapper(mapper);
     }
   }
 
