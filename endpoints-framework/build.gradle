@@ -79,6 +79,8 @@ dependencies {
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+  compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: jacksonVersion
+  compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: jacksonVersion
   compile group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
   compile group: 'com.google.flogger', name: 'flogger', version: floggerVersion
   runtime group: 'com.google.flogger', name: 'flogger-system-backend', version: floggerVersion

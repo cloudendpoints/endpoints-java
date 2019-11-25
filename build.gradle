@@ -35,6 +35,10 @@ subprojects {
     sourceCompatibility = project.sourceCompatibility
     targetCompatibility = project.targetCompatibility
     options.encoding = 'UTF-8'
+    //required for com.google.api.server.spi.ObjectMapperUtilTest
+    //this need to be configured manually for the module in IntelliJ at:
+    //File | Settings | Build, Execution, Deployment | Compiler | Java Compiler
+    options.compilerArgs << '-parameters'
   }
 
   test {
