@@ -17,6 +17,7 @@ package com.google.api.server.spi;
 
 import com.google.api.server.spi.config.annotationreader.ApiAnnotationIntrospector;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
+import com.google.api.server.spi.config.model.EndpointsFlag;
 
 import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -38,8 +39,9 @@ import com.fasterxml.jackson.databind.ser.std.MapSerializer;
 import com.fasterxml.jackson.databind.type.ArrayType;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 
-import com.google.api.server.spi.config.model.EndpointsFlag;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -66,6 +68,14 @@ public class ObjectMapperUtil {
   /**
    * Creates an Endpoints standard object mapper that allows unquoted field names and unknown
    * properties.
+   * 
+   * Some Jackson Java 8 modules (ParameterNamesModule and Jdk8Module) are enabled.
+   * They provide the following features:
+   * - Simpler support for immutable objects through automatic detection of multi-param constructors
+   * - Support for Optional, that differentiates between null value of a field  (maps to
+   * Optional.empty()) and a missing fields (maps to null).
+   * 
+   * Support for JSR310 has been left out for now, as it's quite complex to configure properly.
    *
    * Note on unknown properties: When Apiary FE supports a strict mode where properties
    * are checked against the schema, BE can just ignore unknown properties.  This way, FE does
@@ -87,7 +97,9 @@ public class ObjectMapperUtil {
             new JacksonAnnotationIntrospector())
         : new ApiAnnotationIntrospector(config);
     objectMapper.setAnnotationIntrospector(pair);
-    return objectMapper;
+    return objectMapper
+        .registerModule(new ParameterNamesModule())
+        .registerModule(new Jdk8Module());
   }
 
   /**
