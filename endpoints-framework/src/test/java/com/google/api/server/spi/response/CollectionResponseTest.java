@@ -17,6 +17,8 @@ package com.google.api.server.spi.response;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.api.server.spi.config.model.ApiSerializationConfig;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -45,7 +47,8 @@ public class CollectionResponseTest {
   @Test
   public void testCollectionResponse() throws IOException {
     MockHttpServletResponse servletResponse = new MockHttpServletResponse();
-    ServletResponseResultWriter writer = new ServletResponseResultWriter(servletResponse, null);
+    ServletResponseResultWriter writer = new ServletResponseResultWriter(
+        servletResponse, (ApiSerializationConfig) null, false, false);
     writer.write(getBeans(2));
 
     ObjectNode json = new ObjectMapper().readValue(

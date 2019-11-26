@@ -20,21 +20,27 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.json.JsonWriteFeature;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.ServiceException;
+import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.api.server.spi.types.DateAndTime;
 import com.google.api.server.spi.types.SimpleDate;
 import com.google.appengine.api.datastore.Blob;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
+import javax.servlet.http.HttpServletResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -42,13 +48,12 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Tests for {@link ServletResponseResultWriter}.
@@ -191,9 +196,35 @@ public class ServletResponseResultWriterTest {
       public Map<Long,Long[]> getDeeplyEmptyMapArray() {
         return ImmutableMap.of(12L, new Long[0]);
       }
+      
+      //string handling in collections / maps
+      public List<String> getStringListWithEmptyValues() {
+        return Lists.newArrayList(null, "");
+      }
+      public String[] getStringArrayWithEmptyValues() {
+        return new String[] {null, ""};
+      }
+      public Map<String,String> getStringMapWithEmptyValues() {
+        return new HashMap<String, String>() {{
+          put("null_value", null);
+          put("empty_value", "");
+        }};
+      }
+      public Map<String,List<String>> getMapWithEmptyListValues() {
+        return new HashMap<String, List<String>>() {{
+          put("null_value", null);
+          put("empty_value", new ArrayList<>());
+          put("empty_string_value", Lists.newArrayList(null, ""));
+        }};
+      }
     };
     
     ObjectNode output = toJSON(value);
+    ObjectNode legacyOutput = toJSON(value, true);
+    
+    //the new Mapper config must produce same result as the old one using WRITE_EMPTY_JSON_ARRAYS
+    //see https://github.com/FasterXML/jackson-databind/issues/1547 for more on the issue
+    assertEquals(legacyOutput, output);
 
     //String is handled specifically
     assertEquals("", output.path("stringEmpty").asText(null));
@@ -215,6 +246,13 @@ public class ServletResponseResultWriterTest {
     assertTrue(output.path("deeplyEmptyLongList").isMissingNode());
     assertTrue(output.path("deeplyEmptyMapList").isMissingNode());
     assertTrue(output.path("deeplyEmptyMapArray").isMissingNode());
+    
+    //strings in collections
+    assertPathPresent("[null,\"\"]", output.path("stringListWithEmptyValues"));
+    assertPathPresent("[null,\"\"]", output.path("stringArrayWithEmptyValues"));
+    assertPathPresent("{\"empty_value\":\"\"}", output.path("stringMapWithEmptyValues"));
+    assertPathPresent("{\"empty_string_value\":[null,\"\"],\"empty_value\":[]}", 
+        output.path("mapWithEmptyListValues"));
   }
   
   @Test
@@ -267,6 +305,30 @@ public class ServletResponseResultWriterTest {
       public Map<Long,Long[]> getDeeplyEmptyMapArray_IncludeAlways() {
         return ImmutableMap.of(12L, new Long[0]);
       }
+      //string handling in collections / maps
+      @JsonInclude
+      public List<String> getStringListWithEmptyValues() {
+        return Lists.newArrayList(null, "");
+      }
+      @JsonInclude
+      public String[] getStringArrayWithEmptyValues() {
+        return new String[] {null, ""};
+      }
+      @JsonInclude
+      public Map<String,String> getStringMapWithEmptyValues() {
+        return new HashMap<String, String>() {{
+          put("null_value", null);
+          put("empty_value", "");
+        }};
+      }
+      @JsonInclude
+      public Map<String,List<String>> getMapWithEmptyListValues() {
+        return new HashMap<String, List<String>>() {{
+          put("null_value", null);
+          put("empty_value", new ArrayList<>());
+          put("empty_string_value", Lists.newArrayList(null, ""));
+        }};
+      }
     };
     
     ObjectNode output = toJSON(value);
@@ -287,6 +349,15 @@ public class ServletResponseResultWriterTest {
     assertPathPresent("[[{}]]", output.path("deeplyEmptyLongList_IncludeAlways"));
     assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapList_IncludeAlways"));
     assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapArray_IncludeAlways"));
+
+    //strings in collections
+    assertPathPresent("[null,\"\"]", output.path("stringListWithEmptyValues"));
+    assertPathPresent("[null,\"\"]", output.path("stringArrayWithEmptyValues"));
+    assertPathPresent("{\"null_value\":null,\"empty_value\":\"\"}",
+        output.path("stringMapWithEmptyValues"));
+    assertPathPresent(
+        "{\"null_value\":null,\"empty_string_value\":[null,\"\"],\"empty_value\":[]}",
+        output.path("mapWithEmptyListValues"));
   }
 
   @Test
@@ -339,6 +410,30 @@ public class ServletResponseResultWriterTest {
       public Map<Long,Long[]> getDeeplyEmptyMapArray_IncludeNonNull() {
         return ImmutableMap.of(12L, new Long[0]);
       }
+      //string handling in collections / maps
+      @JsonInclude(value = JsonInclude.Include.NON_NULL, content = Include.NON_NULL)
+      public List<String> getStringListWithEmptyValues() {
+        return Lists.newArrayList(null, "");
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL, content = Include.NON_NULL)
+      public String[] getStringArrayWithEmptyValues() {
+        return new String[] {null, ""};
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL, content = Include.NON_NULL)
+      public Map<String,String> getStringMapWithEmptyValues() {
+        return new HashMap<String, String>() {{
+          put("null_value", null);
+          put("empty_value", "");
+        }};
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_NULL, content = Include.NON_NULL)
+      public Map<String,List<String>> getMapWithEmptyListValues() {
+        return new HashMap<String, List<String>>() {{
+          put("null_value", null);
+          put("empty_value", new ArrayList<>());
+          put("empty_string_value", Lists.newArrayList(null, ""));
+        }};
+      }
     };
     ObjectNode output = toJSON(value);
 
@@ -358,6 +453,13 @@ public class ServletResponseResultWriterTest {
     assertPathPresent("[[{}]]", output.path("deeplyEmptyLongList_IncludeNonNull"));
     assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapList_IncludeNonNull"));
     assertPathPresent("{\"12\":[]}", output.path("deeplyEmptyMapArray_IncludeNonNull"));
+
+    //strings in collections
+    assertPathPresent("[null,\"\"]", output.path("stringListWithEmptyValues"));
+    assertPathPresent("[null,\"\"]", output.path("stringArrayWithEmptyValues"));
+    assertPathPresent("{\"empty_value\":\"\"}", output.path("stringMapWithEmptyValues"));
+    assertPathPresent("{\"empty_string_value\":[null,\"\"],\"empty_value\":[]}",
+        output.path("mapWithEmptyListValues"));
   }
 
   @Test
@@ -437,6 +539,30 @@ public class ServletResponseResultWriterTest {
       public Map<Long,Long[]> getDeeplyNonEmptyMapArray_IncludeNonEmpty() {
         return ImmutableMap.of(12L, new Long[] {23L});
       }
+      //string handling in collections / maps
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = Include.NON_EMPTY)
+      public List<String> getStringListWithEmptyValues() {
+        return Lists.newArrayList(null, "");
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = Include.NON_EMPTY)
+      public String[] getStringArrayWithEmptyValues() {
+        return new String[] {null, ""};
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = Include.NON_EMPTY)
+      public Map<String,String> getStringMapWithEmptyValues() {
+        return new HashMap<String, String>() {{
+          put("null_value", null);
+          put("empty_value", "");
+        }};
+      }
+      @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = Include.NON_EMPTY)
+      public Map<String,List<String>> getMapWithEmptyListValues() {
+        return new HashMap<String, List<String>>() {{
+          put("null_value", null);
+          put("empty_value", new ArrayList<>());
+          put("empty_string_value", Lists.newArrayList(null, ""));
+        }};
+      }
     };
     ObjectNode output = toJSON(value);
     
@@ -462,6 +588,13 @@ public class ServletResponseResultWriterTest {
     assertPathPresent("[[{\"12\":\"\"}]]", output.path("deeplyNonEmptyLongList_IncludeNonEmpty"));
     assertPathPresent("{\"12\":[\"23\"]}", output.path("deeplyNonEmptyMapList_IncludeNonEmpty"));
     assertPathPresent("{\"12\":[\"23\"]}", output.path("deeplyNonEmptyMapArray_IncludeNonEmpty"));
+
+    //strings in collections
+    assertPathPresent("[null,\"\"]", output.path("stringListWithEmptyValues"));
+    assertPathPresent("[null,\"\"]", output.path("stringArrayWithEmptyValues"));
+    assertPathPresent("{}", output.path("stringMapWithEmptyValues"));
+    assertPathPresent("{\"empty_string_value\":[null,\"\"]}",
+        output.path("mapWithEmptyListValues"));
   }
 
   private void assertPathPresent(String expectedString, JsonNode path) {
@@ -483,7 +616,7 @@ public class ServletResponseResultWriterTest {
   @Test
   public void testWriteNull() throws Exception {
     MockHttpServletResponse response = new MockHttpServletResponse();
-    ServletResponseResultWriter writer = new ServletResponseResultWriter(response, null);
+    ServletResponseResultWriter writer = getDefaultWriter(response);
     writer.write(null);
     assertEquals("", response.getContentAsString());
     assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
@@ -497,14 +630,14 @@ public class ServletResponseResultWriterTest {
       }
     };
     ObjectNode output = ObjectMapperUtil.createStandardObjectMapper()
-        .readValue(writeToResponse(value), ObjectNode.class);
+        .readValue(writeToResponse(value, false), ObjectNode.class);
     assertEquals("AQIDBA==", output.path("values").asText());
   }
 
   @Test
   public void testWriteErrorResponseHeaders() throws Exception {
     MockHttpServletResponse response = new MockHttpServletResponse();
-    ServletResponseResultWriter writer = new ServletResponseResultWriter(response, null);
+    ServletResponseResultWriter writer = getDefaultWriter(response);
     Map<String, String> headers = new LinkedHashMap<>();
     headers.put("name0", "value0");
     headers.put("name1", "value1");
@@ -515,8 +648,8 @@ public class ServletResponseResultWriterTest {
   @Test
   public void testPrettyPrint() throws Exception {
     MockHttpServletResponse response = new MockHttpServletResponse();
-    ServletResponseResultWriter writer = new ServletResponseResultWriter(response, null,
-        true /* prettyPrint */, true /* addContentLength */);
+    ServletResponseResultWriter writer = new ServletResponseResultWriter(response, 
+        (ApiSerializationConfig) null, true /* prettyPrint */, true /* addContentLength */);
     writer.write(ImmutableMap.of("one", "two", "three", "four"));
     // If the response is pretty printed, there should be at least two newlines.
     String body = response.getContentAsString();
@@ -538,7 +671,7 @@ public class ServletResponseResultWriterTest {
       }
     };
     ObjectNode output = ObjectMapperUtil.createStandardObjectMapper()
-        .readValue(writeToResponse(value), ObjectNode.class);
+        .readValue(writeToResponse(value, false), ObjectNode.class);
     assertEquals("AQIDBA==", output.path("blob").asText());
   }
 
@@ -550,7 +683,7 @@ public class ServletResponseResultWriterTest {
   public void testEnumAsString() throws Exception {
     TestEnum value = TestEnum.TEST1;
     JsonNode output = ObjectMapperUtil.createStandardObjectMapper()
-        .readValue(writeToResponse(value), JsonNode.class);
+        .readValue(writeToResponse(value, false), JsonNode.class);
     assertEquals("TEST1", output.asText());
   }
 
@@ -572,18 +705,24 @@ public class ServletResponseResultWriterTest {
   }
 
   private ObjectNode toJSON(Object value) throws IOException {
-    String responseBody = writeToResponse(value);
+    return toJSON(value, false);  
+  }
+  
+  private ObjectNode toJSON(Object value, boolean legacy) throws IOException {
+    String responseBody = writeToResponse(value, legacy);
     return ObjectMapperUtil.createStandardObjectMapper()
         .readValue(responseBody, ObjectNode.class);
   }
 
-  private String writeToResponse(Object value) throws IOException {
+  private String writeToResponse(Object value, boolean legacy) throws IOException {
     MockHttpServletResponse response = new MockHttpServletResponse();
-    ServletResponseResultWriter writer = new ServletResponseResultWriter(response, null);
+    ServletResponseResultWriter writer = legacy
+        ? new ServletResponseResultWriter(response, getLegacyObjectWriter(), false, false)
+        : getDefaultWriter(response);
     writer.write(value);
     return response.getContentAsString();
   }
-  
+
   @Test
   public void testExceptionWriterShouldNotBeCustomized() throws IOException {
     MockHttpServletResponse response = new MockHttpServletResponse();
@@ -593,7 +732,7 @@ public class ServletResponseResultWriterTest {
     String errorContent = response.getContentAsString();
     assertEquals("{\"error_message\":\"sample message\"}", errorContent);
   }
-  
+
   @Test
   public void testWriterCustomization() throws IOException {
     Map<String, String> unorderedMap = new HashMap<>();
@@ -604,15 +743,29 @@ public class ServletResponseResultWriterTest {
     String content = response.getContentAsString();
     assertEquals("{a:\"value_a\"}", content);
   }
-  
+
   //Customized writer: for response, the fields name has no quote. For error, they have.
   private ServletResponseResultWriter createCustomizedWriter(HttpServletResponse response) {
-    ServletResponseResultWriter writer = new ServletResponseResultWriter(response, null) {
+    return new ServletResponseResultWriter(response, (ApiSerializationConfig) null, false, false) {
       @Override
       protected ObjectWriter configureWriter(ObjectWriter objectWriter) {
         return objectWriter.withoutFeatures(JsonWriteFeature.QUOTE_FIELD_NAMES);
       }
     };
-    return writer;
+  }
+
+  //creates an object writer with configuration as before 2.4
+  private ObjectWriter getLegacyObjectWriter() {
+    ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper(null);
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    mapper.disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
+    return ConfiguredObjectMapper.builder()
+        .addRegisteredModules(ServletResponseResultWriter.WRITER_MODULES)
+        .buildWithCustomMapper(mapper).writer();
+  }
+
+  private ServletResponseResultWriter getDefaultWriter(MockHttpServletResponse response) {
+    return new ServletResponseResultWriter(
+        response, (ApiSerializationConfig) null, false, false);
   }
 }
