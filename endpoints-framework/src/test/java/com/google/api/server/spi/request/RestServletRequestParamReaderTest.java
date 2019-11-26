@@ -256,6 +256,28 @@ public class RestServletRequestParamReaderTest {
   }
 
   @Test
+  public void parseArrayError() throws ServiceException {
+    checkContentParseError("{\"array\":123}", "field 'array'", "int[]", "");
+  }
+
+  @Test
+  public void parseArrayElementError() throws ServiceException {
+    checkContentParseError("{\"array\":[123, \"abc\"]}", "field 'array[1]'", "int",
+        "invalid number value \"abc\".");
+  }
+
+  @Test
+  public void parseNestedArrayError() throws ServiceException {
+    checkContentParseError("{\"nestedArray\":[{\"simpleInt\": 123},123]}", "field 'nestedArray[1]'", "NestedResource", "");
+  }
+
+  @Test
+  public void parseNestedArrayElementError() throws ServiceException {
+    checkContentParseError("{\"nestedArray\":[{\"simpleInt\": 123},{\"simpleInt\": \"abc\"}]}", "field 'nestedArray[1].simpleInt'", "int",
+        "invalid number value \"abc\".");
+  }
+
+  @Test
   public void parseIntAsParamError() throws ServiceException {
     RestServletRequestParamReader reader = createReader(ImmutableMap.of("path", "abcd"));
     checkParseError("a parameter", "long", "invalid number value \"abcd\"", reader);
@@ -393,6 +415,8 @@ public class RestServletRequestParamReaderTest {
     
     public TestEnum simpleEnum;
     public NestedResource nested;
+    public int[] array;
+    public NestedResource[] nestedArray;
     
     public TestResource() {}
 

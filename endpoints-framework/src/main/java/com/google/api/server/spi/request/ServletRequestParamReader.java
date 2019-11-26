@@ -15,11 +15,6 @@
  */
 package com.google.api.server.spi.request;
 
-import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.databind.JsonMappingException.Reference;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.EndpointsContext;
@@ -43,13 +38,20 @@ import com.google.common.base.Strings;
 import com.google.common.flogger.FluentLogger;
 import com.google.common.reflect.TypeToken;
 
+import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -68,10 +70,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import java.util.stream.Collectors;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Reads parameters from an {@link HttpServletRequest}.
@@ -379,36 +378,51 @@ public class ServletRequestParamReader extends AbstractParamReader {
 
   BadRequestException translateJsonException(MismatchedInputException e) {
     String reason = "parseError";
-    String message = "Parse error for ";
+    
+    //resolve path
     List<Reference> path = e.getPath();
+    String location;
     if (path.isEmpty()) {
       //query / path parameter name can't be retrieved from the error
-      message += "a parameter";
+      location = "a parameter";
     } else {
-      String fieldPath = path.stream().map(Reference::getFieldName)
-          .collect(Collectors.joining("."));
-      message += "field '" + fieldPath + "'";
+      String fieldPath = path.stream()
+          .map(reference -> reference.getIndex() != -1 
+              ? "[" + reference.getIndex()  + "]" 
+              : "." + reference.getFieldName())
+          .collect(Collectors.joining());
+      location = "field '" + fieldPath.substring(1) + "'";
     }
+    
+    //resolve type
     Class<?> targetType = e.getTargetType();
-    message += " of type '" + targetType.getSimpleName() + "'";
+    boolean isArrayElement = targetType.isArray() && !path.isEmpty() 
+        && path.get(path.size() - 1).getIndex() != -1;
+    if (isArrayElement) {
+      targetType = targetType.getComponentType();
+    }
+    String type = " of type '" + targetType.getSimpleName() + "'";
+    
+    //add details if possible
     String messagePattern = ": invalid {0} value \"{1}\".{2}";
+    String details = "";
     if (e instanceof InvalidFormatException) {
       Object value = ((InvalidFormatException) e).getValue();
       if (targetType.isEnum()) {
-        message += MessageFormat.format(messagePattern, "enum",
+        details = (MessageFormat.format(messagePattern, "enum",
             value,
-            " Valid values are " + Arrays.toString(targetType.getEnumConstants())
+            " Valid values are " + Arrays.toString(targetType.getEnumConstants()))
         );
       } else if (isNumber(targetType)) {
-        message += MessageFormat.format(messagePattern, "number", value, "");
+        details = MessageFormat.format(messagePattern, "number", value, "");
       } else if (isBoolean(targetType)) {
-        message += MessageFormat.format(messagePattern,"boolean", value, " Valid values are [true, false]");
+        details = MessageFormat.format(messagePattern,"boolean", value, " Valid values are [true, false]");
       } else if (isDate(targetType)) {
-        message += MessageFormat.format(messagePattern, "date", value, "");
+        details = MessageFormat.format(messagePattern, "date", value, "");
       }
     }
 
-    return new BadRequestException(message, reason, e);
+    return new BadRequestException("Parse error for " + location + type + details, reason, e);
   }
 
   private boolean isBoolean(Class<?> clazz) {
