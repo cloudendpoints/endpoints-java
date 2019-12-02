@@ -1,8 +1,9 @@
+dist: trusty
 language: java
 jdk:
-  - openjdk9
+  - openjdk7
 install:
- - JAVA_HOME=$(jdk_switcher home openjdk9) ./gradlew classes testClasses
+ - JAVA_HOME=$(jdk_switcher home openjdk7) ./gradlew classes testClasses
 after_success:
   - ./gradlew jacocoTestReport
   - bash <(curl -s https://codecov.io/bash)
