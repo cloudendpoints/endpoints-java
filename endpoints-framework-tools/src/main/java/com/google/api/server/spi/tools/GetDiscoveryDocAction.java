@@ -141,7 +141,7 @@ public class GetDiscoveryDocAction extends EndpointsToolAction {
           outputDir + "/" + key.getName() + "-" + key.getVersion() + "-rest.discovery";
       String docString = writer.writeValueAsString(entry.getValue());
       if (outputToDisk) {
-        Files.write(docString, new File(discoveryDocFilePath), UTF_8);
+        Files.asCharSink(new File(discoveryDocFilePath), UTF_8).write(docString);
         System.out.println("API Discovery Document written to " + discoveryDocFilePath);
       }
       builder.put(discoveryDocFilePath, docString);

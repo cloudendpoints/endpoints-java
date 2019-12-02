@@ -104,7 +104,7 @@ public class GenApiConfigAction extends EndpointsToolAction {
         String apiConfigFileName = entry.getKey();
         String apiConfigFileContent = entry.getValue();
         String apiConfigFilePath = outputDir + "/" + apiConfigFileName;
-        Files.write(apiConfigFileContent, new File(apiConfigFilePath), UTF_8);
+        Files.asCharSink(new File(apiConfigFilePath), UTF_8).write(apiConfigFileContent);
         System.out.println("API configuration written to " + apiConfigFilePath);
       }
     }

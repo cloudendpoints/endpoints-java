@@ -124,7 +124,7 @@ public class GetOpenApiDocAction extends EndpointsToolAction {
     String swaggerStr = Json.mapper().writer(new EndpointsPrettyPrinter())
         .writeValueAsString(swagger);
     if (outputToDisk) {
-      Files.write(swaggerStr, new File(outputFilePath), UTF_8);
+      Files.asCharSink(new File(outputFilePath), UTF_8).write(swaggerStr);
       System.out.println("OpenAPI document written to " + outputFilePath);
     }
 
