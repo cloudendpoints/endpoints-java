@@ -51,8 +51,10 @@ public class EndpointsTool {
     actions = new LinkedHashMap<>();
     actions.put(GetDiscoveryDocAction.NAME, new GetDiscoveryDocAction());
     actions.put(GetClientLibAction.NAME, new GetClientLibAction());
+    actions.put(GetClientSrcAction.NAME, new GetClientSrcAction());
     actions.put(GenApiConfigAction.NAME, new GenApiConfigAction());
     actions.put(GenClientLibAction.NAME, new GenClientLibAction());
+    actions.put(GenClientSrcAction.NAME, new GenClientSrcAction());
     actions.put(GetOpenApiDocAction.NAME, new GetOpenApiDocAction());
     actions.put(GetOpenApiDocAction.LEGACY_NAME,
         new GetOpenApiDocAction(GetOpenApiDocAction.LEGACY_NAME, false));
