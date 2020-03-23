@@ -19,13 +19,18 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.server.spi.config.model.EndpointsFlag;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.junit.Test;
 
+import java.lang.reflect.Constructor;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalLong;
 
 /**
  * Tests for {@link ObjectMapperUtil}
@@ -58,18 +63,69 @@ public class ObjectMapperUtilTest {
   }
 
   @Test
-  public void createStandardObjectMapper_optional() throws Exception {
+  public void createStandardObjectMapper_deserialize_optional() throws JsonProcessingException {
     ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
-    assertThat(mapper.writeValueAsString(new TestJava8Types(Optional.of("value")))).isEqualTo("{\"optional\":\"value\"}");
-    assertThat(mapper.writeValueAsString(new TestJava8Types(Optional.of("")))).isEqualTo("{\"optional\":\"\"}");
-    assertThat(mapper.writeValueAsString(new TestJava8Types(Optional.empty()))).isEqualTo("{\"optional\":null}");
-    assertThat(mapper.writeValueAsString(new TestJava8Types(null))).isEqualTo("{\"optional\":null}");
+    ObjectReader reader = mapper.readerFor(TestOptionals.class);
+    assertThat(reader.<TestOptionals>readValue("{\"optionalString\":\"value\"}").getOptionalString())
+        .isEqualTo(Optional.of("value"));
+    assertThat(reader.<TestOptionals>readValue("{\"optionalString\":\"\"}").getOptionalString())
+        .isEqualTo(Optional.of(""));
+    assertThat(reader.<TestOptionals>readValue("{\"optionalString\":null}").getOptionalString())
+        .isEqualTo(Optional.empty());
+    assertThat(reader.<TestOptionals>readValue("{}").getOptionalString())
+        .isEqualTo(null);
+    assertThat(reader.<TestOptionals>readValue("{\"optionalLong\":123}").getOptionalLong())
+        .isEqualTo(OptionalLong.of(123));
+    assertThat(reader.<TestOptionals>readValue("{\"optionalLong\":null}").getOptionalLong())
+        .isEqualTo(OptionalLong.empty());
+    assertThat(reader.<TestOptionals>readValue("{}").getOptionalLong())
+        .isEqualTo(null);
+  }
+  
+  @Test
+  public void createStandardObjectMapper_serialize_optional() throws Exception {
+    testJava8Type(TestOptionals.class, 
+        "{\"optionalString\":null,\"optionalLong\":null}",
+        "{\"optionalString\":null,\"optionalLong\":null}"
+    );
+    testJava8Type(TestOptionalsNonAbsent.class, 
+        "{}",
+        "{}"
+    );
+    testJava8Type(TestOptionalsNonEmpty.class, 
+        "{}",
+        "{}"
+    );
+    testJava8Type(TestOptionalsNonNull.class, 
+        "{\"optionalString\":null,\"optionalLong\":null}",
+        "{}"
+    );
+    testJava8Type(TestOptionalsNonDefault.class, 
+        "{\"optionalString\":null,\"optionalLong\":null}",
+        "{}"
+    );
+    testJava8Type(TestOptionalsUseDefaults.class,
+        "{\"optionalString\":null,\"optionalLong\":null}",
+        "{\"optionalString\":null,\"optionalLong\":null}"
+    );
+    testJava8Type(TestOptionalsAlways.class, 
+        "{\"optionalString\":null,\"optionalLong\":null}",
+        "{\"optionalString\":null,\"optionalLong\":null}"
+    );
+  }
 
-    ObjectReader reader = mapper.readerFor(TestJava8Types.class);
-    assertThat(reader.<TestJava8Types>readValue("{\"optional\":\"value\"}").getOptional()).isEqualTo(Optional.of("value"));
-    assertThat(reader.<TestJava8Types>readValue("{\"optional\":\"\"}").getOptional()).isEqualTo(Optional.of(""));
-    assertThat(reader.<TestJava8Types>readValue("{\"optional\":null}").getOptional()).isEqualTo(Optional.empty());
-    assertThat(reader.<TestJava8Types>readValue("{}").getOptional()).isEqualTo(null);
+  private <T extends TestOptionals> void testJava8Type(Class<T> type, String expectedForEmpty,
+      String expectedForNull) throws Exception {
+    ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
+    Constructor<T> constructor = type.getConstructor(Optional.class, OptionalLong.class);
+    assertThat(mapper.writeValueAsString(constructor.newInstance(Optional.of("value"), OptionalLong.of(123))))
+        .isEqualTo("{\"optionalString\":\"value\",\"optionalLong\":123}");
+    assertThat(mapper.writeValueAsString(constructor.newInstance(Optional.of(""), OptionalLong.of(0))))
+        .isEqualTo("{\"optionalString\":\"\",\"optionalLong\":0}");
+    assertThat(mapper.writeValueAsString(constructor.newInstance(Optional.empty(), OptionalLong.empty())))
+        .isEqualTo(expectedForEmpty);
+    assertThat(mapper.writeValueAsString(constructor.newInstance(null, null)))
+        .isEqualTo(expectedForNull);
   }
 
   @Test
@@ -108,22 +164,89 @@ public class ObjectMapperUtilTest {
     }
   }
   
-  private static class TestJava8Types {
-    Optional<String> optional;
+  private static class TestOptionals {
+    Optional<String> optionalString;
+    OptionalLong optionalLong;
 
-    public TestJava8Types() {
+    public TestOptionals() {
     }
 
-    public TestJava8Types(Optional<String> optional) {
-      this.optional = optional;
+    public TestOptionals(Optional<String> optionalString, OptionalLong optionalLong) {
+      this.optionalString = optionalString;
+      this.optionalLong = optionalLong;
     }
 
-    public Optional<String> getOptional() {
-      return optional;
+    public Optional<String> getOptionalString() {
+      return optionalString;
     }
 
-    public void setOptional(Optional<String> optional) {
-      this.optional = optional;
+    public void setOptionalString(Optional<String> optionalString) {
+      this.optionalString = optionalString;
+    }
+
+    public OptionalLong getOptionalLong() {
+      return optionalLong;
+    }
+
+    public TestOptionals setOptionalLong(OptionalLong optionalLong) {
+      this.optionalLong = optionalLong;
+      return this;
+    }
+  }
+
+  @JsonInclude(Include.NON_ABSENT)
+  private static class TestOptionalsNonAbsent extends TestOptionals {
+    public TestOptionalsNonAbsent() {
+    }
+    public TestOptionalsNonAbsent(Optional<String> optionalString, OptionalLong optionalLong) {
+      super(optionalString, optionalLong);
+    }
+  }
+
+  @JsonInclude(Include.NON_EMPTY)
+  private static class TestOptionalsNonEmpty extends TestOptionals {
+    public TestOptionalsNonEmpty() {
+    }
+    public TestOptionalsNonEmpty(Optional<String> optionalString, OptionalLong optionalLong) {
+      super(optionalString, optionalLong);
+    }
+  }
+
+  @JsonInclude(Include.NON_NULL)
+  private static class TestOptionalsNonNull extends TestOptionals {
+    public TestOptionalsNonNull() {
+    }
+    public TestOptionalsNonNull(Optional<String> optionalString, OptionalLong optionalLong) {
+      super(optionalString, optionalLong);
+    }
+  }
+
+  @JsonInclude(Include.NON_DEFAULT)
+  private static class TestOptionalsNonDefault extends TestOptionals {
+    public TestOptionalsNonDefault() {
+    }
+    public TestOptionalsNonDefault(Optional<String> optionalString,
+        OptionalLong optionalLong) {
+      super(optionalString, optionalLong);
+    }
+  }
+
+  @JsonInclude(Include.USE_DEFAULTS)
+  private static class TestOptionalsUseDefaults extends TestOptionals {
+    public TestOptionalsUseDefaults() {
+    }
+    public TestOptionalsUseDefaults(Optional<String> optionalString,
+        OptionalLong optionalLong) {
+      super(optionalString, optionalLong);
+    }
+  }
+  
+  @JsonInclude(Include.ALWAYS)
+  private static class TestOptionalsAlways extends TestOptionals {
+    public TestOptionalsAlways() {
+    }
+    public TestOptionalsAlways(Optional<String> optionalString, OptionalLong optionalLong) {
+      super(optionalString, optionalLong);
     }
   }
 
