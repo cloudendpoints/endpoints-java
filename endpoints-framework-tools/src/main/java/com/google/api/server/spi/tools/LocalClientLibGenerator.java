@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharSource;
 
 /**
- * Implementation of (@link ClientLibGenerator} using a local tool for generation.<br/>
+ * Implementation of (@link ClientLibGenerator} using a local tool for generation.<br>
  * The Python package <code>google-apis-client-generator</code> must be installed:
  * <pre>
  *     python2 -m pip install --user --upgrade setuptools wheel
