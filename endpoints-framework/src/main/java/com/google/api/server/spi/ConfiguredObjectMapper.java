@@ -32,6 +32,11 @@ import javax.annotation.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
+import java.util.stream.Stream;
 
 /**
  * A wrapper around an {@link ObjectMapper} with a frozen configuration. This exposes a subset of
@@ -145,8 +150,13 @@ public class ConfiguredObjectMapper {
         ObjectMapper mapper =
             ObjectMapperUtil.createStandardObjectMapper(key.apiSerializationConfig);
         mapper.setDefaultPropertyInclusion(Include.NON_EMPTY);
-        mapper.configOverride(String.class)
-            .setIncludeAsProperty(Value.construct(Include.NON_NULL, Include.USE_DEFAULTS));
+        Stream.of(
+            //empty Strings must be serialized
+            String.class,
+            //Empty optionals should serialized by default
+            Optional.class, OptionalLong.class, OptionalDouble.class, OptionalInt.class)
+            .forEach(clazz -> mapper.configOverride(clazz)
+                .setIncludeAsProperty(Value.construct(Include.NON_NULL, Include.USE_DEFAULTS)));
         mapper.configOverride(Map.class)
             .setIncludeAsProperty(Value.construct(Include.USE_DEFAULTS, Include.NON_NULL));
         for (Module module : key.modulesSet) {
