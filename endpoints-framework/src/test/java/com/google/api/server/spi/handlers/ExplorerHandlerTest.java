@@ -25,34 +25,45 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * Tests for {@link ExplorerHandler}.
  */
 public class ExplorerHandlerTest {
   @Test
   public void testHandle() throws Exception {
-    testHandle("http", 8080, "http://apis-explorer.appspot.com/apis-explorer/"
-        + "?base=http://localhost:8080/_ah/api");
+    testHandle("http", 8080, "https://apis-explorer.appspot.com/apis-explorer/"
+        + "?base=http://localhost:8080/_ah/api", Collections.emptyMap());
   }
 
   @Test
   public void testHandle_explicitHttpPort() throws Exception {
-    testHandle("http", 80, "http://apis-explorer.appspot.com/apis-explorer/"
-        + "?base=http://localhost/_ah/api");
+    testHandle("http", 80, "https://apis-explorer.appspot.com/apis-explorer/"
+        + "?base=http://localhost/_ah/api", Collections.emptyMap());
   }
 
   @Test
   public void testHandle_explicitHttpsPort() throws Exception {
-    testHandle("https", 443, "http://apis-explorer.appspot.com/apis-explorer/"
-        + "?base=https://localhost/_ah/api");
+    testHandle("https", 443, "https://apis-explorer.appspot.com/apis-explorer/"
+        + "?base=https://localhost/_ah/api", Collections.emptyMap());
   }
 
-  private void testHandle(String scheme, int port, String expectedLocation) throws Exception {
+  @Test
+  public void testHandle_forwardedRequest() throws Exception {
+    testHandle("http", 80, "https://apis-explorer.appspot.com/apis-explorer/"
+        + "?base=https://localhost/_ah/api", Collections.singletonMap("X-Forwarded-Proto", "https"));
+  }
+
+  private void testHandle(String scheme, int port, String expectedLocation,
+      Map<String, String> headers) throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setScheme(scheme);
     request.setServerName("localhost");
     request.setServerPort(port);
     request.setRequestURI("/_ah/api/explorer/");
+    headers.forEach(request::addHeader);
     MockHttpServletResponse response = new MockHttpServletResponse();
     ExplorerHandler handler = new ExplorerHandler(null);
     EndpointsContext context = new EndpointsContext("GET", "explorer", request, response, true);

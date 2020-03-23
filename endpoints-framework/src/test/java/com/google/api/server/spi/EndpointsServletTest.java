@@ -76,7 +76,7 @@ public class EndpointsServletTest {
 
     assertThat(resp.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
     assertThat(resp.getHeader("Location")).isEqualTo(
-        "http://apis-explorer.appspot.com/apis-explorer/?base=" + API_ROOT);
+        "https://apis-explorer.appspot.com/apis-explorer/?base=" + API_ROOT);
   }
 
   @Test

@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
   
   private static final String DEFAULT_TEMPLATE 
-      = "http://apis-explorer.appspot.com/apis-explorer/?base=${apiBase}";
+      = "https://apis-explorer.appspot.com/apis-explorer/?base=${apiBase}";
   
   private final String urlTemplate;
 
@@ -50,6 +50,10 @@ public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
     // This will convert http://localhost:8080/_ah/api/explorer to
     // ${EXPLORER_URL}?base=http://localhost:8080/_ah/api
     String apiBase = url.substring(0, url.length() - path.length() - 1);
+    String protocolHeader = req.getHeader("X-Forwarded-Proto");
+    if (protocolHeader != null && protocolHeader.equalsIgnoreCase("https")) {
+      apiBase = apiBase.replaceFirst("^http:", "https:");
+    }
     return urlTemplate.replace("${apiBase}", apiBase);
   }
 
