@@ -16,6 +16,7 @@
 package com.google.api.server.spi.handlers;
 
 import com.google.api.server.spi.EndpointsContext;
+import com.google.api.server.spi.RequestUtil;
 import com.google.api.server.spi.Strings;
 import com.google.api.server.spi.dispatcher.DispatcherHandler;
 
@@ -38,7 +39,6 @@ public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
     this.urlTemplate = Optional.ofNullable(urlTemplate).orElse(DEFAULT_TEMPLATE);
   }
 
-
   @Override
   public void handle(EndpointsContext context) throws IOException {
     context.getResponse()
@@ -46,25 +46,12 @@ public class ExplorerHandler implements DispatcherHandler<EndpointsContext> {
   }
 
   private String getExplorerUrl(HttpServletRequest req, String path) {
-    String url = stripRedundantPorts(Strings.stripTrailingSlash(req.getRequestURL().toString()));
+    String requestUrl = RequestUtil.getOriginalRequestUrl(req);
+    requestUrl = Strings.stripTrailingSlash(requestUrl);
     // This will convert http://localhost:8080/_ah/api/explorer to
     // ${EXPLORER_URL}?base=http://localhost:8080/_ah/api
-    String apiBase = url.substring(0, url.length() - path.length() - 1);
-    String protocolHeader = req.getHeader("X-Forwarded-Proto");
-    if (protocolHeader != null && protocolHeader.equalsIgnoreCase("https")) {
-      apiBase = apiBase.replaceFirst("^http:", "https:");
-    }
+    String apiBase = requestUrl.substring(0, requestUrl.length() - path.length() - 1);
     return urlTemplate.replace("${apiBase}", apiBase);
   }
-
-  private static String stripRedundantPorts(String url) {
-    if (url == null) {
-      return null;
-    } else if (url.startsWith("http:") && url.contains(":80/")) {
-      return url.replace(":80/", "/");
-    } else if (url.startsWith("https:") && url.contains(":443/")) {
-      return url.replace(":443/", "/");
-    }
-    return url;
-  }
+  
 }

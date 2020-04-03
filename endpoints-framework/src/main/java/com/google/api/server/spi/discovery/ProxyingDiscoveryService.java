@@ -15,6 +15,7 @@
  */
 package com.google.api.server.spi.discovery;
 
+import com.google.api.server.spi.RequestUtil;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
@@ -80,8 +81,7 @@ public class ProxyingDiscoveryService {
   }
 
   @VisibleForTesting
-  static String getActualRoot(HttpServletRequest request)
-      throws InternalServerErrorException {
+  static String getActualRoot(HttpServletRequest request) throws InternalServerErrorException {
     String uri = request.getRequestURI();
     int index = uri.indexOf("discovery/v1/apis");
     if (index == -1) {
@@ -89,7 +89,7 @@ public class ProxyingDiscoveryService {
           .log("Could not compute discovery root from url: %s", request.getRequestURI());
       throw new InternalServerErrorException("Internal Server Error");
     }
-    StringBuffer url = request.getRequestURL();
-    return url.substring(0, url.length() - (uri.length() - index));
+    String requestUrl = RequestUtil.getOriginalRequestUrl(request);
+    return requestUrl.substring(0, requestUrl.length() - (uri.length() - index));
   }
 }

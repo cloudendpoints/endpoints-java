@@ -56,7 +56,7 @@ public class ExplorerHandlerTest {
         + "?base=https://localhost/_ah/api", Collections.singletonMap("X-Forwarded-Proto", "https"));
   }
 
-  private void testHandle(String scheme, int port, String expectedLocation,
+  private void testHandle(String scheme, Integer port, String expectedLocation,
       Map<String, String> headers) throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setScheme(scheme);
