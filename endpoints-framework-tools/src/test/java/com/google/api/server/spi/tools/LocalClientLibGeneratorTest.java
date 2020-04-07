@@ -13,6 +13,8 @@
  */
 package com.google.api.server.spi.tools;
 
+import static org.junit.Assume.assumeTrue;
+
 import static com.google.api.server.spi.tools.LocalClientLibGenerator.GENERATOR_EXECUTABLE;
 
 import java.io.File;
@@ -46,9 +48,7 @@ public class LocalClientLibGeneratorTest {
 
   @Test
   public void testJavaCodeGeneration() throws Exception {
-    if (isTestIgnored()) {
-      return;
-    }
+    assumeTrue(isToolInstalled());
 
     File destinationDir = tmpFolder.newFolder("destination");
     generator.generateClientLib(discoveryDoc, "java", null, null, destinationDir);
@@ -56,7 +56,9 @@ public class LocalClientLibGeneratorTest {
     Assert.assertTrue(com.isDirectory());
     File google = new File(com, "google");
     Assert.assertTrue(google.isDirectory());
-    File guestbook = new File(google, "guestbook");
+    File client = new File(google, "client");
+    Assert.assertTrue(client.isDirectory());
+    File guestbook = new File(client, "guestbook");
     Assert.assertTrue(guestbook.isDirectory());
     File v1 = new File(guestbook, "v1");
     Assert.assertTrue(guestbook.isDirectory());
@@ -74,9 +76,7 @@ public class LocalClientLibGeneratorTest {
 
   @Test
   public void testDestinationDirectoryCreation() throws Exception {
-    if (isTestIgnored()) {
-      return;
-    }
+    assumeTrue(isToolInstalled());
 
     File destinationParent = tmpFolder.newFolder("destination");
     File dir1 = new File(destinationParent, "d1");
@@ -90,9 +90,7 @@ public class LocalClientLibGeneratorTest {
 
   @Test
   public void testInvalidDiscoveryFile_fails() throws Exception {
-    if (isTestIgnored()) {
-      return;
-    }
+    assumeTrue(isToolInstalled());
 
     expectedException.expect(IOException.class);
 
@@ -103,9 +101,7 @@ public class LocalClientLibGeneratorTest {
 
   @Test
   public void testDestinationIsFile_fails() throws Exception {
-    if (isTestIgnored()) {
-      return;
-    }
+    assumeTrue(isToolInstalled());
 
     expectedException.expect(IOException.class);
 
@@ -115,9 +111,7 @@ public class LocalClientLibGeneratorTest {
 
   @Test
   public void testLanguageUnsupported() throws Exception {
-    if (isTestIgnored()) {
-      return;
-    }
+    assumeTrue(isToolInstalled());
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("Unsupported language: python");
@@ -126,14 +120,14 @@ public class LocalClientLibGeneratorTest {
   }
 
   /**
-   * Ignore the test if the generator isn't installed.
+   * Checks if the generator is installed.
    */
-  private boolean isTestIgnored() {
+  private boolean isToolInstalled() {
     try {
       Runtime.getRuntime().exec(GENERATOR_EXECUTABLE);
-      return false;
-    } catch (IOException e) {
       return true;
+    } catch (IOException e) {
+      return false;
     }
   }
 }
