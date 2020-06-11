@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 language: java
 jdk:
   - openjdk8
@@ -6,7 +6,7 @@ before_install:
   - sudo apt-get -y install python2.7 python-pip
   - python2 -m pip install --user google-apis-client-generator
 install:
- - JAVA_HOME=$(jdk_switcher home openjdk8) ./gradlew classes testClasses
+  - ./gradlew classes testClasses
 after_success:
   - ./gradlew jacocoTestReport
   - bash <(curl -s https://codecov.io/bash)
