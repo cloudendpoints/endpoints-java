@@ -124,7 +124,7 @@ public class EndpointsMethodHandler {
           CorsHandler.allowOrigin(request, response);
           CorsHandler.setAccessControlAllowCredentials(response);
         }
-        systemService.invokeServiceMethod(service, endpointMethod.getMethod(), reader, writer);
+        systemService.invokeServiceMethod(service, endpointMethod.getMethod(), methodConfig.getEffectiveResponseStatus(), reader, writer);
       } catch (ServiceException e) {
         writeError(context, e);
       } catch (Exception e) {

@@ -250,6 +250,11 @@ public class ApiConfigValidator {
     if (typeLoader.isSchemaType(returnType) || Types.isEnumType(returnType)) {
       throw new InvalidReturnTypeException(config, returnType);
     }
+
+    int responseStatus = config.getResponseStatus();
+    if (responseStatus != ApiMethodConfig.RESPONSE_STATUS_UNSET && (responseStatus < 200 || responseStatus > 299)) {
+      throw new InvalidResponseStatusException(config, responseStatus);
+    }
   }
 
   private void validateThirdPartyAuth(ApiMethodConfig config)

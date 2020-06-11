@@ -33,7 +33,7 @@ public class SuccessResultWriter implements ResultWriter {
   }
 
   @Override
-  public void write(Object result) throws IOException {
+  public void write(Object result, int status) throws IOException {
     assertThat(result).isEqualTo(expectedResult);
   }
 

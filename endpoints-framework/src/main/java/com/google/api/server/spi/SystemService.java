@@ -340,14 +340,14 @@ public class SystemService {
    * Invokes a {@code method} on a {@code service} given a {@code paramReader} to read parameters
    * and a {@code resultWriter} to write result.
    */
-  public void invokeServiceMethod(Object service, Method method, ParamReader paramReader,
+  public void invokeServiceMethod(Object service, Method method, int status, ParamReader paramReader,
       ResultWriter resultWriter) throws IOException {
 
     try {
       Object[] params = paramReader.read();
       logger.atFine().log("params=%s (String)", Arrays.toString(params));
       Object response = method.invoke(service, params);
-      resultWriter.write(response);
+      resultWriter.write(response, status);
     } catch (IllegalArgumentException | IllegalAccessException e) {
       logger.atSevere().withCause(e).log("exception occurred while calling backend method");
       resultWriter.writeError(new BadRequestException(e));

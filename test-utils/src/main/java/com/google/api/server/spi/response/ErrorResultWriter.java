@@ -51,7 +51,7 @@ public class ErrorResultWriter implements ResultWriter {
   }
 
   @Override
-  public void write(Object result) throws IOException {
+  public void write(Object result, int status) throws IOException {
     fail("expected a ServiceException to be thrown");
   }
 

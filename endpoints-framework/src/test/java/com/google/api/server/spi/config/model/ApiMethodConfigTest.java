@@ -58,6 +58,9 @@ public class ApiMethodConfigTest {
   private static final List<String> defaultAudiences2 = Lists.newArrayList("a1");
   private static final List<String> defaultClientIds2 = Lists.newArrayList("c1", "c2", "c3");
 
+  private static final TypeToken voidReturnType = TypeToken.of(Void.class);
+  private static final TypeToken stringReturnType = TypeToken.of(String.class);
+
   @Before
   public void setUp() throws Exception {
     Mockito.when(apiConfig.getName()).thenReturn("testapi");
@@ -105,6 +108,22 @@ public class ApiMethodConfigTest {
   public void testMethodNameNoResource() {
     Mockito.when(apiClassConfig.getResource()).thenReturn(null);
     assertEquals("className.getResultNoParams", methodConfig.getName());
+  }
+
+  @Test
+  public void testMethodResponseStatusEffectiveStatus_returnValue_statusOK() throws Exception {
+    Mockito.when(method.getReturnType()).thenReturn(stringReturnType);
+    methodConfig = new ApiMethodConfig(method, new TypeLoader(), apiClassConfig);
+
+    assertEquals(200, methodConfig.getEffectiveResponseStatus());
+  }
+
+  @Test
+  public void testMethodReponseStatusEffectiveStatus_returnVoid_statusNO_CONTENT() throws Exception {
+    Mockito.when(method.getReturnType()).thenReturn(voidReturnType);
+    methodConfig = new ApiMethodConfig(method, new TypeLoader(), apiClassConfig);
+
+    assertEquals(204, methodConfig.getEffectiveResponseStatus());
   }
 
   @Test

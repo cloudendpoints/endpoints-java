@@ -339,6 +339,7 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     config.setDescriptionIfNotEmpty(getAnnotationProperty(apiMethod, "description"));
     config.setPathIfNotEmpty(getAnnotationProperty(apiMethod, "path"));
     config.setHttpMethodIfNotEmpty(getAnnotationProperty(apiMethod, "httpMethod"));
+    config.setResponseStatus(getAnnotationProperty(apiMethod, "responseStatus"));
     config.setAuthLevelIfSpecified(getAnnotationProperty(apiMethod, "authLevel"));
     config.setScopesIfSpecified(getAnnotationProperty(apiMethod, "scopes"));
     config.setAudiencesIfSpecified(getAnnotationProperty(apiMethod, "audiences"));

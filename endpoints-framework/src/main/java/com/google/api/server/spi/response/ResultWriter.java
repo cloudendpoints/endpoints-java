@@ -28,7 +28,7 @@ public interface ResultWriter {
    * Writes a result JSON object.
    * @throws IOException
    */
-  void write(Object result) throws IOException;
+  void write(Object result, int status) throws IOException;
 
   /**
    * Writes an error response with the HTTP status code and JSON body of {"message":

@@ -15,6 +15,9 @@
  */
 package com.google.api.server.spi.config.model;
 
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
+
 import com.google.api.server.spi.EndpointMethod;
 import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.TypeLoader;
@@ -155,6 +158,9 @@ public class ApiMethodConfig {
     }
   }
 
+  /** Value of the response status when not set in the definition of the method. */
+  public static final int RESPONSE_STATUS_UNSET = -1;
+
   private final String endpointMethodName;
 
   private final List<ApiParameterConfig> parameterConfigs;
@@ -178,6 +184,7 @@ public class ApiMethodConfig {
   private boolean deprecated = false;
   private Boolean apiKeyRequired;
   private TypeToken<?> returnType;
+  private int responseStatus;
   private Class<?>[] exceptionTypes;
   private List<ApiMetricCostConfig> metricCosts;
 
@@ -209,6 +216,7 @@ public class ApiMethodConfig {
     this.ignored = original.ignored;
     this.apiKeyRequired = original.apiKeyRequired;
     this.returnType = original.returnType;
+    this.responseStatus = original.responseStatus;
     this.typeLoader = original.typeLoader;
     this.metricCosts = original.metricCosts;
 
@@ -248,6 +256,7 @@ public class ApiMethodConfig {
     ignored = false;
     apiKeyRequired = null;
     returnType = endpointMethod.getReturnType();
+    responseStatus = RESPONSE_STATUS_UNSET;
     exceptionTypes = endpointMethod.getMethod().getExceptionTypes();
     metricCosts = ImmutableList.of();
   }
@@ -280,6 +289,7 @@ public class ApiMethodConfig {
           ignored == config.ignored &&
           apiKeyRequired == config.apiKeyRequired &&
           Objects.equals(returnType, config.returnType) &&
+          responseStatus == config.responseStatus &&
           Objects.equals(metricCosts, config.metricCosts);
     } else {
       return false;
@@ -290,7 +300,7 @@ public class ApiMethodConfig {
   public int hashCode() {
     return Objects.hash(endpointMethodName, parameterConfigs, name, path, httpMethod,
         scopeExpression, audiences, clientIds, authenticators, typeLoader,
-        ignored, issuerAudiences, apiKeyRequired, returnType, metricCosts);
+        ignored, issuerAudiences, apiKeyRequired, returnType, responseStatus, metricCosts);
   }
 
   public ApiClassConfig getApiClassConfig() {
@@ -526,6 +536,18 @@ public class ApiMethodConfig {
 
   public TypeToken<?> getReturnType() {
     return returnType;
+  }
+
+  public void setResponseStatus(int responseStatus) {
+    this.responseStatus = responseStatus;
+  }
+
+  public int getResponseStatus() {
+    return responseStatus;
+  }
+
+  public int getEffectiveResponseStatus() {
+    return responseStatus == RESPONSE_STATUS_UNSET ? (hasResourceInResponse() ? SC_OK : SC_NO_CONTENT) : responseStatus;
   }
 
   public class ErrorResponse {

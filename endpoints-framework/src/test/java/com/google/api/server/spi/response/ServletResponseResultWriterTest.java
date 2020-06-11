@@ -703,9 +703,18 @@ public class ServletResponseResultWriterTest {
   public void testWriteNull() throws Exception {
     MockHttpServletResponse response = new MockHttpServletResponse();
     ServletResponseResultWriter writer = getDefaultWriter(response);
-    writer.write(null);
+    writer.write(null, HttpServletResponse.SC_NO_CONTENT);
     assertEquals("", response.getContentAsString());
     assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
+  }
+
+  @Test
+  public void testWriteCustomStatus() throws Exception {
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    ServletResponseResultWriter writer = getDefaultWriter(response);
+    writer.write("response", HttpServletResponse.SC_CREATED);
+    assertEquals("\"response\"", response.getContentAsString());
+    assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
   }
 
   @SuppressWarnings("unused")
@@ -736,7 +745,7 @@ public class ServletResponseResultWriterTest {
     MockHttpServletResponse response = new MockHttpServletResponse();
     ServletResponseResultWriter writer = new ServletResponseResultWriter(response, 
         (ApiSerializationConfig) null, true /* prettyPrint */, true /* addContentLength */);
-    writer.write(ImmutableMap.of("one", "two", "three", "four"));
+    writer.write(ImmutableMap.of("one", "two", "three", "four"), HttpServletResponse.SC_OK);
     // If the response is pretty printed, there should be at least two newlines.
     String body = response.getContentAsString();
     int index = body.indexOf('\n');
@@ -805,7 +814,7 @@ public class ServletResponseResultWriterTest {
     ServletResponseResultWriter writer = legacy
         ? new ServletResponseResultWriter(response, getLegacyObjectWriter(), false, false)
         : getDefaultWriter(response);
-    writer.write(value);
+    writer.write(value, HttpServletResponse.SC_OK);
     return response.getContentAsString();
   }
 
@@ -825,7 +834,7 @@ public class ServletResponseResultWriterTest {
     unorderedMap.put("a", "value_a");
     MockHttpServletResponse response = new MockHttpServletResponse();
     ServletResponseResultWriter writer = createCustomizedWriter(response);
-    writer.write(unorderedMap);
+    writer.write(unorderedMap, HttpServletResponse.SC_OK);
     String content = response.getContentAsString();
     assertEquals("{a:\"value_a\"}", content);
   }

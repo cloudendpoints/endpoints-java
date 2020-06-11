@@ -523,9 +523,8 @@ public class SwaggerGenerator {
       }
     }
     Response response = new Response().description("A successful response");
-    int responseCode = 204;
+    int responseCode = methodConfig.getEffectiveResponseStatus();
     if (methodConfig.hasResourceInResponse()) {
-      responseCode = 200;
       TypeToken<?> returnType =
           ApiAnnotationIntrospector.getSchemaType(methodConfig.getReturnType(), apiConfig);
       Schema schema = genCtx.schemata.getOrAdd(returnType, apiConfig);

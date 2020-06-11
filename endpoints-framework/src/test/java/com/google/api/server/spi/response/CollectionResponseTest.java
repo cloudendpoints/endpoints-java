@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Tests of {@link CollectionResponse}.
  */
@@ -49,7 +51,7 @@ public class CollectionResponseTest {
     MockHttpServletResponse servletResponse = new MockHttpServletResponse();
     ServletResponseResultWriter writer = new ServletResponseResultWriter(
         servletResponse, (ApiSerializationConfig) null, false, false);
-    writer.write(getBeans(2));
+    writer.write(getBeans(2), HttpServletResponse.SC_OK);
 
     ObjectNode json = new ObjectMapper().readValue(
         servletResponse.getContentAsString(), ObjectNode.class);

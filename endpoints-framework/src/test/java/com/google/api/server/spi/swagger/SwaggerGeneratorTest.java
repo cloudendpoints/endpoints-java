@@ -56,6 +56,7 @@ import com.google.api.server.spi.testing.MultiVersionEndpoint.Version1Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version2Endpoint;
 import com.google.api.server.spi.testing.RequiredPropertiesEndpoint;
 import com.google.api.server.spi.testing.SpecialCharsEndpoint;
+import com.google.api.server.spi.testing.ResponseStatusEndpoint;
 import com.google.common.collect.ImmutableList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -333,6 +334,14 @@ public class SwaggerGeneratorTest {
     Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context
         .setAddErrorCodesForServiceExceptions(true));
     Swagger expected = readExpectedAsSwagger("error_codes_service_exceptions.swagger");
+    checkSwagger(expected, swagger);
+  }
+
+  @Test
+  public void testWriteSwagger_ResponseStatus() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), ResponseStatusEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
+    Swagger expected = readExpectedAsSwagger("response_status.swagger");
     checkSwagger(expected, swagger);
   }
 

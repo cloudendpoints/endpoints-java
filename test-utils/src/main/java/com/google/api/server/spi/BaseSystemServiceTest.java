@@ -45,6 +45,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Base test class for {@link SystemService}.
  */
@@ -143,7 +145,7 @@ public abstract class BaseSystemServiceTest {
 
   @Test
   public void testInvokeServiceMethod() throws Exception {
-    systemService.invokeServiceMethod(service, succeed,
+    systemService.invokeServiceMethod(service, succeed, HttpServletResponse.SC_OK,
         new FakeParamReader("string", true, 99, 9999999999L, 9.9f, .99, false, 99, 9999999999L,
             9.9f, .99, null, null, null, null), new SuccessResultWriter(TestEndpoint.RESULT));
   }
@@ -151,33 +153,34 @@ public abstract class BaseSystemServiceTest {
   @Test
   public void testServiceException() throws Exception {
     systemService
-        .invokeServiceMethod(service, fail, new FakeParamReader("string", 99, null, null, null),
+        .invokeServiceMethod(service, fail, HttpServletResponse.SC_OK, new FakeParamReader("string", 99, null, null, null),
             new ErrorResultWriter(400, TestEndpoint.ERROR_MESSAGE));
   }
 
   @Test
   public void testWrappedException() throws Exception {
-    systemService.invokeServiceMethod(service, getTestServiceMethod("failWrapped"),
+    systemService.invokeServiceMethod(service, getTestServiceMethod("failWrapped"), HttpServletResponse.SC_OK,
         new FakeParamReader(), new ErrorResultWriter(401, TestEndpoint.ERROR_MESSAGE));
   }
 
   @Test
   public void testOAuthException() throws Exception {
-    systemService.invokeServiceMethod(service, failOAuth,
+    systemService.invokeServiceMethod(service, failOAuth, HttpServletResponse.SC_OK,
         new FakeParamReader("string", 99, null, null, null),
         new ErrorResultWriter(401, TestEndpoint.ERROR_MESSAGE, true));
   }
 
   @Test
   public void testIllegalArgumentExceptionUserError() throws Exception {
-    systemService.invokeServiceMethod(service, failIllegalArgumentException, new FakeParamReader(),
+    systemService.invokeServiceMethod(service, failIllegalArgumentException, HttpServletResponse.SC_OK,
+        new FakeParamReader(),
         new ErrorResultWriter(400));
   }
 
   @Test
   public void testIllegalArgumentExceptionServerError() throws Exception {
     systemService = getSystemService(new Object[] {service}, true);
-    systemService.invokeServiceMethod(service, failIllegalArgumentException, new FakeParamReader(),
+    systemService.invokeServiceMethod(service, failIllegalArgumentException, HttpServletResponse.SC_OK, new FakeParamReader(),
         new ErrorResultWriter(500));
   }
 

@@ -1,0 +1,79 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "swagger-test.appspot.com"
+  },
+  "host": "swagger-test.appspot.com",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name" : "responseStatus:v1"
+    }
+  ],
+  "schemes" : [ "https" ],
+  "consumes" : [ "application/json" ],
+  "produces" : [ "application/json" ],
+  "paths" : {
+    "/responseStatus/v1/responseStatusCreatedReturnString" : {
+      "post" : {
+        "tags" : [ "responseStatus:v1" ],
+        "operationId" : "responseStatus:v1.responseStatusCreatedReturnString",
+        "responses" : {
+          "201" : {
+            "description" : "A StringValue response",
+            "schema" : {
+              "$ref" : "#/definitions/StringValue"
+            }
+          }
+        }
+      }
+    },
+    "/responseStatus/v1/responseStatusCreatedReturnVoid" : {
+      "post" : {
+        "tags" : [ "responseStatus:v1" ],
+        "operationId" : "responseStatus:v1.responseStatusCreatedReturnVoid",
+        "responses" : {
+          "201" : {
+            "description" : "A successful response"
+          }
+        }
+      }
+    },
+    "/responseStatus/v1/responseStatusUnsetReturnString" : {
+      "post" : {
+        "tags" : [ "responseStatus:v1" ],
+        "operationId" : "responseStatus:v1.responseStatusUnsetReturnString",
+        "responses" : {
+          "200" : {
+            "description" : "A StringValue response",
+            "schema" : {
+              "$ref" : "#/definitions/StringValue"
+            }
+          }
+        }
+      }
+    },
+    "/responseStatus/v1/responseStatusUnsetReturnVoid" : {
+      "post" : {
+        "tags" : [ "responseStatus:v1" ],
+        "operationId" : "responseStatus:v1.responseStatusUnsetReturnVoid",
+        "responses" : {
+          "204" : {
+            "description" : "A successful response"
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "StringValue" : {
+      "type" : "object",
+      "properties" : {
+        "value" : {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}

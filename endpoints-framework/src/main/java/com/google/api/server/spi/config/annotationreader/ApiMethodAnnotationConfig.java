@@ -68,6 +68,10 @@ class ApiMethodAnnotationConfig {
     }
   }
 
+  public void setResponseStatus(int responseStatus) {
+    config.setResponseStatus(responseStatus);
+  }
+
   public void setAuthLevelIfSpecified(AuthLevel authLevel) {
     if (authLevel != AuthLevel.UNSPECIFIED) {
       config.setAuthLevel(authLevel);

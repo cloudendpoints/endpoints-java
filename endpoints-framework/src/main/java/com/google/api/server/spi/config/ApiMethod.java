@@ -68,6 +68,11 @@ public @interface ApiMethod {
   String httpMethod() default "";
 
   /**
+   * The response status on success. If not set, the value is 200 or 204 if there is no content returned.
+   */
+  int responseStatus() default -1;
+
+  /**
    * Set frontend auth level.
    */
   AuthLevel authLevel() default AuthLevel.UNSPECIFIED;

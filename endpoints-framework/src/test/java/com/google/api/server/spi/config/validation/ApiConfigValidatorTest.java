@@ -505,6 +505,57 @@ public class ApiConfigValidatorTest {
   }
 
   @Test
+  public void testApiMethodConfigWithApiMethodResponseStatusInformal() throws Exception {
+    @Api(name = "testApi", version = "v1", resource = "bar")
+    final class Test {
+      @ApiMethod(responseStatus = 103)
+      public void test() {
+      }
+    }
+
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), Test.class);
+
+    try {
+      validator.validate(config);
+      fail("Expected InvalidResponseStatusException.");
+    } catch (InvalidResponseStatusException expected) {
+      assertThat(expected.getMessage()).contains("103");
+    }
+  }
+
+  @Test
+  public void testApiMethodConfigWithApiMethodResponseStatusRedirection() throws Exception {
+    @Api(name = "testApi", version = "v1", resource = "bar")
+    final class Test {
+      @ApiMethod(responseStatus = 300)
+      public void test() {
+      }
+    }
+
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), Test.class);
+
+    try {
+      validator.validate(config);
+      fail("Expected InvalidResponseStatusException.");
+    } catch (InvalidResponseStatusException expected) {
+      assertThat(expected.getMessage()).contains("300");
+    }
+  }
+
+  @Test
+  public void testApiMethodConfigWithApiMethodResponseStatusCreated() throws Exception {
+    @Api(name = "testApi", version = "v1", resource = "bar")
+    final class Test {
+      @ApiMethod(responseStatus = 201)
+      public void test() {
+      }
+    }
+
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), Test.class);
+    validator.validate(config);
+  }
+
+  @Test
   public void testValidateAuthenticator() throws Exception {
     config.getApiClassConfig().getMethods()
         .get(methodToEndpointMethod(TestEndpoint.class.getMethod("getResultNoParams")))

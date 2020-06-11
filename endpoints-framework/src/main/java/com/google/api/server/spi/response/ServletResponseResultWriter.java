@@ -106,12 +106,8 @@ public class ServletResponseResultWriter implements ResultWriter {
   }
 
   @Override
-  public void write(Object response) throws IOException {
-    if (response == null) {
-      write(HttpServletResponse.SC_NO_CONTENT, null, null, false);
-    } else {
-      write(HttpServletResponse.SC_OK, null, ResponseUtil.wrapCollection(response), false);
-    }
+  public void write(Object response, int status) throws IOException {
+    write(status, null, ResponseUtil.wrapCollection(response), false);
   }
 
   @Override
