@@ -61,7 +61,7 @@ public class CloudClientLibGenerator implements ClientLibGenerator {
     HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
     HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(url),
         ByteArrayContent.fromString("multipart/form-data; boundary=" + boundary, content));
-    request.setReadTimeout(60000);  // 60 seconds is the max App Engine request time
+    request.setReadTimeout(600000);  // Larger discovery documents require more than 20 sec to process
     HttpResponse response = request.execute();
     if (response.getStatusCode() >= 300) {
       throw new IOException("Client Generation failed at server side: " + response.getContent());
