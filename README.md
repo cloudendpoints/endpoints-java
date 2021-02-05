@@ -32,7 +32,7 @@ the dependency with the `endpoints-framework` artifact from the
     <dependency>
       <groupId>com.google.endpoints</groupId>
       <artifactId>endpoints-framework</artifactId>
-      <version>2.0.14</version>
+      <version>2.2.0</version>
     </dependency>
 
 In Gradle, the new dependency looks like this:
