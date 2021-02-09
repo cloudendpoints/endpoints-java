@@ -134,10 +134,7 @@ class GoogleAppEngineAuthenticator implements Authenticator {
     }
     User user = new User(appEngineUser.getEmail());
     if (attr.isEnabled(Attribute.REQUIRE_APPENGINE_USER)) {
-      logger.log(Level.INFO, "appEngineUser = {0}", appEngineUser);
       attr.set(Attribute.AUTHENTICATED_APPENGINE_USER, appEngineUser);
-    } else {
-      logger.log(Level.INFO, "User = {0}", user);
     }
     return user;
   }

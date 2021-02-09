@@ -81,10 +81,7 @@ public class GoogleOAuth2Authenticator implements Authenticator {
     if (attr.isEnabled(Attribute.REQUIRE_APPENGINE_USER)) {
       com.google.appengine.api.users.User appEngineUser =
           new com.google.appengine.api.users.User(tokenInfo.email, "");
-      logger.log(Level.INFO, "appEngineUser = {0}", appEngineUser);
       request.setAttribute(Attribute.AUTHENTICATED_APPENGINE_USER, appEngineUser);
-    } else {
-      logger.log(Level.INFO, "user = {0}", user);
     }
     return user;
   }
