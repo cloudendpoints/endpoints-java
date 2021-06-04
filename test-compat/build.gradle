@@ -62,7 +62,6 @@ allprojects {
 }
 
 test {
-  dependsOn += ':test-compat:appengineEndpointsInstallClientLibs'
 }
 
 // This is necessary because otherwise gradle check runs the dev server, but since there are no
@@ -88,7 +87,6 @@ def testAllConfigs = task('testAllConfigs', type: Test) {
   description = 'runs tests for all environments'
   group = 'Compatibility testing'
   testClassesDir = sourceSets.test.output.classesDir
-  dependsOn += ':test-compat:appengineEndpointsInstallClientLibs'
 }
 
 testConfigs.each { cfg ->
@@ -127,12 +125,6 @@ dependencies {
   compile group: 'javax.servlet', name: 'servlet-api', version: servletVersion
   compileOnly group: 'com.google.appengine', name: 'appengine-endpoints', version: appengineVersion
 
-  testlibCompile(group: 'com.compat_tests', name: 'wax', version: 'v1-+') {
-    exclude group: 'com.google.guava', module: 'guava-jdk5'
-  }
-  testlibCompile(group: 'com.compat_tests', name: 'tictactoe', version: 'v1-+') {
-    exclude group: 'com.google.guava', module: 'guava-jdk5'
-  }
   testlibCompile group: 'junit', name: 'junit', version: junitVersion
   testlibCompile group: 'com.google.truth', name: 'truth', version: truthVersion
   testlibCompile group: 'javax.servlet', name: 'servlet-api', version: servletVersion
