@@ -27,7 +27,7 @@
             "type": "string",
             "enum": [
               "VALUE1",
-              "VALUE2"
+              "value_2"
             ]
           }
         ],
@@ -50,7 +50,7 @@
           "type": "string",
           "enum": [
             "VALUE1",
-            "VALUE2"
+            "value_2"
           ]
         }
       }

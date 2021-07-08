@@ -15,6 +15,10 @@
  */
 package com.google.api.server.spi.testing;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum TestEnum {
-  VALUE1, VALUE2
+  VALUE1,
+  @JsonProperty("value_2")
+  VALUE2;
 }
