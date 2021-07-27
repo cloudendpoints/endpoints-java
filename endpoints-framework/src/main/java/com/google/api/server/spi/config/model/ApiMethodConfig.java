@@ -260,7 +260,7 @@ public class ApiMethodConfig {
           Objects.equals(peerAuthenticators, config.peerAuthenticators) &&
           Objects.equals(typeLoader, config.typeLoader) &&
           ignored == config.ignored &&
-          apiKeyRequired == config.apiKeyRequired &&
+          Objects.equals(apiKeyRequired, config.apiKeyRequired) &&
           Objects.equals(returnType, config.returnType) &&
           Objects.equals(metricCosts, config.metricCosts);
     } else {

@@ -118,7 +118,7 @@ public class ServletRequestParamReader extends AbstractParamReader {
         if (annotation == null) {
           parameterNames.add(null);
         } else {
-          parameterNames.add((String) annotation.getClass().getMethod("value").invoke(annotation));
+          parameterNames.add((String) annotation.annotationType().getMethod("value").invoke(annotation));
         }
       }
       endpointMethod.setParameterNames(parameterNames);

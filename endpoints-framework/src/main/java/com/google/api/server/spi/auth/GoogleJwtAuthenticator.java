@@ -27,7 +27,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;

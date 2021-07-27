@@ -16,14 +16,11 @@
 package com.google.api.server.spi.response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
 
