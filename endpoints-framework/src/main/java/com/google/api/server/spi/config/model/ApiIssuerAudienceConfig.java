@@ -15,7 +15,6 @@
  */
 package com.google.api.server.spi.config.model;
 
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
 import com.google.common.collect.ImmutableSet;

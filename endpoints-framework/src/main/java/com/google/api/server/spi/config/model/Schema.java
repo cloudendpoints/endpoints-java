@@ -24,12 +24,12 @@ public abstract class Schema {
   /**
    * If the schema is an enum, a list of possible enum values in their string representation.
    */
-  @Nullable public abstract ImmutableList<String> enumValues();
+  public abstract ImmutableList<String> enumValues();
 
   /**
    * If the schema is an enum, a list of enum value descriptions.
    */
-  @Nullable public abstract ImmutableList<String> enumDescriptions();
+  public abstract ImmutableList<String> enumDescriptions();
 
   public static Builder builder() {
     return new AutoValue_Schema.Builder();

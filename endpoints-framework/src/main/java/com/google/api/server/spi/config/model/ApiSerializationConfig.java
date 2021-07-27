@@ -107,5 +107,12 @@ public class ApiSerializationConfig {
       }
       return false;
     }
+
+    @Override
+    public int hashCode() {
+      int result = sourceType.hashCode();
+      result = 31 * result + serializer.hashCode();
+      return result;
+    }
   }
 }
