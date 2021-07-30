@@ -128,7 +128,7 @@ public class JacksonResourceSchemaProvider extends AbstractResourceSchemaProvide
       }
     } else if (field != null) {
       return ApiAnnotationIntrospector.getSchemaType(
-          beanType.resolveType(field.getGenericType()), config);
+          beanType.resolveType(field.getAnnotated().getGenericType()), config);
     }
     return null;
   }
