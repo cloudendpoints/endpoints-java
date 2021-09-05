@@ -22,7 +22,7 @@ import java.util.logging.Level;
  * Generic service exception that, in addition to a status message, has a status code, and
  * optionally, response headers to return.
  */
-public class ServiceException extends Exception {
+public class ServiceException extends RuntimeException {
 
   protected final int statusCode;
   protected final String reason;
