@@ -110,6 +110,7 @@ dependencies {
   testCompile project(':test-utils')
   testCompile group: 'junit', name: 'junit', version: junitVersion
   testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+  testCompile group: 'org.skyscreamer', name: 'jsonassert', version: jsonassertVersion
   testCompile group: 'com.google.truth', name: 'truth', version: truthVersion
   testCompile group: 'com.google.appengine', name: 'appengine-testing', version: appengineVersion
   testCompile group: 'com.google.appengine', name: 'appengine-api-stubs', version: appengineVersion
