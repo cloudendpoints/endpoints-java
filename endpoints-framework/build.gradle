@@ -87,9 +87,8 @@ dependencies {
   compile group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
   compile group: 'com.google.flogger', name: 'flogger', version: floggerVersion
   runtime group: 'com.google.flogger', name: 'flogger-system-backend', version: floggerVersion
-  compile(group: 'com.google.http-client', name: 'google-http-client-jackson2', version: apiclientVersion) {
+  compile(group: 'com.google.http-client', name: 'google-http-client-gson', version: apiclientVersion) {
     exclude group: 'com.google.guava', module: 'guava-jdk5'
-    exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
   }
   compile(group: 'com.google.api-client', name: 'google-api-client', version: apiclientVersion) {
     exclude group: 'com.google.guava', module: 'guava-jdk5'
